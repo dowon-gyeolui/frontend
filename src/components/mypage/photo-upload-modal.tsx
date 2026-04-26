@@ -121,7 +121,6 @@ export function PhotoUploadModal({ currentPhoto, onClose, onSave }: Props) {
           type="file"
           accept="image/*"
           // mobile browsers honour `capture` to open the camera directly
-          // @ts-expect-error capture is valid HTML attr on <input type=file>
           capture="user"
           className="hidden"
           onChange={(e) => onPick(e.target.files?.[0] ?? null)}

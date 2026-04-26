@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { saveToken } from "@/lib/auth";
@@ -10,8 +10,26 @@ import { saveToken } from "@/lib/auth";
  *
  * Backend's /auth/kakao/callback redirects here with ?token=...&is_new=0|1.
  * We persist the JWT and route the user to onboarding (new) or home (returning).
+ *
+ * useSearchParams() must be inside a Suspense boundary in Next.js 15+ —
+ * the page component wraps the inner reader so the static prerender
+ * doesn't bail out on /auth/callback.
  */
-export default function AuthCallbackPage() {
+function CallbackBackground({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="flex min-h-dvh w-full flex-1 items-center justify-center"
+      style={{
+        background:
+          "linear-gradient(to bottom, #12081f 0%, #2a0e4f 50%, #5e35b1 100%)",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function CallbackHandler() {
   const router = useRouter();
   const params = useSearchParams();
 
@@ -29,14 +47,22 @@ export default function AuthCallbackPage() {
   }, [params, router]);
 
   return (
-    <div
-      className="flex min-h-dvh w-full flex-1 items-center justify-center"
-      style={{
-        background:
-          "linear-gradient(to bottom, #12081f 0%, #2a0e4f 50%, #5e35b1 100%)",
-      }}
-    >
+    <CallbackBackground>
       <p className="text-white/80 text-sm">로그인 처리 중...</p>
-    </div>
+    </CallbackBackground>
+  );
+}
+
+export default function AuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <CallbackBackground>
+          <p className="text-white/80 text-sm">로딩 중...</p>
+        </CallbackBackground>
+      }
+    >
+      <CallbackHandler />
+    </Suspense>
   );
 }
