@@ -38,12 +38,14 @@ export function AppShell({ children, topChip }: AppShellProps) {
       {/* Top bar */}
       <div className="relative pt-[39px]">
         <div className="flex items-center justify-between px-[24px]">
-          <span
+          <Link
+            href="/home"
+            aria-label="홈으로"
             className="text-[18px] font-bold text-white"
             style={{ letterSpacing: "0.4em" }}
           >
             ZAMI
-          </span>
+          </Link>
           <div className="flex items-center gap-[10px]">
             {topChip}
             <Link

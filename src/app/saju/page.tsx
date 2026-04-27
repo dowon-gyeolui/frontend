@@ -121,6 +121,19 @@ export default function SajuPage() {
               profile={saju.element_profile}
             />
 
+            {/* CTA → 5-section deep interpretation */}
+            <button
+              type="button"
+              onClick={() => router.push("/saju/detail")}
+              className="h-[52px] w-full rounded-[12px] text-[16px] font-bold text-white shadow-[0_0_15px_-2px_rgba(168,85,247,0.5)]"
+              style={{
+                backgroundImage:
+                  "linear-gradient(99deg, rgb(124, 58, 237) 0%, rgb(168, 85, 247) 100%)",
+              }}
+            >
+              ✨ 나의 사주 자세히 풀어보기 →
+            </button>
+
 
             {/* Birth input echo */}
             <section className="rounded-[12px] border border-white/10 bg-white/5 p-[12px] text-[12px] text-white/60">

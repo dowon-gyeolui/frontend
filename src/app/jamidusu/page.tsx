@@ -106,15 +106,13 @@ export default function JamidusuPage() {
 
           <button
             type="button"
-            disabled
-            className="mt-[18px] h-[52px] w-full rounded-[12px] bg-gradient-to-r from-yellow-300 to-pink-400 text-[16px] font-bold text-[#1b1029] opacity-60 disabled:cursor-not-allowed"
+            onClick={() => router.push("/premium?from=jamidusu")}
+            className="mt-[18px] h-[52px] w-full rounded-[12px] bg-gradient-to-r from-yellow-300 to-pink-400 text-[16px] font-bold text-[#1b1029] hover:opacity-90"
           >
-            🚧 결제 시스템 준비 중
+            프리미엄 가입하고 풀이 받기 →
           </button>
           <p className="mt-[10px] text-[11px] text-white/50">
-            카카오페이 / 토스 / 카드결제 연동 작업 중입니다.
-            <br />
-            출시 후 활성화 예정.
+            ZAMI 프리미엄 9,900원 / 월
           </p>
         </section>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowLeft, Menu, Plus, Send } from "lucide-react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -18,7 +19,7 @@ const POLL_INTERVAL_MS = 2500;
 const PLACEHOLDER_PHOTO =
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop";
 
-type Me = { id: number };
+type Me = { id: number; is_paid: boolean };
 
 export default function ChatRoomPage() {
   const router = useRouter();
@@ -36,16 +37,23 @@ export default function ChatRoomPage() {
   // Track the last seen message id for incremental polling.
   const lastIdRef = useRef<number>(0);
 
-  // Auth + load self
+  // Auth + load self. Free-tier users get bounced to the premium upsell —
+  // chatting is a paid feature in the dating-app norm we follow.
   useEffect(() => {
     if (!getToken()) {
       router.replace("/");
       return;
     }
     apiFetch<Me>("/users/me")
-      .then(setMe)
+      .then((m) => {
+        if (!m.is_paid) {
+          router.replace(`/premium?from=chat&peer_id=${peerId}`);
+          return;
+        }
+        setMe(m);
+      })
       .catch((e: Error) => setError(e.message));
-  }, [router]);
+  }, [router, peerId]);
 
   // Adopt candidate handed down from the matching page.
   useEffect(() => {
@@ -138,12 +146,14 @@ export default function ChatRoomPage() {
       {/* Top: ZAMI logo + menu */}
       <div className="relative pt-[39px]">
         <div className="flex items-center justify-between px-[24px]">
-          <span
+          <Link
+            href="/home"
+            aria-label="홈으로"
             className="text-[18px] font-bold text-white"
             style={{ letterSpacing: "0.4em" }}
           >
             ZAMI
-          </span>
+          </Link>
           <Menu className="size-[22px] stroke-white stroke-[2]" />
         </div>
         <div className="mt-[14px] h-px bg-white/40" />
