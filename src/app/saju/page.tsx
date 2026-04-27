@@ -30,12 +30,9 @@ type DetailedSajuResponse = SajuResponse & {
   advice: string;
 };
 
-type Me = { id: number; is_paid: boolean };
-
 export default function SajuPage() {
   const router = useRouter();
   const [saju, setSaju] = useState<DetailedSajuResponse | null>(null);
-  const [me, setMe] = useState<Me | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -43,13 +40,9 @@ export default function SajuPage() {
       router.replace("/");
       return;
     }
-    // Fetch detailed saju + me in parallel — both feed the page.
     apiFetch<DetailedSajuResponse>("/saju/me/detailed")
       .then(setSaju)
       .catch((e: Error) => setError(e.message));
-    apiFetch<Me>("/users/me")
-      .then(setMe)
-      .catch(() => {});
   }, [router]);
 
   return (
@@ -141,8 +134,8 @@ export default function SajuPage() {
             {/* 4 narrative sections — inlined from /saju/me/detailed */}
             <NarrativeSections data={saju} />
 
-            {/* 자미두수 paywall — locked for free users, real interpretation for paid */}
-            <JamidusuSection isPaid={!!me?.is_paid} onUpgrade={() => router.push("/premium?from=jamidusu")} />
+            {/* 자미두수 풀이 — 카드 자체는 CTA. 본문은 /jamidusu 안에서 결제 후에만 노출 */}
+            <JamidusuCta onOpen={() => router.push("/jamidusu")} />
 
             {/* Birth input echo */}
             <section className="rounded-[12px] border border-white/10 bg-white/5 p-[12px] text-[12px] text-white/60">
@@ -403,15 +396,13 @@ function NarrativeCard({
   );
 }
 
-/* ── 자미두수 paywall ── */
+/* ── 자미두수 풀이 CTA ──
+ * Compact card with a Lock + 잠긴 미리보기 + CTA button. Tapping the
+ * button takes the user to /jamidusu where they either see the actual
+ * 풀이 (if paid) or the paywall (if not).
+ */
 
-function JamidusuSection({
-  isPaid,
-  onUpgrade,
-}: {
-  isPaid: boolean;
-  onUpgrade: () => void;
-}) {
+function JamidusuCta({ onOpen }: { onOpen: () => void }) {
   return (
     <section className="relative overflow-hidden rounded-[18px] border border-yellow-300/40 bg-gradient-to-br from-purple-900/40 via-purple-700/30 to-pink-700/30 p-[18px]">
       <div className="flex items-center gap-[8px]">
@@ -422,33 +413,25 @@ function JamidusuSection({
         </span>
       </div>
 
-      {isPaid ? (
-        <p className="mt-[12px] text-[13px] leading-[20px] text-white/85">
-          자미두수 12궁·14주성 풀이는 현재 LLM 시스템과 연동 중입니다.
-          <br />
-          출시 후 활성화되면 이 자리에 전체 풀이가 표시됩니다.
-        </p>
-      ) : (
-        <>
-          {/* Locked teaser — preview lines blurred to imply more content */}
-          <div className="relative mt-[12px] space-y-[6px] text-[12px] text-white/40">
-            <p>命宮(명궁): ████ ███ ████ ███████</p>
-            <p>財帛宮(재백궁): ███ ████████ ██ ███</p>
-            <p>夫妻宮(부처궁): ██████ ███ ███ █████</p>
-          </div>
-          <div className="mt-[14px] flex items-center justify-center gap-[6px] text-white/80">
-            <Lock className="size-[14px]" />
-            <span className="text-[12px]">프리미엄 가입 후 열람 가능</span>
-          </div>
-          <button
-            type="button"
-            onClick={onUpgrade}
-            className="mt-[12px] h-[46px] w-full rounded-[10px] bg-gradient-to-r from-yellow-300 to-pink-400 text-[14px] font-bold text-[#1b1029] shadow-[0_0_15px_-2px_rgba(253,224,71,0.5)] hover:opacity-90"
-          >
-            프리미엄 가입하고 풀이 받기 → (9,900원/월)
-          </button>
-        </>
-      )}
+      <div className="relative mt-[12px] space-y-[6px] text-[12px] text-white/40">
+        <p>命宮(명궁): ████ ███ ████ ███████</p>
+        <p>財帛宮(재백궁): ███ ████████ ██ ███</p>
+        <p>夫妻宮(부처궁): ██████ ███ ███ █████</p>
+      </div>
+
+      <div className="mt-[14px] flex items-center justify-center gap-[6px] text-white/80">
+        <Lock className="size-[14px]" />
+        <span className="text-[12px]">프리미엄 결제 후 열람 가능</span>
+      </div>
+
+      <button
+        type="button"
+        onClick={onOpen}
+        className="mt-[12px] flex h-[46px] w-full items-center justify-center gap-[6px] rounded-[10px] bg-gradient-to-r from-yellow-300 to-pink-400 text-[14px] font-bold text-[#1b1029] shadow-[0_0_15px_-2px_rgba(253,224,71,0.5)] hover:opacity-90"
+      >
+        <Sparkles className="size-[16px] fill-[#1b1029] stroke-[#1b1029]" />
+        자미두수 풀이 보러가기
+      </button>
     </section>
   );
 }
