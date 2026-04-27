@@ -94,9 +94,23 @@ export default function MatchingPage() {
             </p>
           )}
           {threads !== null && threads.length === 0 && (
-            <p className="mt-8 text-center text-[12px] text-white/60">
-              아직 시작한 채팅이 없어요. 매칭 카드에서 대화를 시작해보세요.
-            </p>
+            <div className="mt-12 flex flex-col items-center gap-3 text-center">
+              <div className="text-[40px]">💌</div>
+              <p className="text-[16px] font-semibold text-white">
+                아직 진행 중인 대화가 없어요
+              </p>
+              <p className="text-[12px] leading-[18px] text-white/60">
+                <span
+                  className="cursor-pointer text-purple-300 underline underline-offset-2"
+                  onClick={() => setTab("list")}
+                >
+                  매칭 리스트
+                </span>
+                에서 마음에 드는 상대를 골라
+                <br />
+                먼저 인사를 건네보세요!
+              </p>
+            </div>
           )}
           {threads?.map((t) => (
             <button

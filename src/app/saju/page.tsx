@@ -68,6 +68,7 @@ export default function SajuPage() {
                 </h2>
                 <button
                   type="button"
+                  onClick={() => router.push("/jamidusu")}
                   className="rounded-full bg-white/10 px-[10px] py-[4px] text-[10px] text-white/70 hover:bg-white/20"
                 >
                   자미두수 보러가기

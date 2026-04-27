@@ -8,6 +8,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
 import { apiFetch } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
+import { dominantElement, type ElementProfile } from "@/lib/saju";
 
 type Me = {
   id: number;
@@ -16,16 +17,35 @@ type Me = {
   birth_date: string | null;
 };
 
-const ACTION_TIPS = [
-  "오늘은 밝은 색 옷이 첫인상 상승에 유리",
-  "저녁 시간대 대화 시작 추천",
-  "직설적인 표현보다 돌려 말하는 게 좋음",
-];
+type SajuResponseLite = {
+  element_profile: ElementProfile;
+};
+
+// Action tips are derived from the user's dominant element when available.
+// Once the backend exposes per-day recommendations they'll come from
+// /recommendations/today; for now we render only what we can defend.
+function tipsForElement(dominant: string | null): string[] | null {
+  switch (dominant) {
+    case "wood":
+      return ["산책이나 자연 속 대화가 첫인상 상승에 유리", "오전 시간대 만남 추천", "초록색 액세서리로 포인트"];
+    case "fire":
+      return ["밝은 색 옷이 첫인상 상승에 유리", "저녁 시간대 대화 시작 추천", "직설적인 표현보다 돌려 말하는 게 좋음"];
+    case "earth":
+      return ["편안한 카페에서의 대화가 좋음", "오후 시간대 만남 추천", "황토색·베이지 톤 의상이 유리"];
+    case "metal":
+      return ["깔끔한 정장 스타일이 첫인상에 유리", "낮 시간대 짧고 명료한 대화 추천", "흰색·은색 포인트 추천"];
+    case "water":
+      return ["조용한 곳에서 깊은 대화가 좋음", "밤 시간대 진솔한 대화 추천", "남색·검은색 톤 의상이 유리"];
+    default:
+      return null;
+  }
+}
 
 export default function HomePage() {
   const router = useRouter();
   const [me, setMe] = useState<Me | null>(null);
   const [matches, setMatches] = useState<MatchCandidate[] | null>(null);
+  const [saju, setSaju] = useState<SajuResponseLite | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,14 +58,22 @@ export default function HomePage() {
       .catch((e: Error) => setError(e.message));
   }, [router]);
 
-  // Fetch only after `me.birth_date` is known — backend rejects matches when
-  // the caller hasn't completed onboarding.
+  // Fetch matches + own saju once birth_date is known — backend rejects
+  // both endpoints before onboarding is complete.
   useEffect(() => {
     if (!me || !me.birth_date) return;
     apiFetch<MatchCandidate[]>("/compatibility/matches?top_k=2")
       .then(setMatches)
       .catch(() => setMatches([]));
+    apiFetch<SajuResponseLite>("/saju/me")
+      .then(setSaju)
+      .catch(() => setSaju(null));
   }, [me]);
+
+  // Action tips depend on the user's dominant element. Hidden until saju
+  // arrives so we never show stale generic copy.
+  const tips =
+    saju !== null ? tipsForElement(dominantElement(saju.element_profile)) : null;
 
   // Naive completion heuristic until the backend exposes one.
   const completion =
@@ -139,15 +167,19 @@ export default function HomePage() {
           )}
         </section>
 
-        {/* 행동 가이드 */}
-        <section className="mt-[40px]">
-          <h2 className="text-center text-[20px] font-bold text-white">행동 가이드</h2>
-          <div className="mt-[14px] flex flex-col items-center gap-[6px] text-center text-[14px] text-white">
-            {ACTION_TIPS.map((tip) => (
-              <p key={tip} className="leading-[25px]">{`"${tip}"`}</p>
-            ))}
-          </div>
-        </section>
+        {/* 행동 가이드 — saju가 도착한 뒤에만 렌더 */}
+        {tips && (
+          <section className="mt-[40px]">
+            <h2 className="text-center text-[20px] font-bold text-white">
+              행동 가이드
+            </h2>
+            <div className="mt-[14px] flex flex-col items-center gap-[6px] text-center text-[14px] text-white">
+              {tips.map((tip) => (
+                <p key={tip} className="leading-[25px]">{`"${tip}"`}</p>
+              ))}
+            </div>
+          </section>
+        )}
 
         {error && (
           <p className="mt-[20px] text-center text-xs text-red-300">
