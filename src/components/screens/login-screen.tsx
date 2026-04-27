@@ -1,6 +1,8 @@
 "use client";
 
 import { MessageCircle } from "lucide-react";
+
+import { ZamiLogo } from "@/components/brand/zami-logo";
 import { API_URL } from "@/lib/config";
 
 export default function LoginScreen() {
@@ -17,12 +19,7 @@ export default function LoginScreen() {
       }}
     >
       <div className="flex flex-1 items-center justify-center">
-        <h1
-          className="text-[36px] font-black text-white"
-          style={{ letterSpacing: "0.4em", fontFamily: "'Pretendard Variable', sans-serif" }}
-        >
-          ZAMI
-        </h1>
+        <ZamiLogo size="lg" />
       </div>
 
       <div className="w-full px-[44px] pb-[170px]">

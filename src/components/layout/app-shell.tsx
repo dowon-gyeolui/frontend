@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { Home, MessageCircle, Sparkles, User } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { ZamiLogo } from "@/components/brand/zami-logo";
+
 /**
  * Top + bottom chrome shared across the post-onboarding screens (Home,
  * Matching, Saju, Mypage). Children render between the two bars.
@@ -38,13 +40,8 @@ export function AppShell({ children, topChip }: AppShellProps) {
       {/* Top bar */}
       <div className="relative pt-[39px]">
         <div className="flex items-center justify-between px-[24px]">
-          <Link
-            href="/home"
-            aria-label="홈으로"
-            className="text-[18px] font-bold text-white"
-            style={{ letterSpacing: "0.4em" }}
-          >
-            ZAMI
+          <Link href="/home" aria-label="홈으로">
+            <ZamiLogo size="sm" />
           </Link>
           <div className="flex items-center gap-[10px]">
             {topChip}

@@ -3,6 +3,8 @@
 import { ArrowLeft, Menu, Plus, Send } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+
+import { ZamiLogo } from "@/components/brand/zami-logo";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { MatchCandidate } from "@/components/matching/match-card";
@@ -146,13 +148,8 @@ export default function ChatRoomPage() {
       {/* Top: ZAMI logo + menu */}
       <div className="relative pt-[39px]">
         <div className="flex items-center justify-between px-[24px]">
-          <Link
-            href="/home"
-            aria-label="홈으로"
-            className="text-[18px] font-bold text-white"
-            style={{ letterSpacing: "0.4em" }}
-          >
-            ZAMI
+          <Link href="/home" aria-label="홈으로">
+            <ZamiLogo size="sm" />
           </Link>
           <Menu className="size-[22px] stroke-white stroke-[2]" />
         </div>

@@ -3,6 +3,8 @@
 import { User } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { ZamiLogo } from "@/components/brand/zami-logo";
+
 /**
  * Shared shell for every onboarding screen — gradient background, top logo
  * bar, and a 3-segment progress indicator. ``step`` is 1-based and matches
@@ -27,12 +29,7 @@ export function OnboardingShell({ step, children }: OnboardingShellProps) {
       {/* Top bar — ZAMI logo + user icon + bottom border */}
       <div className="relative pt-[39px]">
         <div className="flex items-center justify-between px-[24px]">
-          <span
-            className="text-[18px] font-bold text-white"
-            style={{ letterSpacing: "0.4em" }}
-          >
-            ZAMI
-          </span>
+          <ZamiLogo size="sm" />
           <User className="size-[25px] stroke-white stroke-[1.5]" />
         </div>
         <div className="mt-[14px] h-px bg-white/40" />

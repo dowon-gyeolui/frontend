@@ -180,30 +180,25 @@ function PillarCard({
 
   return (
     <div
-      className={`relative rounded-[12px] border p-[10px] text-center backdrop-blur-sm ${
+      className={`flex flex-col items-center gap-[6px] rounded-[12px] border px-[8px] py-[12px] text-center backdrop-blur-sm ${
         isDay
           ? "border-purple-400/60 bg-purple-500/15 shadow-[0_0_20px_-5px_rgba(168,85,247,0.5)]"
           : "border-white/15 bg-white/5"
       }`}
     >
       <p className="text-[11px] font-medium text-white/70">{pillar.label}</p>
-      <div className="mt-[6px]">
-        <p
-          className="text-[20px] font-bold leading-none"
-          style={{ color: stemColor }}
-        >
-          {stemInfo?.hanja ?? pillar.stem}
-          {branchInfo?.hanja ?? pillar.branch}
-        </p>
-        <p className="mt-[2px] text-[10px] text-white/60">
-          {pillar.combined}
-          {stemInfo && branchInfo
-            ? `(${stemInfo.hanja}${branchInfo.hanja})`
-            : ""}
-        </p>
-      </div>
+      <p
+        className="text-[22px] font-bold leading-none"
+        style={{ color: stemColor }}
+      >
+        {stemInfo?.hanja ?? pillar.stem}
+        {branchInfo?.hanja ?? pillar.branch}
+      </p>
+      <p className="text-[11px] leading-[14px] text-white/65">
+        {pillar.combined}
+      </p>
       {branchInfo && (
-        <p className="mt-[4px] text-[10px] text-white/50">
+        <p className="text-[10px] leading-[12px] text-white/45">
           {branchInfo.animal}
         </p>
       )}
@@ -223,17 +218,15 @@ function InfoCard({
   hanjaColor?: string;
 }) {
   return (
-    <div className="rounded-[12px] border border-white/10 bg-white/5 p-[10px] text-center">
-      <p className="text-[11px] font-semibold text-white">{title}</p>
+    <div className="flex flex-col items-center justify-between gap-[6px] rounded-[12px] border border-white/10 bg-white/5 px-[10px] py-[12px] text-center">
+      <p className="text-[12px] font-semibold text-white/90">{title}</p>
       <p
-        className="mt-[6px] text-[14px] font-bold"
+        className="text-[18px] font-bold leading-[22px]"
         style={{ color: hanjaColor ?? "#d8b4fe" }}
       >
         {hanja}
       </p>
-      <p className="mt-[4px] text-[10px] text-white/60 leading-[14px]">
-        {subtitle}
-      </p>
+      <p className="text-[11px] leading-[15px] text-white/60">{subtitle}</p>
     </div>
   );
 }
@@ -262,7 +255,7 @@ function DerivedInfoCards({
   const weakDisp = ELEMENT_DISPLAY[weak];
 
   return (
-    <section className="grid grid-cols-4 gap-[8px]">
+    <section className="grid grid-cols-2 gap-[10px]">
       <InfoCard
         title="일간(나)"
         hanja={
@@ -274,19 +267,19 @@ function DerivedInfoCards({
       <InfoCard
         title="강한 오행"
         hanja={`${strongDisp.ko}(${strongDisp.hanja})`}
-        subtitle={`${profile[strong]}점 — 가장 강함`}
+        subtitle={`${profile[strong]}점 · 가장 강함`}
         hanjaColor={strongDisp.color}
       />
       <InfoCard
         title="약한 오행"
         hanja={`${weakDisp.ko}(${weakDisp.hanja})`}
-        subtitle={`${profile[weak]}점 — 보완 필요`}
+        subtitle={`${profile[weak]}점 · 보완 필요`}
         hanjaColor={weakDisp.color}
       />
       <InfoCard
         title="추천 색"
         hanja={recommended.name}
-        subtitle={`${weakDisp.ko}의 기운을 보완`}
+        subtitle={`${weakDisp.ko}의 기운 보완용`}
         hanjaColor={recommended.hex}
       />
     </section>
