@@ -7,15 +7,21 @@ import { AppShell } from "@/components/layout/app-shell";
 import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
+import { listThreads, type ChatThreadSummary } from "@/lib/chat";
 
 type Tab = "list" | "chat";
+
+const PLACEHOLDER_PHOTO =
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop";
 
 export default function MatchingPage() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("list");
   const [matches, setMatches] = useState<MatchCandidate[] | null>(null);
+  const [threads, setThreads] = useState<ChatThreadSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Auth + initial fetch (matches always; threads only when chat tab opened)
   useEffect(() => {
     if (!getToken()) {
       router.replace("/");
@@ -26,9 +32,16 @@ export default function MatchingPage() {
       .catch((e: Error) => setError(e.message));
   }, [router]);
 
+  // Refresh threads when the chat tab becomes active (cheap, on each click).
+  useEffect(() => {
+    if (tab !== "chat") return;
+    listThreads()
+      .then(setThreads)
+      .catch((e: Error) => setError(e.message));
+  }, [tab]);
+
   return (
     <AppShell>
-      {/* Tabs */}
       <div className="relative grid grid-cols-2 px-[20px] pt-[14px]">
         <TabButton label="매칭 리스트" active={tab === "list"} onClick={() => setTab("list")} />
         <div className="absolute inset-y-[14px] left-1/2 w-px bg-white/40" />
@@ -75,11 +88,45 @@ export default function MatchingPage() {
         </div>
       ) : (
         <div className="px-[16px] pt-[16px] flex flex-col gap-[14px]">
-          <p className="mt-2 text-center text-[12px] text-white/60">
-            채팅방은 화요일 작업 중입니다.
-            <br />
-            현재는 매칭 카드를 클릭하면 임시 채팅방으로 이동합니다.
-          </p>
+          {threads === null && (
+            <p className="mt-8 text-center text-[12px] text-white/50">
+              채팅 목록을 불러오는 중...
+            </p>
+          )}
+          {threads !== null && threads.length === 0 && (
+            <p className="mt-8 text-center text-[12px] text-white/60">
+              아직 시작한 채팅이 없어요. 매칭 카드에서 대화를 시작해보세요.
+            </p>
+          )}
+          {threads?.map((t) => (
+            <button
+              key={t.thread_id}
+              type="button"
+              onClick={() => router.push(`/matching/${t.peer.user_id}`)}
+              className="relative h-[86px] w-full overflow-hidden rounded-[10px] text-left shadow-[0px_4px_15px_-4px_rgba(168,85,247,0.4)] transition active:scale-[0.99]"
+              style={{
+                backgroundImage:
+                  "linear-gradient(96deg, rgb(124, 58, 237) 0%, rgb(168, 85, 247) 100%)",
+              }}
+            >
+              <div className="flex h-full items-center gap-[12px] px-[14px]">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={t.peer.photo_url ?? PLACEHOLDER_PHOTO}
+                  alt={t.peer.nickname ?? ""}
+                  className="size-[58px] flex-shrink-0 rounded-full border border-white/20 object-cover"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[20px] font-bold text-white">
+                    {t.peer.nickname ?? "익명"}
+                  </p>
+                  <p className="truncate text-[15px] text-white/95">
+                    {t.last_message?.content ?? "대화를 시작해보세요"}
+                  </p>
+                </div>
+              </div>
+            </button>
+          ))}
         </div>
       )}
     </AppShell>
