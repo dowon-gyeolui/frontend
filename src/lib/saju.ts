@@ -136,3 +136,42 @@ export function dominantElement(profile: ElementProfile): Element {
   ];
   return entries.reduce((a, b) => (b[1] > a[1] ? b : a))[0];
 }
+
+/** Element with the lowest count — what the user should "balance" toward. */
+export function weakestElement(profile: ElementProfile): Element {
+  const entries: [Element, number][] = [
+    ["wood", profile.wood],
+    ["fire", profile.fire],
+    ["earth", profile.earth],
+    ["metal", profile.metal],
+    ["water", profile.water],
+  ];
+  return entries.reduce((a, b) => (b[1] < a[1] ? b : a))[0];
+}
+
+/**
+ * Traditional Korean description of each heavenly stem character. Drives the
+ * "일간(나)" card subtitle so it varies meaningfully per user instead of
+ * showing one hardcoded placeholder.
+ */
+export const STEM_DESCRIPTION: Record<string, string> = {
+  갑: "큰 나무, 푸른 숲",
+  을: "여린 풀, 새싹",
+  병: "태양의 불",
+  정: "등불, 작은 빛",
+  무: "거대한 산",
+  기: "비옥한 들판",
+  경: "강철, 도끼",
+  신: "보석, 칼날",
+  임: "큰 강, 바다",
+  계: "빗물, 이슬",
+};
+
+/** Color name suggested for the *weakest* element — wear it to balance. */
+export const RECOMMENDED_COLOR: Record<Element, { name: string; hex: string }> = {
+  wood: { name: "녹색", hex: "#22c55e" },
+  fire: { name: "빨강", hex: "#ef4444" },
+  earth: { name: "황토색", hex: "#a16207" },
+  metal: { name: "흰색·은색", hex: "#cbd5e1" },
+  water: { name: "검정·남색", hex: "#1e3a8a" },
+};
