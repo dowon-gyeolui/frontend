@@ -7,6 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ZamiLogo } from "@/components/brand/zami-logo";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { CompatibilityReportDrawer } from "@/components/matching/compatibility-report-drawer";
 import type { MatchCandidate } from "@/components/matching/match-card";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
@@ -34,6 +35,7 @@ export default function ChatRoomPage() {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   // Track the last seen message id for incremental polling.
@@ -151,7 +153,14 @@ export default function ChatRoomPage() {
           <Link href="/home" aria-label="홈으로">
             <ZamiLogo size="sm" />
           </Link>
-          <Menu className="size-[22px] stroke-white stroke-[2]" />
+          <button
+            type="button"
+            onClick={() => setReportOpen(true)}
+            aria-label="운명 분석 리포트"
+            className="grid size-[28px] place-items-center"
+          >
+            <Menu className="size-[22px] stroke-white stroke-[2]" />
+          </button>
         </div>
         <div className="mt-[14px] h-px bg-white/40" />
       </div>
@@ -243,6 +252,16 @@ export default function ChatRoomPage() {
           </button>
         </div>
       </div>
+
+      {/* 운명 분석 리포트 drawer — opened by the header menu button */}
+      <CompatibilityReportDrawer
+        peerId={peerId}
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        onUpgrade={() => router.push("/premium?from=jamidusu")}
+        onLeaveRoom={() => router.push("/matching")}
+        onReport={() => alert("신고가 접수되었습니다. 검토 후 조치할게요.")}
+      />
     </div>
   );
 }
