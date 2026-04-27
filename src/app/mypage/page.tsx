@@ -25,6 +25,14 @@ type Me = {
   calendar_type: string | null;
   is_leap_month: boolean;
   gender: string | null;
+  bio: string | null;
+  height_cm: number | null;
+  mbti: string | null;
+  job: string | null;
+  region: string | null;
+  smoking: string | null;
+  drinking: string | null;
+  religion: string | null;
 };
 
 // Profile completion is now derived in lib/profile-completion.ts so home
@@ -89,13 +97,17 @@ export default function MypagePage() {
               <Camera className="size-[20px] stroke-white stroke-[1.5]" />
               프로필 사진
             </button>
-            <button type="button" className="flex flex-col items-center gap-[6px]">
+            <button
+              type="button"
+              onClick={() => router.push("/mypage/edit?focus=bio")}
+              className="flex flex-col items-center gap-[6px]"
+            >
               <Pencil className="size-[20px] stroke-white stroke-[1.5]" />
               자기소개
             </button>
             <button
               type="button"
-              onClick={() => router.push("/onboarding/name")}
+              onClick={() => router.push("/mypage/edit?focus=basic")}
               className="flex flex-col items-center gap-[6px]"
             >
               <Search className="size-[20px] stroke-white stroke-[1.5]" />
@@ -137,44 +149,50 @@ export default function MypagePage() {
           </p>
         </div>
 
-        {/* 한 줄 자기소개 — backend has no field yet, render encouragement */}
-        <section className="mt-[16px] rounded-[18px] border border-white/20 bg-white/10 p-[14px] backdrop-blur-sm">
+        {/* 한 줄 자기소개 — backed by users.bio; tap to edit */}
+        <button
+          type="button"
+          onClick={() => router.push("/mypage/edit?focus=bio")}
+          className="mt-[16px] block w-full rounded-[18px] border border-white/20 bg-white/10 p-[14px] text-left backdrop-blur-sm hover:bg-white/15"
+        >
           <h2 className="text-center text-[18px] font-semibold text-white tracking-tight">
             한 줄 자기소개
           </h2>
-          <p className="mt-[8px] text-center text-[14px] text-[#d8c8f2]">
-            안정적인 사람을 만나서 오래도록 연애하고 싶어요!
+          <p className={`mt-[8px] text-center text-[14px] ${me?.bio ? "text-[#d8c8f2]" : "text-white/40"}`}>
+            {me?.bio ?? "탭해서 한 줄 자기소개를 적어보세요"}
           </p>
-        </section>
+        </button>
 
         {/* 기본 정보 */}
         <section className="mt-[20px]">
           <h2 className="text-center text-[16px] font-semibold text-white">
             기본 정보
           </h2>
-          <div className="relative mt-[10px] grid grid-cols-2 rounded-[18px] border border-white/20 bg-white/10 p-[16px] backdrop-blur-sm">
-            {/* Vertical divider between columns */}
+          <button
+            type="button"
+            onClick={() => router.push("/mypage/edit?focus=basic")}
+            className="relative mt-[10px] grid w-full grid-cols-2 rounded-[18px] border border-white/20 bg-white/10 p-[16px] text-left backdrop-blur-sm hover:bg-white/15"
+          >
             <div className="absolute inset-y-[16px] left-1/2 w-px bg-white/15" />
-            {/* Left column */}
             <InfoRows
               rows={[
                 ["이름", me?.nickname ?? "—"],
                 ["나이", age !== null ? `${age}세` : "—"],
                 ["성별", genderLabel],
-                ["직업", "—"],
+                ["직업", me?.job ?? "—"],
+                ["거주지", me?.region ?? "—"],
               ]}
             />
-            {/* Right column */}
             <InfoRows
               rows={[
-                ["키", "—"],
-                ["흡연", "—"],
-                ["음주", "—"],
-                ["종교", "—"],
-                ["MBTI", "—"],
+                ["키", me?.height_cm ? `${me.height_cm}cm` : "—"],
+                ["MBTI", me?.mbti ?? "—"],
+                ["흡연", me?.smoking ?? "—"],
+                ["음주", me?.drinking ?? "—"],
+                ["종교", me?.religion ?? "—"],
               ]}
             />
-          </div>
+          </button>
         </section>
 
         {/* CTA — 운명의 지도 (사주) */}

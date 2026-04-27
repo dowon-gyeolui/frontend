@@ -18,6 +18,11 @@ type Me = {
   birth_date: string | null;
   birth_time: string | null;
   gender: string | null;
+  bio: string | null;
+  height_cm: number | null;
+  mbti: string | null;
+  job: string | null;
+  region: string | null;
 };
 
 type SajuResponseLite = {
@@ -78,8 +83,6 @@ export default function HomePage() {
   const tips =
     saju !== null ? tipsForElement(dominantElement(saju.element_profile)) : null;
 
-  // Weights spec'd by product — see lib/profile-completion.ts. Today's
-  // maximum is 60% because bio / 기본정보 fields aren't on the backend yet.
   const completion = profileCompletionPct(me);
 
   const nickname = me?.nickname ?? "OOO";
