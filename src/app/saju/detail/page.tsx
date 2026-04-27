@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Heart, HeartHandshake, Sparkles, Wallet, User as UserIcon } from "lucide-react";
+import { ArrowLeft, HeartHandshake, Sparkles, Wallet, User as UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -14,12 +14,11 @@ import {
   type SajuResponse,
 } from "@/lib/saju";
 
-/** Same as SajuResponse + 5 LLM sections. */
+/** Same as SajuResponse + 4 LLM sections (health removed by request). */
 type DetailedSajuResponse = SajuResponse & {
   personality: string;
   love: string;
   wealth: string;
-  health: string;
   advice: string;
 };
 
@@ -70,9 +69,6 @@ export default function SajuDetailPage() {
             <p className="mt-[20px] text-[14px] text-white/60">
               심층 사주 풀이를 작성 중입니다...
             </p>
-            <p className="mt-[6px] text-[11px] text-white/40">
-              5~10초 정도 걸려요 (LLM이 원전을 인용해 작성)
-            </p>
           </div>
         )}
 
@@ -106,11 +102,6 @@ export default function SajuDetailPage() {
                   icon={<Wallet className="size-[18px] stroke-yellow-300" />}
                   title="재물운"
                   content={data.wealth}
-                />
-                <SectionCard
-                  icon={<Heart className="size-[18px] stroke-red-300" />}
-                  title="건강"
-                  content={data.health}
                 />
                 <SectionCard
                   icon={<Sparkles className="size-[18px] stroke-emerald-300" />}

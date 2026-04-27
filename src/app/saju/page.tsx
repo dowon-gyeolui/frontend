@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { ElementPentagon } from "@/components/saju/element-pentagon";
+import { SajuGlossary } from "@/components/saju/saju-glossary";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import {
@@ -154,6 +155,9 @@ export default function SajuPage() {
                 기준일 일주, 五鼠遁 시주. 음력 입력은 양력으로 자동 변환.
               </p>
             </section>
+
+            {/* Plain-Korean glossary so the user can decode every term above */}
+            <SajuGlossary />
           </div>
         )}
       </div>
