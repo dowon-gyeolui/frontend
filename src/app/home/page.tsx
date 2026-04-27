@@ -8,6 +8,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
 import { apiFetch } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
+import { profileCompletionPct } from "@/lib/profile-completion";
 import { dominantElement, type ElementProfile } from "@/lib/saju";
 
 type Me = {
@@ -15,6 +16,8 @@ type Me = {
   nickname: string | null;
   photo_url: string | null;
   birth_date: string | null;
+  birth_time: string | null;
+  gender: string | null;
 };
 
 type SajuResponseLite = {
@@ -75,15 +78,9 @@ export default function HomePage() {
   const tips =
     saju !== null ? tipsForElement(dominantElement(saju.element_profile)) : null;
 
-  // Naive completion heuristic until the backend exposes one.
-  const completion =
-    me === null
-      ? 30
-      : me.birth_date && me.nickname
-        ? 100
-        : me.birth_date
-          ? 60
-          : 30;
+  // Weights spec'd by product — see lib/profile-completion.ts. Today's
+  // maximum is 60% because bio / 기본정보 fields aren't on the backend yet.
+  const completion = profileCompletionPct(me);
 
   const nickname = me?.nickname ?? "OOO";
 

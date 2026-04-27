@@ -13,6 +13,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { PhotoUploadModal } from "@/components/mypage/photo-upload-modal";
 import { apiFetch } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
+import { profileCompletionPct } from "@/lib/profile-completion";
 
 type Me = {
   id: number;
@@ -26,24 +27,9 @@ type Me = {
   gender: string | null;
 };
 
-// Profile completion is computed off the fields the backend currently knows
-// about — extend this set when more profile fields land (height, MBTI, etc.).
-const TRACKED_FIELDS: Array<keyof Me> = [
-  "nickname",
-  "photo_url",
-  "birth_date",
-  "birth_time",
-  "gender",
-];
-
-function calcCompletion(me: Me | null): number {
-  if (!me) return 0;
-  const filled = TRACKED_FIELDS.filter((k) => {
-    const v = me[k];
-    return v !== null && v !== undefined && v !== "";
-  }).length;
-  return Math.round((filled / TRACKED_FIELDS.length) * 100);
-}
+// Profile completion is now derived in lib/profile-completion.ts so home
+// and mypage agree on weights (basic 30 / time 10 / photo 20 / bio 20 /
+// basic-info 20).
 
 function calcAge(birthDate: string | null): number | null {
   if (!birthDate) return null;
@@ -71,7 +57,7 @@ export default function MypagePage() {
       .catch(() => {});
   }, [router]);
 
-  const completion = calcCompletion(me);
+  const completion = profileCompletionPct(me);
   const age = calcAge(me?.birth_date ?? null);
   const genderLabel = me?.gender === "male" ? "남자" : me?.gender === "female" ? "여자" : "—";
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { HeartHandshake, Lock, Sparkles, User as UserIcon, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -21,9 +22,20 @@ import {
   type SajuResponse,
 } from "@/lib/saju";
 
+/** SajuResponse + the 4 narrative sections from /saju/me/detailed. */
+type DetailedSajuResponse = SajuResponse & {
+  personality: string;
+  love: string;
+  wealth: string;
+  advice: string;
+};
+
+type Me = { id: number; is_paid: boolean };
+
 export default function SajuPage() {
   const router = useRouter();
-  const [saju, setSaju] = useState<SajuResponse | null>(null);
+  const [saju, setSaju] = useState<DetailedSajuResponse | null>(null);
+  const [me, setMe] = useState<Me | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,9 +43,13 @@ export default function SajuPage() {
       router.replace("/");
       return;
     }
-    apiFetch<SajuResponse>("/saju/me")
+    // Fetch detailed saju + me in parallel — both feed the page.
+    apiFetch<DetailedSajuResponse>("/saju/me/detailed")
       .then(setSaju)
       .catch((e: Error) => setError(e.message));
+    apiFetch<Me>("/users/me")
+      .then(setMe)
+      .catch(() => {});
   }, [router]);
 
   return (
@@ -122,19 +138,11 @@ export default function SajuPage() {
               profile={saju.element_profile}
             />
 
-            {/* CTA → 5-section deep interpretation */}
-            <button
-              type="button"
-              onClick={() => router.push("/saju/detail")}
-              className="h-[52px] w-full rounded-[12px] text-[16px] font-bold text-white shadow-[0_0_15px_-2px_rgba(168,85,247,0.5)]"
-              style={{
-                backgroundImage:
-                  "linear-gradient(99deg, rgb(124, 58, 237) 0%, rgb(168, 85, 247) 100%)",
-              }}
-            >
-              ✨ 나의 사주 자세히 풀어보기 →
-            </button>
+            {/* 4 narrative sections — inlined from /saju/me/detailed */}
+            <NarrativeSections data={saju} />
 
+            {/* 자미두수 paywall — locked for free users, real interpretation for paid */}
+            <JamidusuSection isPaid={!!me?.is_paid} onUpgrade={() => router.push("/premium?from=jamidusu")} />
 
             {/* Birth input echo */}
             <section className="rounded-[12px] border border-white/10 bg-white/5 p-[12px] text-[12px] text-white/60">
@@ -301,5 +309,146 @@ function DominantSummary({
       의 기운이 가장 강합니다. 자유롭고 유연한 성향을 지니며, 균형을 위해
       반대 기운을 보완해 보세요.
     </p>
+  );
+}
+
+/* ── Narrative interpretation cards (inlined from the old /saju/detail) ── */
+
+function NarrativeSections({ data }: { data: DetailedSajuResponse }) {
+  // RAG retrieval found nothing → render a polite explainer instead of
+  // 4 empty cards.
+  if (data.interpretation_status === "pending") {
+    return (
+      <section className="rounded-[14px] border border-yellow-400/30 bg-yellow-500/5 p-[14px] text-center">
+        <p className="text-[13px] leading-[20px] text-yellow-100/80">
+          원전 데이터가 사주와 매칭되지 않아 심층 해석을 생성하지 못했어요.
+          <br />
+          생년월일/시간을 더 정확히 입력하면 풀이가 향상됩니다.
+        </p>
+      </section>
+    );
+  }
+  return (
+    <section className="space-y-[12px]">
+      <h2 className="text-[16px] font-bold text-white">
+        나의 사주 풀이 <span className="text-white/40">ⓘ</span>
+      </h2>
+      <NarrativeCard
+        icon={<UserIcon className="size-[18px] stroke-purple-300" />}
+        title="성격"
+        content={data.personality}
+      />
+      <NarrativeCard
+        icon={<HeartHandshake className="size-[18px] stroke-pink-300" />}
+        title="대인관계 · 연애운"
+        content={data.love}
+      />
+      <NarrativeCard
+        icon={<Wallet className="size-[18px] stroke-yellow-300" />}
+        title="재물운"
+        content={data.wealth}
+      />
+      <NarrativeCard
+        icon={<Sparkles className="size-[18px] stroke-emerald-300" />}
+        title="조언"
+        content={data.advice}
+        highlight
+      />
+      {data.interpretation_sources.length > 0 && (
+        <div className="rounded-[12px] border border-white/10 bg-white/5 p-[12px]">
+          <p className="text-[11px] font-semibold text-white/70">📚 참고 원전</p>
+          <ul className="mt-[6px] space-y-[3px] text-[11px] text-white/50">
+            {data.interpretation_sources.map((src) => (
+              <li key={src} className="leading-[16px]">{src}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function NarrativeCard({
+  icon,
+  title,
+  content,
+  highlight,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  content: string;
+  highlight?: boolean;
+}) {
+  const has = content.trim().length > 0;
+  return (
+    <div
+      className={`rounded-[14px] border p-[14px] backdrop-blur-sm ${
+        highlight
+          ? "border-yellow-300/40 bg-gradient-to-br from-yellow-300/10 to-pink-400/10"
+          : "border-white/15 bg-white/5"
+      }`}
+    >
+      <div className="flex items-center gap-[8px]">
+        {icon}
+        <h3 className="text-[15px] font-bold text-white">{title}</h3>
+      </div>
+      <p className="mt-[8px] text-[13px] leading-[20px] text-white/85">
+        {has ? content : (
+          <span className="text-white/40">
+            이 항목에 대한 원전 구절을 찾지 못했어요.
+          </span>
+        )}
+      </p>
+    </div>
+  );
+}
+
+/* ── 자미두수 paywall ── */
+
+function JamidusuSection({
+  isPaid,
+  onUpgrade,
+}: {
+  isPaid: boolean;
+  onUpgrade: () => void;
+}) {
+  return (
+    <section className="relative overflow-hidden rounded-[18px] border border-yellow-300/40 bg-gradient-to-br from-purple-900/40 via-purple-700/30 to-pink-700/30 p-[18px]">
+      <div className="flex items-center gap-[8px]">
+        <Sparkles className="size-[18px] fill-yellow-300 stroke-yellow-300" />
+        <h2 className="text-[16px] font-bold text-white">자미두수 풀이</h2>
+        <span className="ml-auto rounded-full bg-yellow-300/20 px-[8px] py-[2px] text-[10px] font-semibold text-yellow-200">
+          PREMIUM
+        </span>
+      </div>
+
+      {isPaid ? (
+        <p className="mt-[12px] text-[13px] leading-[20px] text-white/85">
+          자미두수 12궁·14주성 풀이는 현재 LLM 시스템과 연동 중입니다.
+          <br />
+          출시 후 활성화되면 이 자리에 전체 풀이가 표시됩니다.
+        </p>
+      ) : (
+        <>
+          {/* Locked teaser — preview lines blurred to imply more content */}
+          <div className="relative mt-[12px] space-y-[6px] text-[12px] text-white/40">
+            <p>命宮(명궁): ████ ███ ████ ███████</p>
+            <p>財帛宮(재백궁): ███ ████████ ██ ███</p>
+            <p>夫妻宮(부처궁): ██████ ███ ███ █████</p>
+          </div>
+          <div className="mt-[14px] flex items-center justify-center gap-[6px] text-white/80">
+            <Lock className="size-[14px]" />
+            <span className="text-[12px]">프리미엄 가입 후 열람 가능</span>
+          </div>
+          <button
+            type="button"
+            onClick={onUpgrade}
+            className="mt-[12px] h-[46px] w-full rounded-[10px] bg-gradient-to-r from-yellow-300 to-pink-400 text-[14px] font-bold text-[#1b1029] shadow-[0_0_15px_-2px_rgba(253,224,71,0.5)] hover:opacity-90"
+          >
+            프리미엄 가입하고 풀이 받기 → (9,900원/월)
+          </button>
+        </>
+      )}
+    </section>
   );
 }
