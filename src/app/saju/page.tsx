@@ -137,8 +137,8 @@ export default function SajuPage() {
                 </span>
               </p>
               <p className="mt-1 text-white/40">
-                ※ 현재 사주 계산은 placeholder 알고리즘입니다. 정식 60갑자
-                엔진은 추후 통합 예정.
+                ※ 60갑자 정식 엔진 — 입춘 기준 년주, 24절기 기반 월주,
+                기준일 일주, 五鼠遁 시주. 음력 입력은 양력으로 자동 변환.
               </p>
             </section>
           </div>
