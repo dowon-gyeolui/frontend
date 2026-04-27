@@ -1,95 +1,70 @@
 "use client";
 
-export type MatchCardData = {
-  id: string;
-  name: string;
-  age: number;
-  mbti: string;
-  comment: string;
-  photo: string;
+/**
+ * Match candidate shape returned by `GET /compatibility/matches`. Mirrors the
+ * backend's MatchCandidate pydantic schema. `photo_url` is omitted when the
+ * caller is on the free tier (is_blinded=true), so the UI must handle null.
+ */
+export type MatchCandidate = {
+  user_id: number;
+  score: number;
+  nickname: string | null;
+  age: number | null;
+  gender: string | null;
+  is_blinded: boolean;
+  photo_url: string | null;
+  birth_year: number | null;
+  dominant_element: string | null;
 };
 
 /**
- * Glassy candidate card used on Main_Home and the Matching list.
- * Self-contained: caller wraps in any grid.
+ * Synthesise a short Korean tagline from a saju score. Used as the bottom
+ * line of a match card. Once /compatibility/score returns a per-pair summary
+ * we can swap this out for the real interpretation.
  */
-export function MatchCard({ data }: { data: MatchCardData }) {
+export function scoreComment(score: number): string {
+  if (score >= 90) return "운명적인 인연이에요!";
+  if (score >= 80) return "사주 궁합이 매우 좋아요";
+  if (score >= 70) return "서로를 잘 보완해줘요";
+  if (score >= 60) return "함께라면 안정적이에요";
+  return "특별한 인연일 수 있어요";
+}
+
+const PLACEHOLDER_PHOTO =
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&blur=20";
+
+export function MatchCard({ data }: { data: MatchCandidate }) {
+  const photo = data.photo_url ?? PLACEHOLDER_PHOTO;
+  const name = data.nickname ?? "익명";
+  const ageLabel = data.age !== null ? `${data.age}세` : "—";
+  const elementLabel = data.dominant_element
+    ? `${data.dominant_element}(${data.dominant_element === "목" ? "木" : data.dominant_element === "화" ? "火" : data.dominant_element === "토" ? "土" : data.dominant_element === "금" ? "金" : "水"})`
+    : "?";
+
   return (
     <article className="relative h-[245px] overflow-hidden rounded-[18px] border border-white/15 bg-white/10 shadow-[0px_10px_20px_0px_rgba(0,0,0,0.3),0px_0px_30px_0px_rgba(168,85,247,0.15)] backdrop-blur-sm">
-      {/* Photo with bottom fade so name sits readably */}
+      {/* Photo with bottom fade */}
       <div className="absolute inset-x-[10px] top-[8px] aspect-[130/149] overflow-hidden rounded-[14px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={data.photo} alt={data.name} className="size-full object-cover" />
+        <img src={photo} alt={name} className="size-full object-cover" />
         <div className="absolute inset-0 rounded-[14px] bg-gradient-to-b from-transparent via-transparent to-[#1a1225]/80" />
         <p className="absolute bottom-[6px] right-[10px] text-[14px] font-medium tracking-tight text-white">
-          {data.name}
+          {name}
         </p>
+        {/* Score badge top-left */}
+        <div className="absolute left-[8px] top-[8px] rounded-full bg-purple-500/90 px-[8px] py-[2px] text-[11px] font-bold text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.8)]">
+          {data.score}%
+        </div>
       </div>
+      {/* Stats */}
       <div className="absolute left-[12px] top-[162px] text-[14px] leading-[22px] text-white/80">
-        <p>나이 : {data.age}세</p>
-        <p>MBTI : {data.mbti}</p>
+        <p>나이 : {ageLabel}</p>
+        <p>오행 : {elementLabel}</p>
       </div>
+      {/* Comment */}
       <p className="absolute bottom-[10px] left-1/2 w-[80%] -translate-x-1/2 whitespace-pre-line text-center text-[10px] text-white">
-        {data.comment}
+        {scoreComment(data.score)}
       </p>
     </article>
   );
 }
-
-// Mock data shared until the backend exposes /compatibility/candidates.
-export const MOCK_MATCH_CARDS: MatchCardData[] = [
-  {
-    id: "1",
-    name: "김민주",
-    age: 29,
-    mbti: "INFP",
-    comment: "둘이 연애하면 장기적으로\n금전운이 정말 좋아요!",
-    photo:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop",
-  },
-  {
-    id: "2",
-    name: "설윤아",
-    age: 25,
-    mbti: "ESFP",
-    comment: "서로의 부족한 점을\n완벽하게 보완해줘요",
-    photo:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop",
-  },
-  {
-    id: "3",
-    name: "이나경",
-    age: 27,
-    mbti: "ENTP",
-    comment: "서로 이성에 대한 가치관이\n확실해서 싸울 일이 없어요",
-    photo:
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=400&fit=crop",
-  },
-  {
-    id: "4",
-    name: "신시아",
-    age: 29,
-    mbti: "ISFJ",
-    comment: "경직된 당신을 부드럽게\n녹여줄 수 있는 사람이에요.",
-    photo:
-      "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&h=400&fit=crop",
-  },
-  {
-    id: "5",
-    name: "박서연",
-    age: 26,
-    mbti: "ENFJ",
-    comment: "활기찬 에너지로\n당신을 빛나게 해줄 거예요",
-    photo:
-      "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&fit=crop",
-  },
-  {
-    id: "6",
-    name: "이수진",
-    age: 28,
-    mbti: "INTJ",
-    comment: "깊이 있는 대화로\n마음을 나눌 수 있어요",
-    photo:
-      "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=400&h=400&fit=crop",
-  },
-];

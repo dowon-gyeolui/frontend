@@ -1,28 +1,30 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
-import { MOCK_MATCH_CARDS, MatchCard } from "@/components/matching/match-card";
+import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
+import { apiFetch } from "@/lib/api";
+import { getToken } from "@/lib/auth";
 
 type Tab = "list" | "chat";
-
-// Mock chat threads — keyed off MOCK_MATCH_CARDS so opening a chat from
-// either tab lands on the same thread id.
-const MOCK_CHATS = MOCK_MATCH_CARDS.slice(0, 5).map((c, idx) => ({
-  id: c.id,
-  name: c.name,
-  photo: c.photo,
-  lastMessage: ["오늘은 뭐해?", "떡볶이 먹고 싶다", "어디 아파?", "자라.", "그럼 내일 보는 걸로 할까?"][
-    idx
-  ],
-  unread: idx < 2, // first two have unread badges
-}));
 
 export default function MatchingPage() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("list");
+  const [matches, setMatches] = useState<MatchCandidate[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!getToken()) {
+      router.replace("/");
+      return;
+    }
+    apiFetch<MatchCandidate[]>("/compatibility/matches?top_k=10")
+      .then(setMatches)
+      .catch((e: Error) => setError(e.message));
+  }, [router]);
 
   return (
     <AppShell>
@@ -35,56 +37,48 @@ export default function MatchingPage() {
 
       {tab === "list" ? (
         <div className="px-[20px] pt-[18px]">
-          <div className="grid grid-cols-2 gap-[16px]">
-            {MOCK_MATCH_CARDS.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => router.push(`/matching/${c.id}`)}
-                className="text-left transition active:scale-[0.98]"
-              >
-                <MatchCard data={c} />
-              </button>
-            ))}
-          </div>
-          <p className="mt-6 text-center text-[10px] text-white/40">
-            ※ 백엔드 매칭 API 연동 전 — 임시 카드입니다
-          </p>
+          {error && (
+            <p className="mt-4 text-center text-sm text-red-300">
+              매칭 후보를 불러오지 못했어요: {error}
+            </p>
+          )}
+          {matches === null && !error && (
+            <p className="mt-8 text-center text-[12px] text-white/50">
+              매칭 후보를 분석 중...
+            </p>
+          )}
+          {matches !== null && matches.length === 0 && (
+            <div className="mt-8 text-center text-[12px] text-white/60">
+              <p>아직 매칭 가능한 상대가 없어요</p>
+              <p className="mt-1 text-white/40">
+                생년월일을 입력한 다른 사용자가 가입하면 표시됩니다.
+              </p>
+            </div>
+          )}
+          {matches !== null && matches.length > 0 && (
+            <div className="grid grid-cols-2 gap-[16px]">
+              {matches.map((m) => (
+                <button
+                  key={m.user_id}
+                  type="button"
+                  onClick={() => {
+                    sessionStorage.setItem("activeChat", JSON.stringify(m));
+                    router.push(`/matching/${m.user_id}`);
+                  }}
+                  className="text-left transition active:scale-[0.98]"
+                >
+                  <MatchCard data={m} />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <div className="px-[16px] pt-[16px] flex flex-col gap-[14px]">
-          {MOCK_CHATS.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => router.push(`/matching/${c.id}`)}
-              className="relative h-[86px] w-full overflow-hidden rounded-[10px] text-left shadow-[0px_4px_15px_-4px_rgba(168,85,247,0.4)] transition active:scale-[0.99]"
-              style={{
-                backgroundImage:
-                  "linear-gradient(96deg, rgb(124, 58, 237) 0%, rgb(168, 85, 247) 100%)",
-              }}
-            >
-              {c.unread && (
-                <span className="absolute right-[8px] top-[6px] size-[12px] rounded-full bg-red-500 ring-2 ring-purple-300/50" />
-              )}
-              <div className="flex h-full items-center gap-[12px] px-[14px]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={c.photo}
-                  alt={c.name}
-                  className="size-[58px] flex-shrink-0 rounded-full border border-white/20 object-cover"
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[20px] font-bold text-white">{c.name}</p>
-                  <p className="truncate text-[15px] text-white/95">
-                    {c.lastMessage}
-                  </p>
-                </div>
-              </div>
-            </button>
-          ))}
-          <p className="mt-2 text-center text-[10px] text-white/40">
-            ※ 백엔드 채팅 API 연동 전 — 임시 데이터
+          <p className="mt-2 text-center text-[12px] text-white/60">
+            채팅방은 화요일 작업 중입니다.
+            <br />
+            현재는 매칭 카드를 클릭하면 임시 채팅방으로 이동합니다.
           </p>
         </div>
       )}

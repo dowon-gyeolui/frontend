@@ -4,7 +4,7 @@ import { ArrowLeft, Menu, Plus, Send } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { MOCK_MATCH_CARDS } from "@/components/matching/match-card";
+import type { MatchCandidate } from "@/components/matching/match-card";
 
 type Message = {
   id: string;
@@ -12,29 +12,45 @@ type Message = {
   text: string;
 };
 
-// Seed with the conversation shown in the Figma design so the screen looks
-// alive on first load. New messages get appended client-side; nothing
-// is persisted yet.
+// Demo seed messages — replaced by real chat history once the chat backend
+// (Tuesday's work) lands.
 const INITIAL_MESSAGES: Message[] = [
   { id: "m1", from: "them", text: "안녕하세요?" },
   { id: "m2", from: "me", text: "안녕하세요?" },
   { id: "m3", from: "them", text: "보니까 저랑 동갑이신 것 같은데" },
   { id: "m4", from: "them", text: "말부터 놓고 시작하는 걸로 할까요?" },
   { id: "m5", from: "me", text: "그럴까 그럼?" },
-  { id: "m6", from: "them", text: "그래 ㅎㅎ" },
-  { id: "m7", from: "them", text: "오늘은 뭐해?" },
 ];
+
+const PLACEHOLDER_PHOTO =
+  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop";
 
 export default function ChatRoomPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
-  const candidate = MOCK_MATCH_CARDS.find((c) => c.id === params.id);
+
+  // Read the candidate handed down via sessionStorage by the matching page.
+  // On direct URL access (refresh, share) sessionStorage is empty and we
+  // gracefully fall back to a generic header.
+  const [candidate, setCandidate] = useState<MatchCandidate | null>(null);
+  useEffect(() => {
+    const raw = sessionStorage.getItem("activeChat");
+    if (!raw) return;
+    try {
+      const parsed = JSON.parse(raw) as MatchCandidate;
+      // Only adopt the cache if it matches the URL — otherwise show generic.
+      if (String(parsed.user_id) === params.id) {
+        setCandidate(parsed);
+      }
+    } catch {
+      // ignore malformed cache
+    }
+  }, [params.id]);
 
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom whenever a message lands.
   useEffect(() => {
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
@@ -52,6 +68,9 @@ export default function ChatRoomPage() {
     setInput("");
   };
 
+  const otherName = candidate?.nickname ?? `사용자 ${params.id}`;
+  const otherPhoto = candidate?.photo_url ?? PLACEHOLDER_PHOTO;
+
   return (
     <div
       className="relative flex min-h-dvh w-full flex-1 flex-col overflow-hidden"
@@ -60,7 +79,7 @@ export default function ChatRoomPage() {
           "linear-gradient(to bottom, #12081f 0%, #2a0e4f 50%, #5e35b1 100%)",
       }}
     >
-      {/* Top: ZAMI logo + user icon */}
+      {/* Top: ZAMI logo + menu */}
       <div className="relative pt-[39px]">
         <div className="flex items-center justify-between px-[24px]">
           <span
@@ -85,16 +104,26 @@ export default function ChatRoomPage() {
           <ArrowLeft className="size-[24px] stroke-white stroke-[2]" />
         </button>
         <h1 className="text-center text-[20px] font-medium text-white">
-          {candidate?.name ?? "채팅"}
+          {otherName}
         </h1>
         <div className="mt-[12px] h-px bg-white/30" />
       </div>
 
       {/* Saju-based suggestion */}
-      <p className="px-[16px] pb-[10px] pt-[14px] text-center text-[12px] leading-[18px] text-[#d8c8f2]">
-        Tip : 두 분은 서로 부족한 금의 기운을 채워주는 완벽한 파트너입니다.
-        <br />첫 질문으로 취미에 대해 물어보는 것은 어떨까요?
-      </p>
+      {candidate && (
+        <p className="px-[16px] pb-[10px] pt-[14px] text-center text-[12px] leading-[18px] text-[#d8c8f2]">
+          Tip : 사주 궁합 점수{" "}
+          <span className="font-semibold text-[#fde047]">{candidate.score}%</span>
+          {candidate.dominant_element && (
+            <>
+              · 상대의 주요 오행은{" "}
+              <span className="font-semibold">{candidate.dominant_element}</span>
+            </>
+          )}
+          .
+          <br />첫 질문으로 취미에 대해 물어보는 것은 어떨까요?
+        </p>
+      )}
 
       {/* Message scroll area */}
       <div
@@ -103,12 +132,7 @@ export default function ChatRoomPage() {
       >
         {messages.map((m) =>
           m.from === "them" ? (
-            <ThemBubble
-              key={m.id}
-              text={m.text}
-              avatar={candidate?.photo}
-              name={candidate?.name}
-            />
+            <ThemBubble key={m.id} text={m.text} avatar={otherPhoto} name={otherName} />
           ) : (
             <MeBubble key={m.id} text={m.text} />
           ),
@@ -151,19 +175,17 @@ function ThemBubble({
   name,
 }: {
   text: string;
-  avatar?: string;
-  name?: string;
+  avatar: string;
+  name: string;
 }) {
   return (
     <div className="flex items-end gap-[8px]">
-      {avatar && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={avatar}
-          alt={name ?? ""}
-          className="mb-[2px] size-[42px] flex-shrink-0 rounded-full border border-white/20 object-cover"
-        />
-      )}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={avatar}
+        alt={name}
+        className="mb-[2px] size-[42px] flex-shrink-0 rounded-full border border-white/20 object-cover"
+      />
       <div
         className="max-w-[70%] rounded-[10px] border border-white/5 bg-white/10 px-[14px] py-[10px] text-[14px] text-white backdrop-blur-sm"
       >
