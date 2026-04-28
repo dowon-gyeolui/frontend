@@ -15,6 +15,7 @@ export type MatchCandidate = {
   photo_url: string | null;
   birth_year: number | null;
   dominant_element: string | null;
+  mbti: string | null;
 };
 
 /**

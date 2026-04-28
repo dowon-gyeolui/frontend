@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
+import { MatchInfoModal } from "@/components/matching/match-info-modal";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { listThreads, type ChatThreadSummary } from "@/lib/chat";
@@ -20,6 +21,7 @@ export default function MatchingPage() {
   const [matches, setMatches] = useState<MatchCandidate[] | null>(null);
   const [threads, setThreads] = useState<ChatThreadSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [activeMatch, setActiveMatch] = useState<MatchCandidate | null>(null);
 
   // Auth + initial fetch (matches always; threads only when chat tab opened)
   useEffect(() => {
@@ -74,10 +76,7 @@ export default function MatchingPage() {
                 <button
                   key={m.user_id}
                   type="button"
-                  onClick={() => {
-                    sessionStorage.setItem("activeChat", JSON.stringify(m));
-                    router.push(`/matching/${m.user_id}`);
-                  }}
+                  onClick={() => setActiveMatch(m)}
                   className="text-left transition active:scale-[0.98]"
                 >
                   <MatchCard data={m} />
@@ -142,6 +141,24 @@ export default function MatchingPage() {
             </button>
           ))}
         </div>
+      )}
+
+      {activeMatch && (
+        <MatchInfoModal
+          candidate={activeMatch}
+          onClose={() => setActiveMatch(null)}
+          onOpenDetail={() => {
+            // Detail page (Figma 37:1176) is a future task — for now, route
+            // to the chat room which already shows the same person's saju
+            // tip up top. Users still get something useful from this CTA.
+            sessionStorage.setItem("activeChat", JSON.stringify(activeMatch));
+            router.push(`/matching/${activeMatch.user_id}`);
+          }}
+          onStartChat={() => {
+            sessionStorage.setItem("activeChat", JSON.stringify(activeMatch));
+            router.push(`/matching/${activeMatch.user_id}`);
+          }}
+        />
       )}
     </AppShell>
   );
