@@ -62,10 +62,17 @@ export function MatchInfoModal({
           <X className="size-[20px] stroke-[#1b1029] stroke-[2]" />
         </button>
 
-        {/* Hero photo with name overlay */}
+        {/* Hero photo with name overlay. Free-tier users see a blurred
+            teaser + lock pill; paying for chat (via the 채팅 CTA) returns
+            them with is_paid=true, which makes is_blinded false on the
+            next /compatibility/matches call and reveals the photo. */}
         <div className="relative mt-[20px] aspect-[279/320] w-full overflow-hidden rounded-[14px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={photo} alt={name} className="size-full object-cover" />
+          <img
+            src={photo}
+            alt={name}
+            className={`size-full object-cover ${candidate.is_blinded ? "blur-[18px] scale-110" : ""}`}
+          />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#1a1225]/85" />
           <p className="absolute bottom-[14px] right-[16px] text-[24px] font-semibold tracking-tight text-white">
             {name}
@@ -74,6 +81,13 @@ export function MatchInfoModal({
           <div className="absolute left-[14px] top-[14px] rounded-full bg-purple-500/95 px-[10px] py-[3px] text-[12px] font-bold text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.8)]">
             궁합 {candidate.score}%
           </div>
+          {candidate.is_blinded && (
+            <div className="pointer-events-none absolute inset-x-0 top-1/2 grid -translate-y-1/2 place-items-center">
+              <div className="flex items-center gap-[6px] rounded-full bg-black/60 px-[12px] py-[5px] text-[12px] font-medium text-white/95 backdrop-blur-sm">
+                🔒 결제 후 사진 공개
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Hashtags */}

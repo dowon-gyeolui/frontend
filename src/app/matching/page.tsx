@@ -6,9 +6,12 @@ import { useEffect, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
 import { MatchInfoModal } from "@/components/matching/match-info-modal";
+import { PaymentModal } from "@/components/payment/payment-modal";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { listThreads, type ChatThreadSummary } from "@/lib/chat";
+
+type Me = { id: number; is_paid: boolean };
 
 type Tab = "list" | "chat";
 
@@ -22,6 +25,10 @@ export default function MatchingPage() {
   const [threads, setThreads] = useState<ChatThreadSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeMatch, setActiveMatch] = useState<MatchCandidate | null>(null);
+  const [me, setMe] = useState<Me | null>(null);
+  // When set, the payment modal is shown on top of MatchInfoModal. The
+  // candidate is remembered so we can navigate to their chat after payment.
+  const [paymentTarget, setPaymentTarget] = useState<MatchCandidate | null>(null);
 
   // Auth + initial fetch (matches always; threads only when chat tab opened)
   useEffect(() => {
@@ -29,6 +36,9 @@ export default function MatchingPage() {
       router.replace("/");
       return;
     }
+    apiFetch<Me>("/users/me")
+      .then(setMe)
+      .catch(() => {});
     apiFetch<MatchCandidate[]>("/compatibility/matches?top_k=10")
       .then(setMatches)
       .catch((e: Error) => setError(e.message));
@@ -155,8 +165,32 @@ export default function MatchingPage() {
             router.push(`/matching/${activeMatch.user_id}`);
           }}
           onStartChat={() => {
+            // Free users hit the payment modal first; paying flips is_paid
+            // to true so the next /compatibility/matches call returns
+            // is_blinded=false and the photos un-blur on return.
+            if (!me?.is_paid) {
+              setPaymentTarget(activeMatch);
+              return;
+            }
             sessionStorage.setItem("activeChat", JSON.stringify(activeMatch));
             router.push(`/matching/${activeMatch.user_id}`);
+          }}
+        />
+      )}
+
+      {paymentTarget && (
+        <PaymentModal
+          reason="chat"
+          onClose={() => setPaymentTarget(null)}
+          onPaid={() => {
+            // Demo upgrade succeeded: locally mark paid, dismiss the modal
+            // stack, and continue into the chat room.
+            setMe((prev) => (prev ? { ...prev, is_paid: true } : prev));
+            const target = paymentTarget;
+            setPaymentTarget(null);
+            setActiveMatch(null);
+            sessionStorage.setItem("activeChat", JSON.stringify(target));
+            router.push(`/matching/${target.user_id}`);
           }}
         />
       )}
