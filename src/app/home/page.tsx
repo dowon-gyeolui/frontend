@@ -92,7 +92,7 @@ export default function HomePage() {
       topChip={
         completion < 100 ? (
           <Link
-            href="/onboarding/name"
+            href="/mypage?incomplete=1"
             className="grid h-[18px] place-items-center rounded-full bg-[#fde047] px-3 text-[12px] font-medium text-[#1b1029]"
           >
             프로필 완성하기 →

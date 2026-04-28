@@ -6,10 +6,29 @@ import { useEffect, useState } from "react";
 import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
 import { apiFetch } from "@/lib/api";
 import { useOnboarding } from "@/lib/onboarding-context";
+import {
+  BRANCH_DATA,
+  ELEMENT_DISPLAY,
+  STEM_HANJA,
+  dominantElement,
+  type ElementProfile,
+  type SajuPillar,
+} from "@/lib/saju";
+
+/** /saju/me/detailed response — same shape as in /saju/page.tsx. */
+type DetailedSajuResponse = {
+  pillars: SajuPillar[];
+  element_profile: ElementProfile;
+  personality: string;
+  love: string;
+  wealth: string;
+  advice: string;
+};
 
 type SubmitState =
-  | { kind: "submitting" }
-  | { kind: "success" }
+  | { kind: "submitting" }                              // saving profile + birth-data
+  | { kind: "analyzing" }                               // LLM call in progress
+  | { kind: "ready"; saju: DetailedSajuResponse | null } // LLM done (or skipped on failure)
   | { kind: "error"; message: string };
 
 export default function OnboardingDonePage() {
@@ -46,9 +65,20 @@ export default function OnboardingDonePage() {
             gender: state.gender,
           }),
         });
-
         if (cancelled) return;
-        setStatus({ kind: "success" });
+
+        // 3) Kick off the LLM analysis. This is the "마지막 페이지" content —
+        //    we wait so the user actually reads their own saju before going
+        //    to /home. Failure is non-fatal: we still let them in.
+        setStatus({ kind: "analyzing" });
+        try {
+          const saju = await apiFetch<DetailedSajuResponse>("/saju/me/detailed");
+          if (cancelled) return;
+          setStatus({ kind: "ready", saju });
+        } catch {
+          if (cancelled) return;
+          setStatus({ kind: "ready", saju: null });
+        }
         reset();
       } catch (e) {
         if (cancelled) return;
@@ -66,33 +96,36 @@ export default function OnboardingDonePage() {
 
   return (
     <OnboardingShell step={3}>
-      <div className="flex flex-1 flex-col items-center justify-center px-[36px]">
+      <div className="flex flex-1 flex-col items-center justify-center px-[24px] pb-[40px]">
         {status.kind === "submitting" && (
           <>
-            <h1 className="text-center text-[24px] font-bold text-white tracking-tight">
-              {state.nickname ?? ""} 님의 운명을 엿보는 중입니다...
+            <h1 className="text-center text-[24px] font-bold tracking-tight text-white">
+              {state.nickname ?? ""} 님의 정보를 저장하고 있어요...
             </h1>
             <div className="mt-[40px] size-10 animate-spin rounded-full border-4 border-white/20 border-t-white" />
           </>
         )}
 
-        {status.kind === "success" && (
+        {status.kind === "analyzing" && (
           <>
-            <div className="text-[64px]">✨</div>
-            <h1 className="mt-[16px] text-center text-[28px] font-bold text-white">
-              준비 완료!
+            <div className="text-[48px]">🔮</div>
+            <h1 className="mt-[14px] text-center text-[22px] font-bold text-white">
+              {state.nickname ?? ""} 님의 운명을 풀어보고 있어요
             </h1>
-            <p className="mt-[10px] text-center text-[16px] text-white/70">
-              운명의 인연을 만나러 가볼까요?
+            <p className="mt-[10px] text-center text-[13px] leading-[20px] text-white/70">
+              사주를 분석하는 중이에요. 5~10초 정도 걸려요.
             </p>
-            <button
-              type="button"
-              onClick={() => router.replace("/home")}
-              className="mt-[40px] h-[52px] w-full rounded-[5px] bg-[#6366f1] text-[18px] font-semibold text-white shadow-[0px_4px_15px_-2px_rgba(99,102,241,0.5)]"
-            >
-              시작하기
-            </button>
+            <div className="mt-[28px] size-10 animate-spin rounded-full border-4 border-white/20 border-t-white" />
           </>
+        )}
+
+        {status.kind === "ready" && (
+          <ReadyView
+            nickname={state.nickname ?? ""}
+            saju={status.saju}
+            onGoSaju={() => router.replace("/saju")}
+            onGoHome={() => router.replace("/home")}
+          />
         )}
 
         {status.kind === "error" && (
@@ -128,5 +161,110 @@ export default function OnboardingDonePage() {
         )}
       </div>
     </OnboardingShell>
+  );
+}
+
+function ReadyView({
+  nickname,
+  saju,
+  onGoSaju,
+  onGoHome,
+}: {
+  nickname: string;
+  saju: DetailedSajuResponse | null;
+  onGoSaju: () => void;
+  onGoHome: () => void;
+}) {
+  const dayPillar = saju?.pillars[2];
+  const dominant = saju ? dominantElement(saju.element_profile) : null;
+  const dominantKo = dominant ? ELEMENT_DISPLAY[dominant].ko : null;
+  const dominantHanja = dominant ? ELEMENT_DISPLAY[dominant].hanja : null;
+  const dayHanja = dayPillar
+    ? `${STEM_HANJA[dayPillar.stem]?.hanja ?? "?"}${BRANCH_DATA[dayPillar.branch]?.hanja ?? "?"}`
+    : null;
+
+  return (
+    <div className="flex w-full flex-col items-center">
+      <div className="text-[48px]">✨</div>
+      <h1 className="mt-[12px] text-center text-[22px] font-bold tracking-tight text-white">
+        {nickname} 님의 사주를 풀었어요
+      </h1>
+
+      {/* When LLM succeeds — show summary cards */}
+      {saju && dayPillar && dominant && (
+        <div className="mt-[20px] w-full max-w-[340px] space-y-[12px]">
+          <div className="grid grid-cols-2 gap-[10px]">
+            <InfoBox label="일주" value={dayPillar.combined} hanja={dayHanja} />
+            <InfoBox
+              label="주요 오행"
+              value={dominantKo ?? ""}
+              hanja={dominantHanja ?? ""}
+            />
+          </div>
+
+          {saju.personality && (
+            <NarrativeCard title="✦ 성격" body={saju.personality} />
+          )}
+          {saju.advice && <NarrativeCard title="✦ 조언" body={saju.advice} />}
+        </div>
+      )}
+
+      {/* When LLM failed — friendly fallback */}
+      {!saju && (
+        <p className="mt-[16px] max-w-[300px] text-center text-[13px] leading-[20px] text-white/70">
+          LLM 분석이 일시적으로 지연됐어요. 자세한 풀이는{" "}
+          <span className="text-purple-300">사주 페이지</span> 에서 확인할 수 있어요.
+        </p>
+      )}
+
+      {/* CTAs */}
+      <div className="mt-[24px] flex w-full max-w-[340px] flex-col gap-[10px]">
+        <button
+          type="button"
+          onClick={onGoSaju}
+          className="h-[48px] w-full rounded-[12px] text-[16px] font-semibold text-white shadow-[0_0_15px_-2px_rgba(168,85,247,0.5)]"
+          style={{
+            backgroundImage:
+              "linear-gradient(99deg, rgb(124, 58, 237) 0%, rgb(168, 85, 247) 100%)",
+          }}
+        >
+          내 사주 자세히 보기
+        </button>
+        <button
+          type="button"
+          onClick={onGoHome}
+          className="h-[48px] w-full rounded-[12px] border border-white/20 bg-white/5 text-[16px] font-medium text-white hover:bg-white/10"
+        >
+          홈으로 가기
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function InfoBox({
+  label,
+  value,
+  hanja,
+}: {
+  label: string;
+  value: string;
+  hanja: string | null;
+}) {
+  return (
+    <div className="rounded-[12px] border border-white/15 bg-white/5 p-[12px] text-center backdrop-blur-sm">
+      <p className="text-[11px] text-white/60">{label}</p>
+      <p className="mt-[4px] text-[18px] font-bold text-white">{value}</p>
+      {hanja && <p className="text-[11px] text-white/40">{hanja}</p>}
+    </div>
+  );
+}
+
+function NarrativeCard({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-[12px] border border-white/15 bg-white/5 p-[14px] backdrop-blur-sm">
+      <h3 className="text-[13px] font-semibold text-[#fde047]">{title}</h3>
+      <p className="mt-[6px] text-[12px] leading-[20px] text-white/85">{body}</p>
+    </div>
   );
 }

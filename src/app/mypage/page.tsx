@@ -7,8 +7,8 @@ import {
   Search,
   UserX,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import {
@@ -19,7 +19,7 @@ import { BioEditModal } from "@/components/mypage/bio-edit-modal";
 import { PhotoUploadModal } from "@/components/mypage/photo-upload-modal";
 import { apiFetch } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
-import { profileCompletionPct } from "@/lib/profile-completion";
+import { completionRows, profileCompletionPct } from "@/lib/profile-completion";
 
 type Me = {
   id: number;
@@ -57,7 +57,25 @@ function calcAge(birthDate: string | null): number | null {
 }
 
 export default function MypagePage() {
+  return (
+    <Suspense
+      fallback={
+        <AppShell>
+          <div className="flex flex-1 items-center justify-center">
+            <p className="text-white/60">로딩 중...</p>
+          </div>
+        </AppShell>
+      }
+    >
+      <MypageContent />
+    </Suspense>
+  );
+}
+
+function MypageContent() {
   const router = useRouter();
+  const params = useSearchParams();
+  const incomplete = params.get("incomplete") === "1";
   const [me, setMe] = useState<Me | null>(null);
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [bioOpen, setBioOpen] = useState(false);
@@ -185,6 +203,53 @@ export default function MypagePage() {
             프로필 완성도 {completion}%
           </p>
         </div>
+
+        {/* Missing-items callout — shown when not yet 100%. The yellow highlight
+            kicks in when the user came from "프로필 완성하기" on /home so it's
+            obvious why they were redirected. */}
+        {me && completion < 100 && (
+          <div
+            className={`mt-[12px] rounded-[14px] border p-[14px] backdrop-blur-sm ${
+              incomplete
+                ? "border-[#fde047]/60 bg-[#fde047]/15 shadow-[0_0_15px_-2px_rgba(253,224,71,0.4)]"
+                : "border-white/20 bg-white/10"
+            }`}
+          >
+            <p className="text-[13px] font-semibold text-white">
+              {incomplete
+                ? "프로필을 완성해야 100% 가동률이 돼요!"
+                : `프로필 완성도 ${completion}% — 100% 까지 ${100 - completion}% 남았어요`}
+            </p>
+            <ul className="mt-[10px] space-y-[6px]">
+              {completionRows(me)
+                .filter((r) => !r.earned)
+                .map((r) => (
+                  <li key={r.label}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (r.label === "한 줄 자기소개 추가") setBioOpen(true);
+                        else if (r.label === "기본 정보 입력") setBasicOpen(true);
+                        else if (r.label === "프로필 사진 추가")
+                          setPhotoModalOpen(true);
+                        else if (r.label === "시간 (출생 시간)") setBasicOpen(true); // closest tap target
+                        else router.push("/onboarding/name");
+                      }}
+                      className="flex w-full items-center justify-between rounded-[10px] bg-white/5 px-[10px] py-[8px] text-left hover:bg-white/10"
+                    >
+                      <span className="flex items-center gap-[8px] text-[12px] text-white/85">
+                        <span className="text-[#fde047]">✦</span>
+                        {r.label}
+                      </span>
+                      <span className="text-[11px] text-white/50">
+                        +{r.pct}% →
+                      </span>
+                    </button>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        )}
 
         {/* 한 줄 자기소개 — backed by users.bio; tap to edit */}
         <button
