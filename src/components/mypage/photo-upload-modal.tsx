@@ -3,25 +3,30 @@
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+import { API_URL } from "@/lib/config";
+import { getToken } from "@/lib/auth";
+
 /**
- * Photo upload modal — visual replica of the Figma "Mypage_profile_등록" frame.
+ * Photo upload modal — Figma "Mypage_profile_등록" frame.
  *
- * Real upload (multipart → object storage → CDN URL) needs backend infra
- * we don't have yet. For now:
- *   - "앨범에서 선택하기" opens a native file picker
- *   - The chosen file is shown as a local preview via URL.createObjectURL
- *   - "저장하기" triggers onSave(localPreviewUrl); the parent decides what to do
+ * Flow: pick file → local preview via URL.createObjectURL → "저장하기"
+ * uploads multipart to POST /users/me/photo → backend stores on Cloudinary,
+ * updates users.photo_url, returns the CDN URL → onSave receives the
+ * permanent URL the parent should use for further state updates.
  */
 type Props = {
   currentPhoto: string | null;
   onClose: () => void;
-  /** Called with the chosen object URL (local-only until upload is wired up) */
+  /** Called with the permanent CDN URL after a successful upload. */
   onSave: (newPhotoUrl: string) => void;
 };
 
 export function PhotoUploadModal({ currentPhoto, onClose, onSave }: Props) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentPhoto);
   const [isLocal, setIsLocal] = useState(false); // tracks whether to revoke URL
+  const [pickedFile, setPickedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
 
@@ -38,6 +43,34 @@ export function PhotoUploadModal({ currentPhoto, onClose, onSave }: Props) {
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
     setIsLocal(true);
+    setPickedFile(file);
+    setError(null);
+  };
+
+  const handleSave = async () => {
+    if (!pickedFile || uploading) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", pickedFile);
+      const token = getToken();
+      const resp = await fetch(`${API_URL}/users/me/photo`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+      if (!resp.ok) {
+        const body = await resp.text();
+        throw new Error(`${resp.status}: ${body}`);
+      }
+      const data = (await resp.json()) as { photo_url: string | null };
+      if (!data.photo_url) throw new Error("서버가 사진 URL 을 반환하지 않았어요");
+      onSave(data.photo_url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "업로드 실패");
+      setUploading(false);
+    }
   };
 
   return (
@@ -126,23 +159,23 @@ export function PhotoUploadModal({ currentPhoto, onClose, onSave }: Props) {
           onChange={(e) => onPick(e.target.files?.[0] ?? null)}
         />
 
+        {error && (
+          <p className="mt-[12px] text-center text-[11px] text-red-500">{error}</p>
+        )}
+
         {/* Save */}
         <button
           type="button"
-          disabled={!previewUrl || !isLocal}
-          onClick={() => previewUrl && onSave(previewUrl)}
+          disabled={!pickedFile || uploading}
+          onClick={handleSave}
           className="mx-auto mt-[16px] block h-[30px] w-[149px] rounded-[18px] text-[16px] font-semibold text-white shadow-[0px_0px_8px_2px_#7f55b4] disabled:opacity-40"
           style={{
             backgroundImage:
               "linear-gradient(97deg, rgb(124, 58, 237) 0%, rgb(168, 85, 247) 100%)",
           }}
         >
-          저장하기
+          {uploading ? "업로드 중..." : "저장하기"}
         </button>
-
-        <p className="mt-[10px] text-center text-[10px] text-[#1b1029]/50">
-          ※ 이미지 업로드 백엔드 연동 전 — 미리보기만 표시됩니다
-        </p>
       </div>
     </div>
   );

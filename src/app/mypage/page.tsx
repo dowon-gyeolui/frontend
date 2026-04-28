@@ -329,11 +329,9 @@ function MypageContent() {
         <PhotoUploadModal
           currentPhoto={me?.photo_url ?? null}
           onClose={() => setPhotoModalOpen(false)}
-          onSave={(_url) => {
-            // TODO: PATCH /users/me/profile with the uploaded photo URL once
-            // we have an image hosting endpoint. For now we just close.
+          onSave={(url) => {
+            setMe((prev) => (prev ? { ...prev, photo_url: url } : prev));
             setPhotoModalOpen(false);
-            alert("사진 업로드 기능은 백엔드 연동 후 활성화됩니다.");
           }}
         />
       )}
