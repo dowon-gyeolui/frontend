@@ -2,7 +2,7 @@
 
 import { ArrowLeft, Save } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { apiFetch } from "@/lib/api";
@@ -53,15 +53,22 @@ function emptyForm(): FormState {
 function MypageEditContent() {
   const router = useRouter();
   const params = useSearchParams();
-  const focus = params.get("focus"); // "bio" | "basic" | null
+  // focus drives which section renders. "bio" → 한 줄 자기소개만, "basic" →
+  // 기본 정보만. unset 또는 그 외 값이면 전체(legacy fallback).
+  const focus = params.get("focus");
+  const showBio = focus === null || focus === "bio";
+  const showBasic = focus === null || focus === "basic";
+  const headerTitle =
+    focus === "bio"
+      ? "한 줄 자기소개"
+      : focus === "basic"
+      ? "기본 정보 입력"
+      : "프로필 편집";
 
   const [form, setForm] = useState<FormState>(emptyForm());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const bioRef = useRef<HTMLTextAreaElement>(null);
-  const basicRef = useRef<HTMLDivElement>(null);
 
   // Load current values
   useEffect(() => {
@@ -89,16 +96,6 @@ function MypageEditContent() {
         setLoading(false);
       });
   }, [router]);
-
-  // Auto-scroll/focus to the requested section
-  useEffect(() => {
-    if (loading) return;
-    if (focus === "bio") {
-      bioRef.current?.focus();
-    } else if (focus === "basic") {
-      basicRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [loading, focus]);
 
   const update = (patch: Partial<FormState>) =>
     setForm((prev) => ({ ...prev, ...patch }));
@@ -154,7 +151,7 @@ function MypageEditContent() {
             <ArrowLeft className="size-[24px] stroke-white stroke-[2]" />
           </button>
           <h1 className="text-center text-[20px] font-bold text-white">
-            프로필 편집
+            {headerTitle}
           </h1>
           <div className="mt-[10px] h-px bg-white/30" />
         </div>
@@ -174,26 +171,29 @@ function MypageEditContent() {
             className="mt-[20px] space-y-[24px]"
           >
             {/* 한 줄 자기소개 */}
-            <section>
-              <label className="text-[14px] font-semibold text-white">
-                한 줄 자기소개{" "}
-                <span className="text-[11px] text-white/40">
-                  ({form.bio.length}/120)
-                </span>
-              </label>
-              <textarea
-                ref={bioRef}
-                value={form.bio}
-                maxLength={120}
-                onChange={(e) => update({ bio: e.target.value })}
-                placeholder="안정적인 사람을 만나서 오래도록 연애하고 싶어요!"
-                rows={2}
-                className="mt-[8px] w-full resize-none rounded-[12px] border border-white/15 bg-white/10 p-[12px] text-[14px] text-white placeholder:text-white/40 focus:border-purple-300 focus:outline-none"
-              />
-            </section>
+            {showBio && (
+              <section>
+                <label className="text-[14px] font-semibold text-white">
+                  한 줄 자기소개{" "}
+                  <span className="text-[11px] text-white/40">
+                    ({form.bio.length}/120)
+                  </span>
+                </label>
+                <textarea
+                  autoFocus
+                  value={form.bio}
+                  maxLength={120}
+                  onChange={(e) => update({ bio: e.target.value })}
+                  placeholder="안정적인 사람을 만나서 오래도록 연애하고 싶어요!"
+                  rows={2}
+                  className="mt-[8px] w-full resize-none rounded-[12px] border border-white/15 bg-white/10 p-[12px] text-[14px] text-white placeholder:text-white/40 focus:border-purple-300 focus:outline-none"
+                />
+              </section>
+            )}
 
             {/* 기본 정보 */}
-            <section ref={basicRef} className="space-y-[14px]">
+            {showBasic && (
+            <section className="space-y-[14px]">
               <h2 className="text-[14px] font-semibold text-white">기본 정보</h2>
 
               <Field label="이름 (닉네임)">
@@ -276,6 +276,7 @@ function MypageEditContent() {
                 />
               </Field>
             </section>
+            )}
 
             {error && (
               <p className="text-center text-[12px] text-red-300">{error}</p>

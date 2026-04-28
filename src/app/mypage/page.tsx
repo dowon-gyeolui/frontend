@@ -5,6 +5,7 @@ import {
   Camera,
   Pencil,
   Search,
+  UserX,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -54,6 +55,23 @@ export default function MypagePage() {
   const router = useRouter();
   const [me, setMe] = useState<Me | null>(null);
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [leaveError, setLeaveError] = useState<string | null>(null);
+
+  const confirmLeave = async () => {
+    if (leaving) return;
+    setLeaving(true);
+    setLeaveError(null);
+    try {
+      await apiFetch("/users/me", { method: "DELETE" });
+      clearToken();
+      router.replace("/");
+    } catch (e) {
+      setLeaveError(e instanceof Error ? e.message : "탈퇴 실패");
+      setLeaving(false);
+    }
+  };
 
   useEffect(() => {
     if (!getToken()) {
@@ -83,6 +101,18 @@ export default function MypagePage() {
             <ArrowLeft className="size-[24px] stroke-white stroke-[2]" />
           </button>
           <h1 className="text-center text-[20px] font-bold text-white">마이페이지</h1>
+          <button
+            type="button"
+            onClick={() => {
+              setLeaveError(null);
+              setLeaveOpen(true);
+            }}
+            aria-label="탈퇴하기"
+            className="absolute right-0 top-[14px] flex items-center gap-[4px] rounded-full border border-white/20 bg-white/5 px-[10px] py-[4px] text-[11px] text-white/70 hover:bg-white/15"
+          >
+            <UserX className="size-[12px] stroke-white/70 stroke-[2]" />
+            탈퇴하기
+          </button>
         </div>
 
         {/* Profile photo + side action icons */}
@@ -235,7 +265,68 @@ export default function MypagePage() {
           }}
         />
       )}
+
+      {leaveOpen && (
+        <LeaveConfirmModal
+          onClose={() => (leaving ? null : setLeaveOpen(false))}
+          onConfirm={confirmLeave}
+          loading={leaving}
+          error={leaveError}
+        />
+      )}
     </AppShell>
+  );
+}
+
+function LeaveConfirmModal({
+  onClose,
+  onConfirm,
+  loading,
+  error,
+}: {
+  onClose: () => void;
+  onConfirm: () => void;
+  loading: boolean;
+  error: string | null;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 grid place-items-center bg-black/60 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-[300px] rounded-[16px] border border-white/15 bg-[#1f1235] p-[20px]"
+      >
+        <h3 className="text-center text-[16px] font-bold text-white">정말 탈퇴하시겠어요?</h3>
+        <p className="mt-[10px] text-center text-[12px] leading-[18px] text-white/70">
+          탈퇴 시 프로필·채팅 기록이 모두 삭제됩니다.
+          <br />
+          삭제 후 같은 카카오 계정으로 다시 가입할 수 있어요.
+        </p>
+        {error && (
+          <p className="mt-[10px] text-center text-[11px] text-red-300">{error}</p>
+        )}
+        <div className="mt-[16px] flex gap-[8px]">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="h-[40px] flex-1 rounded-[10px] border border-white/20 bg-white/5 text-[14px] text-white hover:bg-white/10 disabled:opacity-50"
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={loading}
+            className="h-[40px] flex-1 rounded-[10px] bg-[rgba(255,95,95,0.9)] text-[14px] font-bold text-black hover:bg-[rgba(255,95,95,1)] disabled:opacity-50"
+          >
+            {loading ? "탈퇴 중..." : "탈퇴하기"}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 

@@ -61,7 +61,26 @@ export default function JamidusuPage() {
 }
 
 /* ── Paid view — actual 자미두수 풀이 ── */
+
+type JamidusuPalace = { name: string; description: string };
+type JamidusuResponse = {
+  user_id: number;
+  overview: string;
+  palaces: JamidusuPalace[];
+  main_stars_summary: string;
+  interpretation_status: "pending" | "ready";
+};
+
 function PaidView({ nickname }: { nickname: string | null }) {
+  const [data, setData] = useState<JamidusuResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    apiFetch<JamidusuResponse>("/saju/me/jamidusu")
+      .then(setData)
+      .catch((e: Error) => setError(e.message));
+  }, []);
+
   return (
     <>
       {/* Hero */}
@@ -79,23 +98,78 @@ function PaidView({ nickname }: { nickname: string | null }) {
         </p>
       </section>
 
-      {/* 12궁 풀이 — 정식 출시 전 placeholder */}
-      <section className="mt-[20px] rounded-[14px] border border-white/15 bg-white/5 p-[16px]">
-        <h3 className="text-[14px] font-bold text-white">12궁 풀이</h3>
-        <ul className="mt-[10px] space-y-[8px] text-[13px] leading-[20px] text-white/80">
-          <li><span className="font-semibold text-white">命宮 (명궁)</span> — 본명·기질·삶의 큰 줄기</li>
-          <li><span className="font-semibold text-white">財帛宮 (재백궁)</span> — 재물 운과 돈을 다루는 방식</li>
-          <li><span className="font-semibold text-white">夫妻宮 (부처궁)</span> — 배우자상과 결혼 운</li>
-          <li><span className="font-semibold text-white">官祿宮 (관록궁)</span> — 직업·사회 활동에서의 흐름</li>
-          <li><span className="font-semibold text-white">遷移宮 (천이궁)</span> — 이동·해외·새로운 환경</li>
-        </ul>
-        <p className="mt-[12px] text-[11px] text-white/40">
-          ※ 12궁·14주성 풀이는 LLM 시스템과 연동 중입니다. 정식 출시 후 이 자리에 전체 풀이가 표시됩니다.
-        </p>
-      </section>
+      {/* Loading state */}
+      {!data && !error && (
+        <section className="mt-[24px] rounded-[14px] border border-white/15 bg-white/5 p-[20px] text-center">
+          <div className="mx-auto size-8 animate-spin rounded-full border-4 border-white/20 border-t-white" />
+          <p className="mt-[10px] text-[12px] text-white/60">
+            자미두수를 풀이하고 있어요... 5~10초 정도 걸려요
+          </p>
+        </section>
+      )}
+
+      {/* Error state */}
+      {error && (
+        <section className="mt-[24px] rounded-[14px] border border-red-400/40 bg-red-500/10 p-[16px] text-center text-[12px] text-red-200">
+          풀이를 불러오지 못했어요. {error}
+        </section>
+      )}
+
+      {/* LLM ready */}
+      {data && data.interpretation_status === "ready" && (
+        <>
+          {/* 종합 요약 */}
+          {data.overview && (
+            <section className="mt-[20px] rounded-[14px] border border-yellow-300/30 bg-gradient-to-br from-yellow-300/10 to-pink-400/10 p-[16px]">
+              <h3 className="flex items-center gap-[6px] text-[14px] font-bold text-white">
+                <Sparkles className="size-[14px] fill-yellow-300 stroke-yellow-300" />
+                종합 풀이
+              </h3>
+              <p className="mt-[8px] whitespace-pre-line text-[13px] leading-[22px] text-white/85">
+                {data.overview}
+              </p>
+            </section>
+          )}
+
+          {/* 12궁 */}
+          {data.palaces.length > 0 && (
+            <section className="mt-[16px] rounded-[14px] border border-white/15 bg-white/5 p-[16px]">
+              <h3 className="text-[14px] font-bold text-white">12궁 풀이</h3>
+              <ul className="mt-[10px] space-y-[10px] text-[13px] leading-[20px] text-white/85">
+                {data.palaces.map((p) => (
+                  <li key={p.name}>
+                    <span className="font-semibold text-white">{p.name}</span>
+                    <br />
+                    <span className="text-white/75">{p.description}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {/* 14주성 요약 */}
+          {data.main_stars_summary && (
+            <section className="mt-[16px] rounded-[14px] border border-white/15 bg-white/5 p-[16px]">
+              <h3 className="text-[14px] font-bold text-white">14주성 요약</h3>
+              <p className="mt-[8px] whitespace-pre-line text-[13px] leading-[22px] text-white/85">
+                {data.main_stars_summary}
+              </p>
+            </section>
+          )}
+        </>
+      )}
+
+      {/* LLM pending — happens when OpenAI quota is hit or API key missing */}
+      {data && data.interpretation_status === "pending" && (
+        <section className="mt-[20px] rounded-[14px] border border-white/15 bg-white/5 p-[16px] text-center">
+          <p className="text-[13px] leading-[22px] text-white/75">
+            자미두수 LLM 풀이를 일시적으로 불러올 수 없어요. 잠시 후 새로 고침 해주세요.
+          </p>
+        </section>
+      )}
 
       <p className="mt-[20px] text-center text-[10px] text-white/40">
-        ※ 자미두수 계산 엔진은 정식 출시 전 베타 테스트 중입니다.
+        ※ 자미두수 풀이는 LLM 보조 서비스로, 보조 참고 자료로만 활용해주세요.
       </p>
     </>
   );
