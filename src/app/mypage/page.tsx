@@ -11,6 +11,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
+import {
+  BasicInfoEditModal,
+  type BasicInfoInitial,
+} from "@/components/mypage/basic-info-edit-modal";
+import { BioEditModal } from "@/components/mypage/bio-edit-modal";
 import { PhotoUploadModal } from "@/components/mypage/photo-upload-modal";
 import { apiFetch } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
@@ -55,6 +60,8 @@ export default function MypagePage() {
   const router = useRouter();
   const [me, setMe] = useState<Me | null>(null);
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
+  const [bioOpen, setBioOpen] = useState(false);
+  const [basicOpen, setBasicOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [leaveError, setLeaveError] = useState<string | null>(null);
@@ -129,7 +136,7 @@ export default function MypagePage() {
             </button>
             <button
               type="button"
-              onClick={() => router.push("/mypage/edit?focus=bio")}
+              onClick={() => setBioOpen(true)}
               className="flex flex-col items-center gap-[6px]"
             >
               <Pencil className="size-[20px] stroke-white stroke-[1.5]" />
@@ -137,7 +144,7 @@ export default function MypagePage() {
             </button>
             <button
               type="button"
-              onClick={() => router.push("/mypage/edit?focus=basic")}
+              onClick={() => setBasicOpen(true)}
               className="flex flex-col items-center gap-[6px]"
             >
               <Search className="size-[20px] stroke-white stroke-[1.5]" />
@@ -182,7 +189,7 @@ export default function MypagePage() {
         {/* 한 줄 자기소개 — backed by users.bio; tap to edit */}
         <button
           type="button"
-          onClick={() => router.push("/mypage/edit?focus=bio")}
+          onClick={() => setBioOpen(true)}
           className="mt-[16px] block w-full rounded-[18px] border border-white/20 bg-white/10 p-[14px] text-left backdrop-blur-sm hover:bg-white/15"
         >
           <h2 className="text-center text-[18px] font-semibold text-white tracking-tight">
@@ -200,7 +207,7 @@ export default function MypagePage() {
           </h2>
           <button
             type="button"
-            onClick={() => router.push("/mypage/edit?focus=basic")}
+            onClick={() => setBasicOpen(true)}
             className="relative mt-[10px] grid w-full grid-cols-2 rounded-[18px] border border-white/20 bg-white/10 p-[16px] text-left backdrop-blur-sm hover:bg-white/15"
           >
             <div className="absolute inset-y-[16px] left-1/2 w-px bg-white/15" />
@@ -262,6 +269,53 @@ export default function MypagePage() {
             // we have an image hosting endpoint. For now we just close.
             setPhotoModalOpen(false);
             alert("사진 업로드 기능은 백엔드 연동 후 활성화됩니다.");
+          }}
+        />
+      )}
+
+      {bioOpen && (
+        <BioEditModal
+          initialBio={me?.bio ?? ""}
+          onClose={() => setBioOpen(false)}
+          onSaved={(bio) => {
+            setMe((prev) => (prev ? { ...prev, bio } : prev));
+            setBioOpen(false);
+          }}
+        />
+      )}
+
+      {basicOpen && me && (
+        <BasicInfoEditModal
+          initial={
+            {
+              nickname: me.nickname,
+              age,
+              height_cm: me.height_cm,
+              mbti: me.mbti,
+              job: me.job,
+              region: me.region,
+              religion: me.religion,
+              smoking: me.smoking,
+              drinking: me.drinking,
+            } satisfies BasicInfoInitial
+          }
+          onClose={() => setBasicOpen(false)}
+          onSaved={(patch) => {
+            setMe((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    height_cm: patch.height_cm ?? prev.height_cm,
+                    mbti: patch.mbti ?? prev.mbti,
+                    job: patch.job ?? prev.job,
+                    region: patch.region ?? prev.region,
+                    religion: patch.religion ?? prev.religion,
+                    smoking: patch.smoking ?? prev.smoking,
+                    drinking: patch.drinking ?? prev.drinking,
+                  }
+                : prev,
+            );
+            setBasicOpen(false);
           }}
         />
       )}
