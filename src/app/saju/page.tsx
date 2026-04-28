@@ -7,10 +7,13 @@ import { useEffect, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { ElementPentagon } from "@/components/saju/element-pentagon";
 import { SajuGlossary } from "@/components/saju/saju-glossary";
+import {
+  DayPillarHeadline,
+  SajuMyeongsik,
+} from "@/components/saju/saju-myeongsik";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import {
-  BRANCH_DATA,
   ELEMENT_DISPLAY,
   RECOMMENDED_COLOR,
   STEM_DESCRIPTION,
@@ -109,20 +112,10 @@ export default function SajuPage() {
               </div>
             </section>
 
-            {/* 사주 4기둥 */}
-            <section>
-              <h2 className="text-[16px] font-bold text-white">
-                나의 사주 구성 <span className="text-white/40">ⓘ</span>
-              </h2>
-              <div className="mt-[12px] grid grid-cols-4 gap-[8px]">
-                {saju.pillars.map((p, i) => (
-                  <PillarCard
-                    key={p.label}
-                    pillar={p}
-                    isDay={i === 2 /* 일주(day) is highlighted in design */}
-                  />
-                ))}
-              </div>
+            {/* 사주 명식(命式) — 천간/십성/지지/지장간/12운성/12신살 */}
+            <section className="space-y-[10px]">
+              <DayPillarHeadline pillar={saju.pillars[2]} />
+              <SajuMyeongsik pillars={saju.pillars} />
             </section>
 
             {/* 일간 / 강·약 오행 / 보완 색 — derived from saju.pillars + element_profile */}
@@ -163,47 +156,6 @@ export default function SajuPage() {
         )}
       </div>
     </AppShell>
-  );
-}
-
-function PillarCard({
-  pillar,
-  isDay,
-}: {
-  pillar: SajuPillar;
-  isDay: boolean;
-}) {
-  const stemInfo = STEM_HANJA[pillar.stem];
-  const branchInfo = BRANCH_DATA[pillar.branch];
-  const stemColor = stemInfo
-    ? ELEMENT_DISPLAY[stemInfo.element].color
-    : "#ffffff";
-
-  return (
-    <div
-      className={`flex flex-col items-center gap-[6px] rounded-[12px] border px-[8px] py-[12px] text-center backdrop-blur-sm ${
-        isDay
-          ? "border-purple-400/60 bg-purple-500/15 shadow-[0_0_20px_-5px_rgba(168,85,247,0.5)]"
-          : "border-white/15 bg-white/5"
-      }`}
-    >
-      <p className="text-[11px] font-medium text-white/70">{pillar.label}</p>
-      <p
-        className="text-[22px] font-bold leading-none"
-        style={{ color: stemColor }}
-      >
-        {stemInfo?.hanja ?? pillar.stem}
-        {branchInfo?.hanja ?? pillar.branch}
-      </p>
-      <p className="text-[11px] leading-[14px] text-white/65">
-        {pillar.combined}
-      </p>
-      {branchInfo && (
-        <p className="text-[10px] leading-[12px] text-white/45">
-          {branchInfo.animal}
-        </p>
-      )}
-    </div>
   );
 }
 

@@ -13,6 +13,20 @@ export type SajuPillar = {
   stem: string; // 천간 한글: 갑/을/...
   branch: string; // 지지 한글: 자/축/...
   combined: string; // stem + branch, e.g. "갑자"
+
+  // 명식 chart fields — optional so older clients keep parsing.
+  stem_hanja?: string | null;
+  stem_element?: Element | null;
+  stem_polarity?: "+" | "-" | null;
+  stem_ten_god?: string | null;
+  branch_hanja?: string | null;
+  branch_animal?: string | null;
+  branch_element?: Element | null;
+  branch_polarity?: "+" | "-" | null;
+  branch_ten_god?: string | null;
+  hidden_stems?: string[];
+  twelve_stage?: string | null;
+  twelve_spirit?: string | null;
 };
 
 export type ElementProfile = {
@@ -174,4 +188,13 @@ export const RECOMMENDED_COLOR: Record<Element, { name: string; hex: string }> =
   earth: { name: "황토색", hex: "#a16207" },
   metal: { name: "흰색·은색", hex: "#cbd5e1" },
   water: { name: "검정·남색", hex: "#1e3a8a" },
+};
+
+/** Korean adjective for the day-pillar header (e.g. 갑→푸른, 병→붉은). */
+export const ELEMENT_COLOR_KO: Record<Element, string> = {
+  wood: "푸른",
+  fire: "붉은",
+  earth: "노란",
+  metal: "흰",
+  water: "검은",
 };
