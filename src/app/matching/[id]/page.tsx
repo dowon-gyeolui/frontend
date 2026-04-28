@@ -13,6 +13,7 @@ import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import {
   fetchMessagesWith,
+  listThreads,
   sendMessageTo,
   type Message,
 } from "@/lib/chat";
@@ -71,6 +72,37 @@ export default function ChatRoomPage() {
     }
   }, [peerId]);
 
+  // Fallback: if sessionStorage didn't carry a candidate (direct URL access
+  // or arrival from the threads-tab list), resolve the peer's nickname/photo
+  // by walking /chat/threads instead of showing "사용자 14".
+  useEffect(() => {
+    if (candidate || !me) return;
+    let cancelled = false;
+    listThreads()
+      .then((threads) => {
+        if (cancelled) return;
+        const thread = threads.find((t) => t.peer.user_id === peerId);
+        if (!thread) return;
+        setCandidate({
+          user_id: thread.peer.user_id,
+          nickname: thread.peer.nickname,
+          photo_url: thread.peer.photo_url,
+          // Filler — only nickname/photo are read by the header.
+          score: 0,
+          age: null,
+          gender: null,
+          is_blinded: false,
+          birth_year: null,
+          dominant_element: null,
+          mbti: null,
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [candidate, me, peerId]);
+
   // Initial history load.
   useEffect(() => {
     if (!me) return;
@@ -95,7 +127,17 @@ export default function ChatRoomPage() {
       try {
         const newer = await fetchMessagesWith(peerId, lastIdRef.current || undefined);
         if (cancelled || newer.length === 0) return;
-        setMessages((prev) => [...prev, ...newer]);
+        // Dedup against current state — when send() and a poll fire close
+        // together, the just-sent message could land in `prev` from send's
+        // optimistic add AND in this poll's `newer`. Without this filter
+        // the first message would render twice on the sender's screen
+        // (visible in dev where StrictMode double-runs effects).
+        setMessages((prev) => {
+          const seen = new Set(prev.map((m) => m.id));
+          const fresh = newer.filter((m) => !seen.has(m.id));
+          if (fresh.length === 0) return prev;
+          return [...prev, ...fresh];
+        });
         lastIdRef.current = newer[newer.length - 1].id;
       } catch {
         // soft-fail polls; user can retry by interacting

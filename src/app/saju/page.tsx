@@ -1,6 +1,6 @@
 "use client";
 
-import { HeartHandshake, Lock, Sparkles, User as UserIcon, Wallet } from "lucide-react";
+import { HeartHandshake, Info, Lock, Sparkles, User as UserIcon, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -308,6 +308,8 @@ function DominantSummary({
 /* ── Narrative interpretation cards (inlined from the old /saju/detail) ── */
 
 function NarrativeSections({ data }: { data: DetailedSajuResponse }) {
+  const [showSources, setShowSources] = useState(false);
+
   // RAG retrieval found nothing → render a polite explainer instead of
   // 4 empty cards.
   if (data.interpretation_status === "pending") {
@@ -321,10 +323,25 @@ function NarrativeSections({ data }: { data: DetailedSajuResponse }) {
       </section>
     );
   }
+  const hasSources = data.interpretation_sources.length > 0;
   return (
     <section className="space-y-[12px]">
-      <h2 className="text-[16px] font-bold text-white">
-        나의 사주 풀이 <span className="text-white/40">ⓘ</span>
+      <h2 className="flex items-center gap-[6px] text-[16px] font-bold text-white">
+        나의 사주 풀이
+        {hasSources && (
+          <button
+            type="button"
+            onClick={() => setShowSources((v) => !v)}
+            aria-label={showSources ? "참고 원전 숨기기" : "참고 원전 보기"}
+            className={`grid size-[20px] place-items-center rounded-full border transition ${
+              showSources
+                ? "border-[#fde047]/60 bg-[#fde047]/15 text-[#fde047]"
+                : "border-white/30 text-white/60 hover:border-white/60 hover:text-white/85"
+            }`}
+          >
+            <Info className="size-[12px]" />
+          </button>
+        )}
       </h2>
       <NarrativeCard
         icon={<UserIcon className="size-[18px] stroke-purple-300" />}
@@ -347,14 +364,17 @@ function NarrativeSections({ data }: { data: DetailedSajuResponse }) {
         content={data.advice}
         highlight
       />
-      {data.interpretation_sources.length > 0 && (
-        <div className="rounded-[12px] border border-white/10 bg-white/5 p-[12px]">
+      {hasSources && showSources && (
+        <div className="rounded-[12px] border border-white/15 bg-white/5 p-[12px]">
           <p className="text-[11px] font-semibold text-white/70">📚 참고 원전</p>
           <ul className="mt-[6px] space-y-[3px] text-[11px] text-white/50">
             {data.interpretation_sources.map((src) => (
               <li key={src} className="leading-[16px]">{src}</li>
             ))}
           </ul>
+          <p className="mt-[8px] text-[10px] leading-[15px] text-white/40">
+            위 풀이는 이 원전 구절들을 기반으로 LLM 이 작성했어요.
+          </p>
         </div>
       )}
     </section>

@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
+import { MatchInfoModal } from "@/components/matching/match-info-modal";
+import { PaymentModal } from "@/components/payment/payment-modal";
 import { apiFetch } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
 import { profileCompletionPct } from "@/lib/profile-completion";
@@ -18,6 +20,7 @@ type Me = {
   birth_date: string | null;
   birth_time: string | null;
   gender: string | null;
+  is_paid: boolean;
   bio: string | null;
   height_cm: number | null;
   mbti: string | null;
@@ -55,6 +58,8 @@ export default function HomePage() {
   const [matches, setMatches] = useState<MatchCandidate[] | null>(null);
   const [saju, setSaju] = useState<SajuResponseLite | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [activeMatch, setActiveMatch] = useState<MatchCandidate | null>(null);
+  const [paymentTarget, setPaymentTarget] = useState<MatchCandidate | null>(null);
 
   useEffect(() => {
     if (!getToken()) {
@@ -149,15 +154,7 @@ export default function HomePage() {
                 <button
                   key={m.user_id}
                   type="button"
-                  onClick={() => {
-                    // Hand the candidate down to the chat room so it can
-                    // render headers without an extra fetch on hot navigation.
-                    sessionStorage.setItem(
-                      "activeChat",
-                      JSON.stringify(m),
-                    );
-                    router.push(`/matching/${m.user_id}`);
-                  }}
+                  onClick={() => setActiveMatch(m)}
                   className="text-left transition active:scale-[0.98]"
                 >
                   <MatchCard data={m} />
@@ -199,6 +196,41 @@ export default function HomePage() {
           </button>
         </div>
       </div>
+
+      {activeMatch && (
+        <MatchInfoModal
+          candidate={activeMatch}
+          onClose={() => setActiveMatch(null)}
+          onOpenDetail={() => {
+            sessionStorage.setItem("activeChat", JSON.stringify(activeMatch));
+            router.push(`/matching/${activeMatch.user_id}`);
+          }}
+          onStartChat={() => {
+            // Free users hit the payment modal; paid users go straight in.
+            if (!me?.is_paid) {
+              setPaymentTarget(activeMatch);
+              return;
+            }
+            sessionStorage.setItem("activeChat", JSON.stringify(activeMatch));
+            router.push(`/matching/${activeMatch.user_id}`);
+          }}
+        />
+      )}
+
+      {paymentTarget && (
+        <PaymentModal
+          reason="chat"
+          onClose={() => setPaymentTarget(null)}
+          onPaid={() => {
+            setMe((prev) => (prev ? { ...prev, is_paid: true } : prev));
+            const target = paymentTarget;
+            setPaymentTarget(null);
+            setActiveMatch(null);
+            sessionStorage.setItem("activeChat", JSON.stringify(target));
+            router.push(`/matching/${target.user_id}`);
+          }}
+        />
+      )}
     </AppShell>
   );
 }

@@ -35,64 +35,62 @@ export default function OnboardingBirthDatePage() {
 
   return (
     <OnboardingShell step={2}>
-      <div className="flex flex-1 flex-col px-[36px]">
-        <h1 className="mt-[150px] text-center text-[24px] font-bold text-white tracking-tight">
-          당신이 우주에
-          <br />
-          기록된 날은 언제인가요?
-        </h1>
+      <div className="flex flex-1 flex-col px-[36px] pb-[40px]">
+        {/* Vertically-centered form group */}
+        <div className="flex flex-1 flex-col justify-center gap-[24px] pt-[20px]">
+          <h1 className="text-center text-[24px] font-bold tracking-tight text-white">
+            당신이 우주에
+            <br />
+            기록된 날은 언제인가요?
+          </h1>
 
-        {/* Date input — using native date input for now; design can be polished later */}
-        <div className="mt-[36px]">
           <input
             type="date"
             value={birthDate}
             onChange={(e) => setBirthDate(e.target.value)}
             className="h-[52px] w-full rounded-[5px] border border-[#5a3a82] bg-[#352052] px-4 text-center text-[18px] font-medium text-white placeholder:text-white/70 focus:border-white/60 focus:outline-none [color-scheme:dark]"
           />
-        </div>
 
-        {/* Calendar type pick */}
-        <div className="mt-[20px] flex gap-[10px]">
-          <button
-            type="button"
-            onClick={() => setCalendar("solar")}
-            className={`h-[52px] flex-1 rounded-[5px] text-[22px] font-bold text-white transition ${
-              calendar === "solar"
-                ? "bg-[#ec4899] shadow-[0px_4px_15px_-2px_rgba(236,72,153,0.5)]"
-                : "bg-[#ec4899]/40 hover:bg-[#ec4899]/70"
-            }`}
-          >
-            양력
-          </button>
-          <button
-            type="button"
-            onClick={() => setCalendar("lunar")}
-            className={`h-[52px] flex-1 rounded-[5px] text-[22px] font-bold text-white transition ${
-              calendar === "lunar"
-                ? "bg-[#6366f1] shadow-[0px_4px_15px_-2px_rgba(99,102,241,0.5)]"
-                : "bg-[#6366f1]/40 hover:bg-[#6366f1]/70"
-            }`}
-          >
-            음력
-          </button>
-        </div>
+          <div className="flex gap-[10px]">
+            <button
+              type="button"
+              onClick={() => setCalendar("solar")}
+              className={`h-[52px] flex-1 rounded-[5px] text-[22px] font-bold text-white transition ${
+                calendar === "solar"
+                  ? "bg-[#ec4899] shadow-[0px_4px_15px_-2px_rgba(236,72,153,0.5)]"
+                  : "bg-[#ec4899]/40 hover:bg-[#ec4899]/70"
+              }`}
+            >
+              양력
+            </button>
+            <button
+              type="button"
+              onClick={() => setCalendar("lunar")}
+              className={`h-[52px] flex-1 rounded-[5px] text-[22px] font-bold text-white transition ${
+                calendar === "lunar"
+                  ? "bg-[#6366f1] shadow-[0px_4px_15px_-2px_rgba(99,102,241,0.5)]"
+                  : "bg-[#6366f1]/40 hover:bg-[#6366f1]/70"
+              }`}
+            >
+              음력
+            </button>
+          </div>
 
-        {/* Leap month — only meaningful for lunar */}
-        {calendar === "lunar" && (
-          <label className="mt-[8px] flex cursor-pointer items-center justify-end gap-[6px] pr-[4px] text-[15px] text-white">
-            <input
-              type="checkbox"
-              checked={isLeap}
-              onChange={(e) => setIsLeap(e.target.checked)}
-              className="size-[14px] cursor-pointer accent-white"
-            />
-            윤달
-          </label>
-        )}
+          {calendar === "lunar" && (
+            <label className="-mt-[8px] flex cursor-pointer items-center justify-center gap-[6px] text-[15px] text-white">
+              <input
+                type="checkbox"
+                checked={isLeap}
+                onChange={(e) => setIsLeap(e.target.checked)}
+                className="size-[14px] cursor-pointer accent-white"
+              />
+              윤달
+            </label>
+          )}
+        </div>
 
         {/* Bottom: 이전 + 다음 */}
-        <div className="mt-auto flex gap-[10px] pb-[40px]">
+        <div className="mt-[40px] flex gap-[10px]">
           <button
             type="button"
             onClick={() => router.back()}

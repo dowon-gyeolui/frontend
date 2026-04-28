@@ -125,7 +125,27 @@ export default function MatchingPage() {
             <button
               key={t.thread_id}
               type="button"
-              onClick={() => router.push(`/matching/${t.peer.user_id}`)}
+              onClick={() => {
+                // Pre-seed sessionStorage so the chat header shows the
+                // peer's nickname immediately instead of "사용자 14" while
+                // the fallback fetch resolves.
+                sessionStorage.setItem(
+                  "activeChat",
+                  JSON.stringify({
+                    user_id: t.peer.user_id,
+                    nickname: t.peer.nickname,
+                    photo_url: t.peer.photo_url,
+                    score: 0,
+                    age: null,
+                    gender: null,
+                    is_blinded: false,
+                    birth_year: null,
+                    dominant_element: null,
+                    mbti: null,
+                  } as MatchCandidate),
+                );
+                router.push(`/matching/${t.peer.user_id}`);
+              }}
               className="relative h-[86px] w-full overflow-hidden rounded-[10px] text-left shadow-[0px_4px_15px_-4px_rgba(168,85,247,0.4)] transition active:scale-[0.99]"
               style={{
                 backgroundImage:

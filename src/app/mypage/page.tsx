@@ -166,7 +166,7 @@ function MypageContent() {
               className="flex flex-col items-center gap-[6px]"
             >
               <Search className="size-[20px] stroke-white stroke-[1.5]" />
-              기본정보 입력
+              정보 수정
             </button>
           </div>
 
@@ -352,6 +352,11 @@ function MypageContent() {
           initial={
             {
               nickname: me.nickname,
+              gender: me.gender,
+              birth_date: me.birth_date,
+              birth_time: me.birth_time,
+              calendar_type: me.calendar_type,
+              is_leap_month: me.is_leap_month,
               age,
               height_cm: me.height_cm,
               mbti: me.mbti,
@@ -368,6 +373,18 @@ function MypageContent() {
               prev
                 ? {
                     ...prev,
+                    nickname: patch.nickname ?? prev.nickname,
+                    gender: patch.gender ?? prev.gender,
+                    birth_date: patch.birth_date ?? prev.birth_date,
+                    birth_time:
+                      patch.birth_time !== undefined
+                        ? patch.birth_time
+                        : prev.birth_time,
+                    calendar_type: patch.calendar_type ?? prev.calendar_type,
+                    is_leap_month:
+                      patch.is_leap_month !== undefined
+                        ? patch.is_leap_month
+                        : prev.is_leap_month,
                     height_cm: patch.height_cm ?? prev.height_cm,
                     mbti: patch.mbti ?? prev.mbti,
                     job: patch.job ?? prev.job,

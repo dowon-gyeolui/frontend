@@ -26,18 +26,20 @@ export default function OnboardingBirthTimePage() {
 
   return (
     <OnboardingShell step={3}>
-      <div className="flex flex-1 flex-col px-[36px]">
-        <h1 className="mt-[150px] text-center text-[24px] font-bold text-white tracking-tight">
-          태어난 시간을
-          <br />
-          알려주세요
-        </h1>
-        <p className="mt-[12px] text-center text-[14px] text-white/60">
-          정확한 사주 풀이에 사용돼요. 모르면 건너뛸 수 있어요.
-        </p>
+      <div className="flex flex-1 flex-col px-[36px] pb-[40px]">
+        {/* Vertically-centered form group */}
+        <div className="flex flex-1 flex-col justify-center gap-[20px] pt-[20px]">
+          <div className="flex flex-col gap-[10px]">
+            <h1 className="text-center text-[24px] font-bold tracking-tight text-white">
+              태어난 시간을
+              <br />
+              알려주세요
+            </h1>
+            <p className="text-center text-[14px] text-white/60">
+              정확한 사주 풀이에 사용돼요. 모르면 건너뛸 수 있어요.
+            </p>
+          </div>
 
-        {/* Time input */}
-        <div className="mt-[36px]">
           <input
             type="time"
             value={birthTime}
@@ -48,24 +50,23 @@ export default function OnboardingBirthTimePage() {
             disabled={unknown}
             className="h-[52px] w-full rounded-[5px] border border-[#5a3a82] bg-[#352052] px-4 text-center text-[18px] font-medium text-white placeholder:text-white/70 focus:border-white/60 focus:outline-none disabled:opacity-40 [color-scheme:dark]"
           />
+
+          <label className="flex cursor-pointer items-center justify-center gap-[8px] text-[15px] text-white/80">
+            <input
+              type="checkbox"
+              checked={unknown}
+              onChange={(e) => {
+                setUnknown(e.target.checked);
+                if (e.target.checked) setBirthTime("");
+              }}
+              className="size-[16px] cursor-pointer accent-white"
+            />
+            시간 모름
+          </label>
         </div>
 
-        {/* Unknown toggle */}
-        <label className="mt-[16px] flex cursor-pointer items-center justify-center gap-[8px] text-[15px] text-white/80">
-          <input
-            type="checkbox"
-            checked={unknown}
-            onChange={(e) => {
-              setUnknown(e.target.checked);
-              if (e.target.checked) setBirthTime("");
-            }}
-            className="size-[16px] cursor-pointer accent-white"
-          />
-          시간 모름
-        </label>
-
         {/* Bottom: 이전 + 다음 */}
-        <div className="mt-auto flex gap-[10px] pb-[40px]">
+        <div className="mt-[40px] flex gap-[10px]">
           <button
             type="button"
             onClick={() => router.back()}
