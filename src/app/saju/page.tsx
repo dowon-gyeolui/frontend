@@ -15,13 +15,7 @@ import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import {
   ELEMENT_DISPLAY,
-  RECOMMENDED_COLOR,
-  STEM_DESCRIPTION,
-  STEM_HANJA,
   dominantElement,
-  weakestElement,
-  type ElementProfile,
-  type SajuPillar,
   type SajuResponse,
 } from "@/lib/saju";
 
@@ -112,17 +106,14 @@ export default function SajuPage() {
               </div>
             </section>
 
-            {/* 사주 명식(命式) — 천간/십성/지지/지장간/12운성/12신살 */}
-            <section className="space-y-[10px]">
+            {/* 사주 명식 — 4-기둥 카드 + 4-스탯 카드 (Figma-style) */}
+            <section className="space-y-[12px]">
               <DayPillarHeadline pillar={saju.pillars[2]} />
-              <SajuMyeongsik pillars={saju.pillars} />
+              <SajuMyeongsik
+                pillars={saju.pillars}
+                profile={saju.element_profile}
+              />
             </section>
-
-            {/* 일간 / 강·약 오행 / 보완 색 — derived from saju.pillars + element_profile */}
-            <DerivedInfoCards
-              pillars={saju.pillars}
-              profile={saju.element_profile}
-            />
 
             {/* 4 narrative sections — inlined from /saju/me/detailed */}
             <NarrativeSections data={saju} />
@@ -156,86 +147,6 @@ export default function SajuPage() {
         )}
       </div>
     </AppShell>
-  );
-}
-
-function InfoCard({
-  title,
-  subtitle,
-  hanja,
-  hanjaColor,
-}: {
-  title: string;
-  subtitle: string;
-  hanja: string;
-  hanjaColor?: string;
-}) {
-  return (
-    <div className="flex flex-col items-center justify-between gap-[6px] rounded-[12px] border border-white/10 bg-white/5 px-[10px] py-[12px] text-center">
-      <p className="text-[12px] font-semibold text-white/90">{title}</p>
-      <p
-        className="text-[18px] font-bold leading-[22px]"
-        style={{ color: hanjaColor ?? "#d8b4fe" }}
-      >
-        {hanja}
-      </p>
-      <p className="text-[11px] leading-[15px] text-white/60">{subtitle}</p>
-    </div>
-  );
-}
-
-/**
- * The four small cards under "사주 구성" — every value derived from the
- * actual SajuResponse so each user sees their own figures.
- */
-function DerivedInfoCards({
-  pillars,
-  profile,
-}: {
-  pillars: SajuPillar[];
-  profile: ElementProfile;
-}) {
-  // 일간 = day pillar's heavenly stem
-  const dayStem = pillars[2]?.stem ?? "";
-  const dayInfo = STEM_HANJA[dayStem];
-  const dayElement = dayInfo ? ELEMENT_DISPLAY[dayInfo.element] : null;
-
-  const strong = dominantElement(profile);
-  const weak = weakestElement(profile);
-  const recommended = RECOMMENDED_COLOR[weak];
-
-  const strongDisp = ELEMENT_DISPLAY[strong];
-  const weakDisp = ELEMENT_DISPLAY[weak];
-
-  return (
-    <section className="grid grid-cols-2 gap-[10px]">
-      <InfoCard
-        title="일간(나)"
-        hanja={
-          dayInfo && dayElement ? `${dayInfo.hanja}${dayElement.hanja}` : "—"
-        }
-        subtitle={STEM_DESCRIPTION[dayStem] ?? "—"}
-        hanjaColor={dayElement?.color}
-      />
-      <InfoCard
-        title="강한 오행"
-        hanja={`${strongDisp.ko}(${strongDisp.hanja})`}
-        subtitle={`${profile[strong]}점 · 가장 강함`}
-        hanjaColor={strongDisp.color}
-      />
-      <InfoCard
-        title="약한 오행"
-        hanja={`${weakDisp.ko}(${weakDisp.hanja})`}
-        subtitle={`${profile[weak]}점 · 보완 필요`}
-        hanjaColor={weakDisp.color}
-      />
-      <InfoCard
-        title="추천 색"
-        hanja={recommended.name}
-        subtitle={`${weakDisp.ko}의 기운 보완용`}
-        hanjaColor={recommended.hex}
-      />
-    </section>
   );
 }
 
