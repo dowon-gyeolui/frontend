@@ -30,10 +30,33 @@ export type ChatThreadSummary = {
   peer: ChatPeer;
   last_message: Message | null;
   updated_at: string;
+  /** Number of messages from the peer the current user hasn't seen yet. */
+  unread_count: number;
 };
 
 export async function listThreads(): Promise<ChatThreadSummary[]> {
   return apiFetch<ChatThreadSummary[]>("/chat/threads");
+}
+
+/**
+ * Mark all messages in the thread with `peerId` as read by the current
+ * user. Server bumps the per-user `last_read_id` to the latest message.
+ *
+ * Called by the chat room on mount and whenever a poll yields new
+ * messages so the badge drops to 0 the moment the user is looking.
+ */
+export async function markThreadRead(peerId: number): Promise<void> {
+  await apiFetch(`/chat/with/${peerId}/read`, { method: "POST" });
+}
+
+/**
+ * Soft-leave a chat thread (KakaoTalk-style 1:1 leave). The thread
+ * disappears from the current user's list. The other user keeps
+ * seeing the history. Server hard-deletes the thread only when both
+ * users have left.
+ */
+export async function leaveThread(threadId: number): Promise<void> {
+  await apiFetch(`/chat/threads/${threadId}`, { method: "DELETE" });
 }
 
 /**

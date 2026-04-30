@@ -4,20 +4,18 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
+import { ChatThreadRow } from "@/components/matching/chat-thread-row";
 import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
 import { MatchInfoModal } from "@/components/matching/match-info-modal";
 import { PaymentModal } from "@/components/payment/payment-modal";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
-import { listThreads, type ChatThreadSummary } from "@/lib/chat";
+import { leaveThread, listThreads, type ChatThreadSummary } from "@/lib/chat";
 
 type Me = { id: number; is_paid: boolean };
 
 type Tab = "list" | "chat";
-
-const PLACEHOLDER_PHOTO =
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop";
 
 export default function MatchingPage() {
   const router = useRouter();
@@ -30,6 +28,26 @@ export default function MatchingPage() {
   // When set, the payment modal is shown on top of MatchInfoModal. The
   // candidate is remembered so we can navigate to their chat after payment.
   const [paymentTarget, setPaymentTarget] = useState<MatchCandidate | null>(null);
+  // Which thread row currently has its swipe-action revealed. Only one
+  // row can be open at a time so the UI stays unambiguous.
+  const [openThreadId, setOpenThreadId] = useState<number | null>(null);
+
+  const handleLeaveThread = async (t: ChatThreadSummary) => {
+    if (!confirm(`${t.peer.nickname ?? "이 채팅"} 방에서 나가시겠어요?\n나간 후에는 더 이상 보이지 않아요.`)) {
+      return;
+    }
+    // Optimistic removal — drop from local state, then call backend.
+    // If the request fails, re-fetch to restore the row.
+    setThreads((prev) => prev?.filter((x) => x.thread_id !== t.thread_id) ?? prev);
+    setOpenThreadId(null);
+    try {
+      await leaveThread(t.thread_id);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "채팅방 나가기 실패");
+      // Re-fetch to undo the optimistic removal.
+      listThreads().then(setThreads).catch(() => {});
+    }
+  };
 
   // Auth + initial fetch (matches always; threads only when chat tab opened)
   useEffect(() => {
@@ -126,9 +144,13 @@ export default function MatchingPage() {
             </div>
           )}
           {threads?.map((t) => (
-            <button
+            <ChatThreadRow
               key={t.thread_id}
-              type="button"
+              thread={t}
+              isOpen={openThreadId === t.thread_id}
+              onOpenChange={(open) =>
+                setOpenThreadId(open ? t.thread_id : null)
+              }
               onClick={() => {
                 // Pre-seed sessionStorage so the chat header shows the
                 // peer's nickname immediately instead of "사용자 14" while
@@ -148,31 +170,18 @@ export default function MatchingPage() {
                     mbti: null,
                   } as MatchCandidate),
                 );
+                // Optimistically clear the badge for this row so the user
+                // doesn't see stale unread numbers between navigation and
+                // the chat room's mark-read call landing.
+                setThreads((prev) =>
+                  prev?.map((x) =>
+                    x.thread_id === t.thread_id ? { ...x, unread_count: 0 } : x,
+                  ) ?? prev,
+                );
                 router.push(`/matching/${t.peer.user_id}`);
               }}
-              className="relative h-[86px] w-full overflow-hidden rounded-[10px] text-left shadow-[0px_4px_15px_-4px_rgba(168,85,247,0.4)] transition active:scale-[0.99]"
-              style={{
-                backgroundImage:
-                  "linear-gradient(96deg, rgb(124, 58, 237) 0%, rgb(168, 85, 247) 100%)",
-              }}
-            >
-              <div className="flex h-full items-center gap-[12px] px-[14px]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={t.peer.photo_url ?? PLACEHOLDER_PHOTO}
-                  alt={t.peer.nickname ?? ""}
-                  className="size-[58px] flex-shrink-0 rounded-full border border-white/20 object-cover"
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="text-[20px] font-bold text-white">
-                    {t.peer.nickname ?? "익명"}
-                  </p>
-                  <p className="truncate text-[15px] text-white/95">
-                    {t.last_message?.content ?? "대화를 시작해보세요"}
-                  </p>
-                </div>
-              </div>
-            </button>
+              onLeave={() => handleLeaveThread(t)}
+            />
           ))}
         </div>
       )}

@@ -16,6 +16,7 @@ import { getToken } from "@/lib/auth";
 import {
   fetchMessagesWith,
   listThreads,
+  markThreadRead,
   sendMediaMessageTo,
   sendMessageTo,
   type Message,
@@ -127,7 +128,8 @@ export default function ChatRoomPage() {
     };
   }, [candidate, me, peerId]);
 
-  // Initial history load.
+  // Initial history load. Once messages arrive, fire-and-forget a
+  // mark-as-read so the unread badge in /chat/threads drops to 0.
   useEffect(() => {
     if (!me) return;
     let cancelled = false;
@@ -136,6 +138,7 @@ export default function ChatRoomPage() {
         if (cancelled) return;
         setMessages(msgs);
         if (msgs.length > 0) lastIdRef.current = msgs[msgs.length - 1].id;
+        markThreadRead(peerId).catch(() => {});
       })
       .catch((e: Error) => setError(e.message));
     return () => {
@@ -156,13 +159,18 @@ export default function ChatRoomPage() {
         // optimistic add AND in this poll's `newer`. Without this filter
         // the first message would render twice on the sender's screen
         // (visible in dev where StrictMode double-runs effects).
+        let appendedFromPeer = false;
         setMessages((prev) => {
           const seen = new Set(prev.map((m) => m.id));
           const fresh = newer.filter((m) => !seen.has(m.id));
           if (fresh.length === 0) return prev;
+          appendedFromPeer = fresh.some((m) => m.sender_id !== me.id);
           return [...prev, ...fresh];
         });
         lastIdRef.current = newer[newer.length - 1].id;
+        // Only call mark-read when the peer actually said something new.
+        // Skipping for our own echoes saves a no-op POST every tick.
+        if (appendedFromPeer) markThreadRead(peerId).catch(() => {});
       } catch {
         // soft-fail polls; user can retry by interacting
       }
