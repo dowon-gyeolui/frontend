@@ -127,44 +127,50 @@ export function ScrollableDateInput({
 
   return (
     <div className="relative flex items-center gap-[6px]">
-      <Pill variant={variant} suffix="년" width={86}>
-        <input
-          inputMode="numeric"
-          pattern="[0-9]*"
-          maxLength={4}
-          value={yText}
-          onChange={(e) => onYearChange(e.target.value)}
-          placeholder="----"
-          aria-label="출생 연도"
-          className="size-full bg-transparent text-center text-[15px] font-semibold text-black outline-none placeholder:text-black/30"
-        />
-      </Pill>
-      <Pill variant={variant} suffix="월" width={56}>
-        <input
-          ref={monthRef}
-          inputMode="numeric"
-          pattern="[0-9]*"
-          maxLength={2}
-          value={mText}
-          onChange={(e) => onMonthChange(e.target.value)}
-          placeholder="--"
-          aria-label="출생 월"
-          className="size-full bg-transparent text-center text-[15px] font-semibold text-black outline-none placeholder:text-black/30"
-        />
-      </Pill>
-      <Pill variant={variant} suffix="일" width={56}>
-        <input
-          ref={dayRef}
-          inputMode="numeric"
-          pattern="[0-9]*"
-          maxLength={2}
-          value={dText}
-          onChange={(e) => onDayChange(e.target.value)}
-          placeholder="--"
-          aria-label="출생 일"
-          className="size-full bg-transparent text-center text-[15px] font-semibold text-black outline-none placeholder:text-black/30"
-        />
-      </Pill>
+      <PillInput
+        variant={variant}
+        suffix="년"
+        width={78}
+        inputProps={{
+          inputMode: "numeric",
+          pattern: "[0-9]*",
+          maxLength: 4,
+          value: yText,
+          onChange: (e) => onYearChange(e.target.value),
+          placeholder: "----",
+          "aria-label": "출생 연도",
+        }}
+      />
+      <PillInput
+        variant={variant}
+        suffix="월"
+        width={50}
+        inputRef={monthRef}
+        inputProps={{
+          inputMode: "numeric",
+          pattern: "[0-9]*",
+          maxLength: 2,
+          value: mText,
+          onChange: (e) => onMonthChange(e.target.value),
+          placeholder: "--",
+          "aria-label": "출생 월",
+        }}
+      />
+      <PillInput
+        variant={variant}
+        suffix="일"
+        width={50}
+        inputRef={dayRef}
+        inputProps={{
+          inputMode: "numeric",
+          pattern: "[0-9]*",
+          maxLength: 2,
+          value: dText,
+          onChange: (e) => onDayChange(e.target.value),
+          placeholder: "--",
+          "aria-label": "출생 일",
+        }}
+      />
 
       {/* Calendar icon — opens native date picker for users who prefer scroll. */}
       <button
@@ -197,16 +203,27 @@ export function ScrollableDateInput({
   );
 }
 
-function Pill({
-  children,
+/**
+ * One labelled pill containing an editable numeric input.
+ *
+ * The input is absolutely positioned to fill the entire pill box so a
+ * tap anywhere on the box focuses the input. The previous version put
+ * the input as a grid child with `place-items-center`, which on iOS
+ * shrank the input to its content size and left a non-clickable border
+ * around it — that's why tapping the day pill seemed dead.
+ */
+function PillInput({
   suffix,
   width,
   variant,
+  inputProps,
+  inputRef,
 }: {
-  children: React.ReactNode;
   suffix: string;
   width: number;
   variant: "dark" | "light";
+  inputProps: React.InputHTMLAttributes<HTMLInputElement>;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
 }) {
   const suffixCls = variant === "light" ? "text-black/70" : "text-white/85";
   const boxCls =
@@ -214,15 +231,20 @@ function Pill({
       ? "bg-white border border-black/10"
       : "bg-white/85";
   return (
-    <span className="flex items-center gap-[2px]">
-      <span
+    <div className="flex items-center gap-[2px]">
+      <div
         style={{ width }}
-        className={`grid h-[36px] place-items-center rounded-[8px] ${boxCls}`}
+        className={`relative h-[36px] rounded-[8px] ${boxCls}`}
       >
-        {children}
-      </span>
+        <input
+          ref={inputRef}
+          {...inputProps}
+          type="text"
+          className="absolute inset-0 size-full bg-transparent text-center text-[15px] font-semibold text-black outline-none placeholder:text-black/30"
+        />
+      </div>
       <span className={`text-[12px] font-medium ${suffixCls}`}>{suffix}</span>
-    </span>
+    </div>
   );
 }
 
