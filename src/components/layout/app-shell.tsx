@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, MessageCircle, Sparkles, User } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { ZamiLogo } from "@/components/brand/zami-logo";
+import { apiFetch } from "@/lib/api";
+import { getToken } from "@/lib/auth";
 
 /**
  * Top + bottom chrome shared across the post-onboarding screens (Home,
@@ -26,8 +28,51 @@ const NAV_ITEMS = [
   { href: "/saju", label: "사주", icon: Sparkles },
 ] as const;
 
+const UNREAD_POLL_MS = 30_000;
+
+/**
+ * Small red dot on the 매칭 nav icon when there are any unread messages.
+ *
+ * Polls /chat/unread-summary on a slow cadence so the badge stays roughly
+ * fresh wherever the user is in the app. We deliberately don't tie this
+ * to the 2.5s chat-room poll — that's a per-thread loop only running on
+ * the chat screen; the nav badge is "did anyone message me anywhere?" and
+ * 30s freshness is plenty.
+ */
+function useUnreadTotal(): number {
+  const [total, setTotal] = useState(0);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (!getToken()) return;
+    let cancelled = false;
+
+    const tick = () => {
+      apiFetch<{ total_unread: number }>("/chat/unread-summary")
+        .then((r) => {
+          if (!cancelled) setTotal(r.total_unread);
+        })
+        .catch(() => {
+          /* soft-fail; the dot just won't update this tick */
+        });
+    };
+
+    tick();
+    const handle = window.setInterval(tick, UNREAD_POLL_MS);
+    return () => {
+      cancelled = true;
+      window.clearInterval(handle);
+    };
+    // re-run on route change so the badge refreshes immediately when the
+    // user comes back from the chat room (where mark-read just fired).
+  }, [pathname]);
+
+  return total;
+}
+
 export function AppShell({ children, topChip }: AppShellProps) {
   const pathname = usePathname();
+  const unreadTotal = useUnreadTotal();
 
   return (
     <div
@@ -65,17 +110,24 @@ export function AppShell({ children, topChip }: AppShellProps) {
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href;
           const Icon = item.icon;
+          const showDot = item.href === "/matching" && unreadTotal > 0;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-col items-center justify-center gap-[2px]"
+              className="relative flex flex-col items-center justify-center gap-[2px]"
             >
               <Icon
                 className={`size-[20px] ${active ? "stroke-[#fde047]" : "stroke-[#8d7aae]"}`}
                 fill={active ? "#fde047" : "none"}
                 strokeWidth={active ? 0 : 2}
               />
+              {showDot && (
+                <span
+                  aria-label="새 메시지 있음"
+                  className="absolute -top-[2px] right-[2px] size-[8px] rounded-full bg-[#ff5f5f] shadow-[0_0_6px_rgba(255,95,95,0.7)]"
+                />
+              )}
               <span
                 className={`text-[13px] ${active ? "font-bold text-[#fde047]" : "text-[#8d7aae]"}`}
               >

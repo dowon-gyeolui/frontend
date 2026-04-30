@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { Lock } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { ChatThreadRow } from "@/components/matching/chat-thread-row";
 import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
@@ -17,10 +18,30 @@ type Me = { id: number; is_paid: boolean };
 
 type Tab = "list" | "chat";
 
+type SlotMatchBasis = "saju" | "jamidusu";
+
+type HistoryMatchEntry = {
+  candidate: MatchCandidate;
+  slot_index: number;
+  match_basis: SlotMatchBasis;
+  assigned_at: string;
+  unlock_at: string;
+  is_locked: boolean;
+  requires_payment: boolean;
+};
+
 export default function MatchingPage() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("list");
-  const [matches, setMatches] = useState<MatchCandidate[] | null>(null);
+  const [history, setHistory] = useState<HistoryMatchEntry[] | null>(null);
+  // Toast for taps on still-locked history rows (slot 2/3 within their
+  // 24h countdown window).
+  const [lockedToast, setLockedToast] = useState<string | null>(null);
+  useEffect(() => {
+    if (!lockedToast) return;
+    const t = window.setTimeout(() => setLockedToast(null), 2200);
+    return () => window.clearTimeout(t);
+  }, [lockedToast]);
   const [threads, setThreads] = useState<ChatThreadSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeMatch, setActiveMatch] = useState<MatchCandidate | null>(null);
@@ -58,10 +79,13 @@ export default function MatchingPage() {
     apiFetch<Me>("/users/me")
       .then(setMe)
       .catch(() => {});
-    fetchWithCache<MatchCandidate[]>(
-      "/compatibility/matches?top_k=10",
+    // Cumulative match history. Backend returns one row per unique
+    // candidate ever assigned to this user, with locks recomputed
+    // against the current time.
+    fetchWithCache<HistoryMatchEntry[]>(
+      "/compatibility/history",
       CACHE_TTL.matches,
-      setMatches,
+      setHistory,
       { onError: (e: Error) => setError(e.message) },
     );
   }, [router]);
@@ -86,33 +110,42 @@ export default function MatchingPage() {
         <div className="px-[20px] pt-[18px]">
           {error && (
             <p className="mt-4 text-center text-sm text-red-300">
-              매칭 후보를 불러오지 못했어요: {error}
+              매칭 히스토리를 불러오지 못했어요: {error}
             </p>
           )}
-          {matches === null && !error && (
+          {history === null && !error && (
             <p className="mt-8 text-center text-[12px] text-white/50">
-              매칭 후보를 분석 중...
+              매칭 히스토리를 불러오는 중...
             </p>
           )}
-          {matches !== null && matches.length === 0 && (
+          {history !== null && history.length === 0 && (
             <div className="mt-8 text-center text-[12px] text-white/60">
-              <p>아직 매칭 가능한 상대가 없어요</p>
+              <p>아직 매칭된 상대가 없어요</p>
               <p className="mt-1 text-white/40">
-                생년월일을 입력한 다른 사용자가 가입하면 표시됩니다.
+                홈 화면의 오늘의 매칭 카드부터 시작해보세요.
               </p>
             </div>
           )}
-          {matches !== null && matches.length > 0 && (
+          {history !== null && history.length > 0 && (
             <div className="grid grid-cols-2 gap-[16px]">
-              {matches.map((m) => (
-                <button
-                  key={m.user_id}
-                  type="button"
-                  onClick={() => setActiveMatch(m)}
-                  className="text-left transition active:scale-[0.98]"
-                >
-                  <MatchCard data={m} />
-                </button>
+              {history.map((entry) => (
+                <HistoryCard
+                  key={`${entry.candidate.user_id}-${entry.assigned_at}`}
+                  entry={entry}
+                  onOpen={() => {
+                    if (entry.is_locked) {
+                      setLockedToast(
+                        "아직 잠금이 해제되지 않은 카드예요. 카운트다운이 끝나면 자동으로 열려요.",
+                      );
+                      return;
+                    }
+                    if (entry.candidate.is_blinded && entry.requires_payment) {
+                      setPaymentTarget(entry.candidate);
+                      return;
+                    }
+                    setActiveMatch(entry.candidate);
+                  }}
+                />
               ))}
             </div>
           )}
@@ -223,7 +256,90 @@ export default function MatchingPage() {
           }}
         />
       )}
+
+      {/* Locked-card toast — pinned bottom-center, auto-dismiss. */}
+      {lockedToast && (
+        <div className="fixed bottom-[100px] left-1/2 z-20 -translate-x-1/2 rounded-full border border-white/15 bg-black/70 px-[14px] py-[8px] text-[12px] text-white backdrop-blur-sm">
+          {lockedToast}
+        </div>
+      )}
     </AppShell>
+  );
+}
+
+function HistoryCard({
+  entry,
+  onOpen,
+}: {
+  entry: HistoryMatchEntry;
+  onOpen: () => void;
+}) {
+  // is_locked is computed at fetch time; recompute here so a card the
+  // user is staring at unlocks the moment its timer hits zero without
+  // requiring a refetch.
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(t);
+  }, []);
+  const unlockMs = new Date(entry.unlock_at).getTime();
+  const isLocked = now < unlockMs;
+
+  if (isLocked) {
+    const remaining = Math.max(0, unlockMs - now);
+    const totalSec = Math.floor(remaining / 1000);
+    const hh = Math.floor(totalSec / 3600);
+    const mm = Math.floor((totalSec % 3600) / 60);
+    const ss = totalSec % 60;
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    return (
+      <button
+        type="button"
+        onClick={onOpen}
+        className="text-left transition active:scale-[0.98]"
+      >
+        <article className="relative aspect-[150/245] overflow-hidden rounded-[18px] border border-white/15 bg-gradient-to-br from-[#1f1235]/90 via-[#2a1648]/90 to-[#3a1c5e]/90 shadow-[0px_10px_20px_0px_rgba(0,0,0,0.35)] backdrop-blur-sm">
+          <div className="flex h-full flex-col items-center justify-center gap-[10px] px-[10px] text-center">
+            <div className="grid size-[44px] place-items-center rounded-full bg-white/10">
+              <Lock className="size-[20px] stroke-white/85 stroke-[1.5]" />
+            </div>
+            <p className="text-[11px] text-white/65">곧 공개되는 인연</p>
+            <p className="font-mono text-[16px] font-bold tabular-nums text-white">
+              {pad(hh)}:{pad(mm)}:{pad(ss)}
+            </p>
+            <p className="text-[10px] text-white/55">
+              {entry.match_basis === "jamidusu" ? "자미두수" : "사주"} 매칭
+            </p>
+          </div>
+        </article>
+      </button>
+    );
+  }
+
+  const blinded = entry.candidate.is_blinded && entry.requires_payment;
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="relative text-left transition active:scale-[0.98]"
+    >
+      <MatchCard data={entry.candidate} />
+      {blinded && (
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-[6px] rounded-[18px] bg-black/55 backdrop-blur-[2px]">
+          <div className="grid size-[36px] place-items-center rounded-full bg-[#fde047]/95 text-[#1b1029]">
+            <Lock className="size-[16px] stroke-[2.5]" />
+          </div>
+          <p className="text-center text-[11px] font-bold text-[#fde047]">
+            프리미엄
+          </p>
+          <p className="px-[10px] text-center text-[10px] leading-[14px] text-white/85">
+            결제하고 자미두수
+            <br />
+            매칭 열어보기
+          </p>
+        </div>
+      )}
+    </button>
   );
 }
 

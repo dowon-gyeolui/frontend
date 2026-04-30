@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
-import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
+import {
+  DailyMatchSlotCard,
+  type DailyMatchSlot,
+} from "@/components/matching/daily-match-slot-card";
+import { type MatchCandidate } from "@/components/matching/match-card";
 import { MatchInfoModal } from "@/components/matching/match-info-modal";
 import { PaymentModal } from "@/components/payment/payment-modal";
 import { apiFetch } from "@/lib/api";
@@ -13,6 +17,12 @@ import { clearToken, getToken } from "@/lib/auth";
 import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
 import { profileCompletionPct } from "@/lib/profile-completion";
 import { dominantElement, type ElementProfile } from "@/lib/saju";
+
+type DailyMatchPack = {
+  assigned_at: string;
+  next_cycle_at: string;
+  slots: DailyMatchSlot[];
+};
 
 type Me = {
   id: number;
@@ -56,11 +66,25 @@ function tipsForElement(dominant: string | null): string[] | null {
 export default function HomePage() {
   const router = useRouter();
   const [me, setMe] = useState<Me | null>(null);
-  const [matches, setMatches] = useState<MatchCandidate[] | null>(null);
+  const [pack, setPack] = useState<DailyMatchPack | null>(null);
   const [saju, setSaju] = useState<SajuResponseLite | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeMatch, setActiveMatch] = useState<MatchCandidate | null>(null);
-  const [paymentTarget, setPaymentTarget] = useState<MatchCandidate | null>(null);
+  // When set, the payment modal is shown over the home grid. The reason
+  // distinguishes between starting a chat (existing flow) and unlocking
+  // the jamidusu paid slot.
+  const [paymentTarget, setPaymentTarget] = useState<{
+    candidate: MatchCandidate | null;
+    reason: "chat" | "jamidusu";
+  } | null>(null);
+  // Lightweight toast shown when the user taps a still-locked countdown
+  // card. Auto-dismisses after a couple of seconds.
+  const [lockedToast, setLockedToast] = useState<string | null>(null);
+  useEffect(() => {
+    if (!lockedToast) return;
+    const t = window.setTimeout(() => setLockedToast(null), 2200);
+    return () => window.clearTimeout(t);
+  }, [lockedToast]);
 
   useEffect(() => {
     if (!getToken()) {
@@ -72,18 +96,17 @@ export default function HomePage() {
       .catch((e: Error) => setError(e.message));
   }, [router]);
 
-  // Fetch matches + own saju once birth_date is known — backend rejects
-  // both endpoints before onboarding is complete.
+  // Fetch today's 4-slot pack + own saju once birth_date is known —
+  // backend rejects both endpoints before onboarding is complete.
   // Both go through fetchWithCache so a returning user sees the previous
-  // values immediately while we revalidate in the background, instead of
-  // staring at a spinner every time they open the home tab.
+  // values immediately while we revalidate in the background.
   useEffect(() => {
     if (!me || !me.birth_date) return;
-    fetchWithCache<MatchCandidate[]>(
-      "/compatibility/matches?top_k=4",
+    fetchWithCache<DailyMatchPack>(
+      "/compatibility/today",
       CACHE_TTL.matches,
-      setMatches,
-      { onError: () => setMatches([]) },
+      setPack,
+      { onError: () => setPack({ assigned_at: new Date().toISOString(), next_cycle_at: new Date().toISOString(), slots: [] }) },
     );
     fetchWithCache<SajuResponseLite>(
       "/saju/me",
@@ -145,30 +168,38 @@ export default function HomePage() {
           </p>
         </section>
 
-        {/* 오늘의 매칭 카드 */}
+        {/* 오늘의 매칭 카드 — 4-슬롯 (saju 무료 / jamidusu 유료 / 24h × 2). */}
         <section className="mt-[36px]">
           <h2 className="text-center text-[20px] font-bold text-white">
             오늘의 매칭 카드
           </h2>
-          {matches === null ? (
+          {pack === null ? (
             <p className="mt-[18px] text-center text-[12px] text-white/50">
               매칭 후보를 분석 중...
             </p>
-          ) : matches.length === 0 ? (
+          ) : pack.slots.length === 0 ? (
             <p className="mt-[18px] text-center text-[12px] text-white/50">
               아직 매칭 가능한 상대가 없어요
             </p>
           ) : (
-            <div className="mt-[18px] grid grid-cols-2 gap-[16px]">
-              {matches.slice(0, 4).map((m) => (
-                <button
-                  key={m.user_id}
-                  type="button"
-                  onClick={() => setActiveMatch(m)}
-                  className="text-left transition active:scale-[0.98]"
-                >
-                  <MatchCard data={m} />
-                </button>
+            <div className="mt-[18px] grid grid-cols-2 gap-x-[16px] gap-y-[26px]">
+              {pack.slots.map((slot) => (
+                <DailyMatchSlotCard
+                  key={slot.slot_index}
+                  slot={slot}
+                  onOpen={() => setActiveMatch(slot.candidate)}
+                  onPaywallClick={() =>
+                    setPaymentTarget({
+                      candidate: slot.candidate,
+                      reason: "jamidusu",
+                    })
+                  }
+                  onLockedClick={() =>
+                    setLockedToast(
+                      "곧 공개되는 인연이에요. 카운트다운이 끝나면 자동으로 열려요.",
+                    )
+                  }
+                />
               ))}
             </div>
           )}
@@ -232,7 +263,7 @@ export default function HomePage() {
           onStartChat={() => {
             // Free users hit the payment modal; paid users go straight in.
             if (!me?.is_paid) {
-              setPaymentTarget(activeMatch);
+              setPaymentTarget({ candidate: activeMatch, reason: "chat" });
               return;
             }
             sessionStorage.setItem("activeChat", JSON.stringify(activeMatch));
@@ -243,17 +274,30 @@ export default function HomePage() {
 
       {paymentTarget && (
         <PaymentModal
-          reason="chat"
+          reason={paymentTarget.reason === "chat" ? "chat" : "general"}
           onClose={() => setPaymentTarget(null)}
           onPaid={() => {
             setMe((prev) => (prev ? { ...prev, is_paid: true } : prev));
             const target = paymentTarget;
             setPaymentTarget(null);
-            setActiveMatch(null);
-            sessionStorage.setItem("activeChat", JSON.stringify(target));
-            router.push(`/matching/${target.user_id}`);
+            // After payment, clear cache so /compatibility/today refetches
+            // with the slot-1/3 photos un-blinded.
+            if (target.reason === "chat" && target.candidate) {
+              setActiveMatch(null);
+              sessionStorage.setItem("activeChat", JSON.stringify(target.candidate));
+              router.push(`/matching/${target.candidate.user_id}`);
+            }
+            // For "jamidusu" reason we just stay on /home — the next
+            // pack fetch will reveal slot 1 / 3 photos automatically.
           }}
         />
+      )}
+
+      {/* Locked-card toast — pinned bottom-center */}
+      {lockedToast && (
+        <div className="fixed bottom-[100px] left-1/2 z-20 -translate-x-1/2 rounded-full border border-white/15 bg-black/70 px-[14px] py-[8px] text-[12px] text-white backdrop-blur-sm">
+          {lockedToast}
+        </div>
       )}
     </AppShell>
   );
