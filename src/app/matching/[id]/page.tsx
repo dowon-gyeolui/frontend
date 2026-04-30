@@ -269,7 +269,7 @@ export default function ChatRoomPage() {
       <div className="relative pt-[14px]">
         <button
           type="button"
-          onClick={() => router.push("/matching")}
+          onClick={() => router.push("/matching?tab=chat")}
           aria-label="뒤로"
           className="absolute left-[16px] top-[14px]"
         >
@@ -369,7 +369,7 @@ export default function ChatRoomPage() {
           setReportOpen(false);
           router.push(`/date-spots/${peerId}`);
         }}
-        onLeaveRoom={() => router.push("/matching")}
+        onLeaveRoom={() => router.push("/matching?tab=chat")}
         onReport={() => {
           setReportOpen(false);
           setReportModalOpen(true);

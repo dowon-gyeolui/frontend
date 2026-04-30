@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
 import { Lock } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
@@ -31,8 +31,31 @@ type HistoryMatchEntry = {
 };
 
 export default function MatchingPage() {
+  // useSearchParams() requires a Suspense boundary in Next 16 client
+  // components — wrap so the fallback shows while the URL parses.
+  return (
+    <Suspense
+      fallback={
+        <AppShell>
+          <div className="flex flex-1 items-center justify-center">
+            <p className="text-white/60">로딩 중...</p>
+          </div>
+        </AppShell>
+      }
+    >
+      <MatchingPageContent />
+    </Suspense>
+  );
+}
+
+function MatchingPageContent() {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("list");
+  const params = useSearchParams();
+  // Default to "list" but honour ?tab=chat so the back button from the
+  // chat room lands directly on the chat list instead of the matching
+  // list (which forced the user to retap to find the conversation).
+  const initialTab: Tab = params.get("tab") === "chat" ? "chat" : "list";
+  const [tab, setTab] = useState<Tab>(initialTab);
   const [history, setHistory] = useState<HistoryMatchEntry[] | null>(null);
   // Toast for taps on still-locked history rows (slot 2/3 within their
   // 24h countdown window).
