@@ -108,8 +108,9 @@ export function MatchInfoModal({
           <p>MBTI : {mbtiLabel}</p>
         </div>
 
-        {/* Tip */}
-        <p className="mt-[12px] text-center text-[13px] leading-[20px] text-[#1b1029]">
+        {/* Tip — bumped +2pt vs the prior 13px so the personalised
+            sentence is more legible and feels like the focal copy. */}
+        <p className="mt-[12px] text-center text-[15px] leading-[22px] text-[#1b1029]">
           {tip}
         </p>
 

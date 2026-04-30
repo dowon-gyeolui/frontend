@@ -1,16 +1,21 @@
 "use client";
 
-import { useRef } from "react";
+import { Calendar } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 /**
- * 생년월일 입력기 — 시각적으론 년/월/일 3-박스, 누르면 네이티브 달력
- * picker 가 뜬다.
+ * 생년월일 입력기 — 년/월/일 3-박스 + 달력 아이콘.
  *
- * 모바일에서는 native `<input type="date">` 의 캘린더 위젯이 가장 익숙해서
- * 이를 보이지 않게 깔아두고 시각적으로 3개 박스만 표시. 어떤 박스를
- * 눌러도 `showPicker()` 가 호출돼 캘린더가 뜬다.
+ * 두 가지 입력 경로를 모두 지원:
+ *  1. 각 박스를 직접 탭해서 숫자를 타이핑 (4자리 연 / 2자리 월·일).
+ *  2. 오른쪽 달력 아이콘을 탭하면 native `<input type="date">` 의
+ *     showPicker() 가 호출돼 캘린더 위젯이 열린다.
  *
- * 출력값은 `YYYY-MM-DD` ISO 문자열 (또는 빈 문자열).
+ * iOS Safari 에서는 type=date 의 dash placeholder 를 직접 탭해도 picker
+ * 가 안 뜨는 경우가 있어 명시적인 아이콘 버튼이 필요. 동시에 데스크톱
+ * 사용자는 키보드 타이핑이 더 빠르므로 둘 다 가능하게 둔다.
+ *
+ * 출력값은 `YYYY-MM-DD` ISO 문자열 (불완전한 입력 중에는 빈 문자열).
  */
 export function ScrollableDateInput({
   value,
@@ -26,20 +31,66 @@ export function ScrollableDateInput({
   /** "dark" — onboarding (purple bg). "light" — modal (white bg). */
   variant?: "dark" | "light";
 }) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const today = new Date();
   const cappedMaxYear = maxYear ?? today.getFullYear();
 
   const parsed = parseDate(value);
-  const yLabel = parsed?.y.toString() ?? "----";
-  const mLabel = parsed ? parsed.m.toString() : "--";
-  const dLabel = parsed ? parsed.d.toString() : "--";
+  const [yText, setYText] = useState(parsed ? String(parsed.y) : "");
+  const [mText, setMText] = useState(parsed ? pad2(parsed.m) : "");
+  const [dText, setDText] = useState(parsed ? pad2(parsed.d) : "");
+
+  const monthRef = useRef<HTMLInputElement>(null);
+  const dayRef = useRef<HTMLInputElement>(null);
+  const pickerRef = useRef<HTMLInputElement>(null);
+
+  // Keep local input strings in sync when the parent updates `value`
+  // (e.g., picker selection or initial load).
+  useEffect(() => {
+    const p = parseDate(value);
+    if (!p) {
+      // Don't wipe the user's mid-typing state on every render — only
+      // clear when the parent explicitly resets to empty AND the local
+      // boxes are all already complete (so we know it's an external reset).
+      if (value === "" && yText.length === 4 && mText.length >= 1 && dText.length >= 1) {
+        setYText("");
+        setMText("");
+        setDText("");
+      }
+      return;
+    }
+    setYText(String(p.y));
+    setMText(pad2(p.m));
+    setDText(pad2(p.d));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  // Push completed YYYY-MM-DD up to parent whenever locally-edited
+  // values together form a real, in-range date.
+  const commit = (y: string, m: string, d: string) => {
+    if (y.length !== 4) return onChange("");
+    const yi = Number(y);
+    const mi = Number(m);
+    const di = Number(d);
+    if (
+      !Number.isFinite(yi) ||
+      !Number.isFinite(mi) ||
+      !Number.isFinite(di) ||
+      yi < minYear ||
+      yi > cappedMaxYear ||
+      mi < 1 ||
+      mi > 12 ||
+      di < 1 ||
+      di > daysInMonth(yi, mi)
+    ) {
+      onChange("");
+      return;
+    }
+    onChange(`${pad4(yi)}-${pad2(mi)}-${pad2(di)}`);
+  };
 
   const openPicker = () => {
-    const el = inputRef.current;
+    const el = pickerRef.current;
     if (!el) return;
-    // showPicker() 가 모바일/데스크톱 modern 브라우저에서 동작.
-    // 미지원 환경은 focus + click 으로 폴백.
     if (typeof el.showPicker === "function") {
       try {
         el.showPicker();
@@ -52,28 +103,126 @@ export function ScrollableDateInput({
     el.click();
   };
 
+  const onlyDigits = (s: string) => s.replace(/\D/g, "");
+
+  const onYearChange = (raw: string) => {
+    const digits = onlyDigits(raw).slice(0, 4);
+    setYText(digits);
+    commit(digits, mText, dText);
+    if (digits.length === 4) monthRef.current?.focus();
+  };
+
+  const onMonthChange = (raw: string) => {
+    const digits = onlyDigits(raw).slice(0, 2);
+    setMText(digits);
+    commit(yText, digits, dText);
+    if (digits.length === 2) dayRef.current?.focus();
+  };
+
+  const onDayChange = (raw: string) => {
+    const digits = onlyDigits(raw).slice(0, 2);
+    setDText(digits);
+    commit(yText, mText, digits);
+  };
+
   return (
-    <div
-      onClick={openPicker}
-      className="relative flex cursor-pointer items-center gap-[6px]"
-    >
+    <div className="relative flex items-center gap-[6px]">
+      <Pill variant={variant} suffix="년" width={86}>
+        <input
+          inputMode="numeric"
+          pattern="[0-9]*"
+          maxLength={4}
+          value={yText}
+          onChange={(e) => onYearChange(e.target.value)}
+          placeholder="----"
+          aria-label="출생 연도"
+          className="size-full bg-transparent text-center text-[15px] font-semibold text-black outline-none placeholder:text-black/30"
+        />
+      </Pill>
+      <Pill variant={variant} suffix="월" width={56}>
+        <input
+          ref={monthRef}
+          inputMode="numeric"
+          pattern="[0-9]*"
+          maxLength={2}
+          value={mText}
+          onChange={(e) => onMonthChange(e.target.value)}
+          placeholder="--"
+          aria-label="출생 월"
+          className="size-full bg-transparent text-center text-[15px] font-semibold text-black outline-none placeholder:text-black/30"
+        />
+      </Pill>
+      <Pill variant={variant} suffix="일" width={56}>
+        <input
+          ref={dayRef}
+          inputMode="numeric"
+          pattern="[0-9]*"
+          maxLength={2}
+          value={dText}
+          onChange={(e) => onDayChange(e.target.value)}
+          placeholder="--"
+          aria-label="출생 일"
+          className="size-full bg-transparent text-center text-[15px] font-semibold text-black outline-none placeholder:text-black/30"
+        />
+      </Pill>
+
+      {/* Calendar icon — opens native date picker for users who prefer scroll. */}
+      <button
+        type="button"
+        onClick={openPicker}
+        aria-label="달력에서 선택"
+        className={`grid size-[36px] flex-shrink-0 place-items-center rounded-[8px] ${
+          variant === "light"
+            ? "bg-white/90 hover:bg-white text-black/70"
+            : "bg-white/15 hover:bg-white/25 text-white"
+        }`}
+      >
+        <Calendar className="size-[18px]" />
+      </button>
+
+      {/* Hidden native picker. We never show it directly — the icon button
+          above triggers showPicker(). When the user picks, push back up. */}
       <input
-        ref={inputRef}
+        ref={pickerRef}
         type="date"
         value={value}
         min={`${minYear}-01-01`}
         max={`${cappedMaxYear}-12-31`}
         onChange={(e) => onChange(e.target.value)}
-        // 시각적으로는 숨기되 click target 으로는 살아있게.
-        // pointer-events-none 으로 두면 모바일 picker 가 안 뜨므로
-        // opacity-0 + 절대위치 + size-full 로 처리.
-        className="absolute inset-0 cursor-pointer opacity-0 [color-scheme:dark]"
-        aria-label="생년월일"
+        className="absolute size-0 opacity-0 [color-scheme:dark]"
+        aria-hidden="true"
+        tabIndex={-1}
       />
-      <Pill text={`${yLabel}`} suffix="년" width={70} active={!!parsed} variant={variant} />
-      <Pill text={`${mLabel}`} suffix="월" width={50} active={!!parsed} variant={variant} />
-      <Pill text={`${dLabel}`} suffix="일" width={50} active={!!parsed} variant={variant} />
     </div>
+  );
+}
+
+function Pill({
+  children,
+  suffix,
+  width,
+  variant,
+}: {
+  children: React.ReactNode;
+  suffix: string;
+  width: number;
+  variant: "dark" | "light";
+}) {
+  const suffixCls = variant === "light" ? "text-black/70" : "text-white/85";
+  const boxCls =
+    variant === "light"
+      ? "bg-white border border-black/10"
+      : "bg-white/85";
+  return (
+    <span className="flex items-center gap-[2px]">
+      <span
+        style={{ width }}
+        className={`grid h-[36px] place-items-center rounded-[8px] ${boxCls}`}
+      >
+        {children}
+      </span>
+      <span className={`text-[12px] font-medium ${suffixCls}`}>{suffix}</span>
+    </span>
   );
 }
 
@@ -83,38 +232,15 @@ function parseDate(value: string): { y: number; m: number; d: number } | null {
   return { y: Number(match[1]), m: Number(match[2]), d: Number(match[3]) };
 }
 
-function Pill({
-  text,
-  suffix,
-  width,
-  active,
-  variant,
-}: {
-  text: string;
-  suffix: string;
-  width: number;
-  active: boolean;
-  variant: "dark" | "light";
-}) {
-  const suffixCls =
-    variant === "light"
-      ? "text-black/70"
-      : "text-white/85";
-  const boxCls =
-    variant === "light"
-      ? "bg-white border border-black/10"
-      : "bg-white/85";
-  return (
-    <span className="flex items-center gap-[2px]">
-      <span
-        style={{ width }}
-        className={`grid h-[36px] place-items-center rounded-[8px] text-center text-[15px] font-semibold ${boxCls} ${
-          active ? "text-black" : "text-black/35"
-        }`}
-      >
-        {text}
-      </span>
-      <span className={`text-[12px] font-medium ${suffixCls}`}>{suffix}</span>
-    </span>
-  );
+function pad2(n: number): string {
+  return n.toString().padStart(2, "0");
+}
+
+function pad4(n: number): string {
+  return n.toString().padStart(4, "0");
+}
+
+function daysInMonth(year: number, month: number): number {
+  // month is 1..12. Day 0 of next month = last day of given month.
+  return new Date(year, month, 0).getDate();
 }

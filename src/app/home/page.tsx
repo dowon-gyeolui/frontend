@@ -10,6 +10,7 @@ import { MatchInfoModal } from "@/components/matching/match-info-modal";
 import { PaymentModal } from "@/components/payment/payment-modal";
 import { apiFetch } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
+import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
 import { profileCompletionPct } from "@/lib/profile-completion";
 import { dominantElement, type ElementProfile } from "@/lib/saju";
 
@@ -73,14 +74,23 @@ export default function HomePage() {
 
   // Fetch matches + own saju once birth_date is known — backend rejects
   // both endpoints before onboarding is complete.
+  // Both go through fetchWithCache so a returning user sees the previous
+  // values immediately while we revalidate in the background, instead of
+  // staring at a spinner every time they open the home tab.
   useEffect(() => {
     if (!me || !me.birth_date) return;
-    apiFetch<MatchCandidate[]>("/compatibility/matches?top_k=4")
-      .then(setMatches)
-      .catch(() => setMatches([]));
-    apiFetch<SajuResponseLite>("/saju/me")
-      .then(setSaju)
-      .catch(() => setSaju(null));
+    fetchWithCache<MatchCandidate[]>(
+      "/compatibility/matches?top_k=4",
+      CACHE_TTL.matches,
+      setMatches,
+      { onError: () => setMatches([]) },
+    );
+    fetchWithCache<SajuResponseLite>(
+      "/saju/me",
+      CACHE_TTL.saju,
+      setSaju,
+      { onError: () => setSaju(null) },
+    );
   }, [me]);
 
   // Action tips depend on the user's dominant element. Hidden until saju

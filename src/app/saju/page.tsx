@@ -11,8 +11,8 @@ import {
   DayPillarHeadline,
   SajuMyeongsik,
 } from "@/components/saju/saju-myeongsik";
-import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
+import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
 import {
   ELEMENT_DISPLAY,
   dominantElement,
@@ -37,9 +37,14 @@ export default function SajuPage() {
       router.replace("/");
       return;
     }
-    apiFetch<DetailedSajuResponse>("/saju/me/detailed")
-      .then(setSaju)
-      .catch((e: Error) => setError(e.message));
+    // /saju/me/detailed is the LLM-backed endpoint (5–10s on cold call).
+    // Cache + revalidate so returning users see their saju immediately.
+    fetchWithCache<DetailedSajuResponse>(
+      "/saju/me/detailed",
+      CACHE_TTL.saju,
+      setSaju,
+      { onError: (e) => setError(e.message) },
+    );
   }, [router]);
 
   return (

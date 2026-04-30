@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { ScrollableDateInput } from "@/components/common/scrollable-date-input";
+import { TypingTimeInput } from "@/components/common/typing-time-input";
 import { apiFetch } from "@/lib/api";
 import { BIRTH_PLACE_OPTIONS } from "@/lib/birth-place";
 
@@ -229,16 +230,17 @@ export function RequiredInfoEditModal({
 
           <PillRow>
             <span className="text-[16px] font-medium text-black shrink-0">생시 :</span>
-            <input
-              type="time"
-              value={birthTime}
-              disabled={timeUnknown}
-              onChange={(e) => {
-                setBirthTime(e.target.value);
-                setTimeUnknown(false);
-              }}
-              className="flex-1 bg-transparent text-[16px] font-medium text-black focus:outline-none disabled:opacity-50"
-            />
+            <div className="flex-1">
+              <TypingTimeInput
+                value={birthTime}
+                disabled={timeUnknown}
+                variant="light"
+                onChange={(next) => {
+                  setBirthTime(next);
+                  if (next) setTimeUnknown(false);
+                }}
+              />
+            </div>
             <label className="flex cursor-pointer items-center gap-[4px] text-[12px] text-black">
               <input
                 type="checkbox"

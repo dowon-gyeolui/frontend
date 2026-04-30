@@ -17,6 +17,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { PaymentModal } from "@/components/payment/payment-modal";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
+import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
 
 type DestinyAnalysis = {
   user_a_id: number;
@@ -62,9 +63,14 @@ export default function DestinyPage() {
 
   useEffect(() => {
     if (!me || !me.is_paid) return;
-    apiFetch<DestinyAnalysis>(`/compatibility/destiny/${peerId}`)
-      .then(setData)
-      .catch((e: Error) => setError(e.message));
+    // LLM 호출이라 5–10초 걸림. 사용자가 같은 쌍의 풀이를 여러 번 보러
+    // 와도 매번 기다리지 않게 stale-while-revalidate 캐시 사용.
+    fetchWithCache<DestinyAnalysis>(
+      `/compatibility/destiny/${peerId}`,
+      CACHE_TTL.saju,
+      setData,
+      { onError: (e: Error) => setError(e.message) },
+    );
   }, [me, peerId]);
 
   return (

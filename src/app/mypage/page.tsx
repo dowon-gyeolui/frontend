@@ -23,6 +23,7 @@ import {
 } from "@/components/mypage/required-info-edit-modal";
 import { apiFetch } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
+import { cacheClearAll } from "@/lib/cache";
 import { completionRows, profileCompletionPct } from "@/lib/profile-completion";
 
 type Me = {
@@ -335,8 +336,11 @@ function MypageContent() {
           currentPhoto={me?.photo_url ?? null}
           onClose={() => setPhotoModalOpen(false)}
           onSave={(url) => {
+            // Gallery modal calls this on every mutation (add / delete /
+            // promote). `url` is the new primary photo URL, or null if
+            // every photo was deleted.
             setMe((prev) => (prev ? { ...prev, photo_url: url } : prev));
-            setPhotoModalOpen(false);
+            cacheClearAll();
           }}
         />
       )}
@@ -381,6 +385,8 @@ function MypageContent() {
                   }
                 : prev,
             );
+            // MBTI 변경은 매칭 리스트 키워드/한줄평에 반영되니 캐시 무효화.
+            cacheClearAll();
             setBasicOpen(false);
           }}
         />
@@ -425,6 +431,9 @@ function MypageContent() {
                   }
                 : prev,
             );
+            // 생년월일/시간이 바뀌면 사주·자미두수·궁합·운명 풀이가 전부
+            // 무효 — 다음 방문 때 다시 계산되도록 캐시 클리어.
+            cacheClearAll();
             setRequiredOpen(false);
           }}
         />

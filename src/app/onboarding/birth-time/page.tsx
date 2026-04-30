@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
+import { TypingTimeInput } from "@/components/common/typing-time-input";
 import { useOnboarding } from "@/lib/onboarding-context";
 
 export default function OnboardingBirthTimePage() {
@@ -40,15 +41,14 @@ export default function OnboardingBirthTimePage() {
             </p>
           </div>
 
-          <input
-            type="time"
+          <TypingTimeInput
             value={birthTime}
-            onChange={(e) => {
-              setBirthTime(e.target.value);
-              setUnknown(false);
+            onChange={(next) => {
+              setBirthTime(next);
+              if (next) setUnknown(false);
             }}
             disabled={unknown}
-            className="h-[52px] w-full rounded-[5px] border border-[#5a3a82] bg-[#352052] px-4 text-center text-[18px] font-medium text-white placeholder:text-white/70 focus:border-white/60 focus:outline-none disabled:opacity-40 [color-scheme:dark]"
+            variant="dark"
           />
 
           <label className="flex cursor-pointer items-center justify-center gap-[8px] text-[15px] text-white/80">

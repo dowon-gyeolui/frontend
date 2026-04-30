@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
+import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
 
 type Me = {
   id: number;
@@ -76,9 +77,13 @@ function PaidView({ nickname }: { nickname: string | null }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    apiFetch<JamidusuResponse>("/saju/me/jamidusu")
-      .then(setData)
-      .catch((e: Error) => setError(e.message));
+    // 자미두수 풀이는 LLM 호출 (5–10초). 캐시해서 재방문 시 즉시 표시.
+    fetchWithCache<JamidusuResponse>(
+      "/saju/me/jamidusu",
+      CACHE_TTL.saju,
+      setData,
+      { onError: (e: Error) => setError(e.message) },
+    );
   }, []);
 
   return (

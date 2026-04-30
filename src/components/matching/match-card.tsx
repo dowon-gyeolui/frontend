@@ -1,5 +1,7 @@
 "use client";
 
+import { matchCardComment } from "@/lib/match-keywords";
+
 /**
  * Match candidate shape returned by `GET /compatibility/matches`. Mirrors the
  * backend's MatchCandidate pydantic schema. `photo_url` is omitted when the
@@ -17,19 +19,6 @@ export type MatchCandidate = {
   dominant_element: string | null;
   mbti: string | null;
 };
-
-/**
- * Synthesise a short Korean tagline from a saju score. Used as the bottom
- * line of a match card. Once /compatibility/score returns a per-pair summary
- * we can swap this out for the real interpretation.
- */
-export function scoreComment(score: number): string {
-  if (score >= 90) return "운명적인 인연이에요!";
-  if (score >= 80) return "사주 궁합이 매우 좋아요";
-  if (score >= 70) return "서로를 잘 보완해줘요";
-  if (score >= 60) return "함께라면 안정적이에요";
-  return "특별한 인연일 수 있어요";
-}
 
 const PLACEHOLDER_PHOTO =
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&blur=20";
@@ -105,9 +94,11 @@ export function MatchCard({ data }: { data: MatchCandidate }) {
         </div>
       </div>
 
-      {/* Comment — Figma inset-[86.12% 16% 4.08% 16.67%] */}
+      {/* Comment — Figma inset-[86.12% 16% 4.08% 16.67%].
+          Per-user tagline is seeded by user_id so each card shows a
+          different short caption instead of the same 5 strings. */}
       <p className="absolute inset-x-[10%] bottom-[5%] line-clamp-2 text-center text-[10px] leading-[14px] text-white/75">
-        {scoreComment(data.score)}
+        {matchCardComment(data)}
       </p>
     </article>
   );

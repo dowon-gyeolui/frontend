@@ -8,6 +8,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { PaymentModal } from "@/components/payment/payment-modal";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
+import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
 
 type DateSpot = { title: string; description: string };
 type DateRecommendation = {
@@ -51,9 +52,13 @@ export default function DateSpotsPage() {
 
   useEffect(() => {
     if (!me || !me.is_paid) return;
-    apiFetch<DateRecommendation>(`/compatibility/date-recommendation/${peerId}`)
-      .then(setData)
-      .catch((e: Error) => setError(e.message));
+    // LLM 호출. 캐시해서 같은 쌍의 추천을 다시 볼 때 즉시 표시.
+    fetchWithCache<DateRecommendation>(
+      `/compatibility/date-recommendation/${peerId}`,
+      CACHE_TTL.saju,
+      setData,
+      { onError: (e: Error) => setError(e.message) },
+    );
   }, [me, peerId]);
 
   return (

@@ -9,6 +9,7 @@ import { MatchInfoModal } from "@/components/matching/match-info-modal";
 import { PaymentModal } from "@/components/payment/payment-modal";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
+import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
 import { listThreads, type ChatThreadSummary } from "@/lib/chat";
 
 type Me = { id: number; is_paid: boolean };
@@ -39,9 +40,12 @@ export default function MatchingPage() {
     apiFetch<Me>("/users/me")
       .then(setMe)
       .catch(() => {});
-    apiFetch<MatchCandidate[]>("/compatibility/matches?top_k=10")
-      .then(setMatches)
-      .catch((e: Error) => setError(e.message));
+    fetchWithCache<MatchCandidate[]>(
+      "/compatibility/matches?top_k=10",
+      CACHE_TTL.matches,
+      setMatches,
+      { onError: (e: Error) => setError(e.message) },
+    );
   }, [router]);
 
   // Refresh threads when the chat tab becomes active (cheap, on each click).
