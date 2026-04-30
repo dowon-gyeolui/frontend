@@ -64,9 +64,19 @@ export default function SajuPage() {
           </div>
         )}
 
+        {/* Loading state — same idiom as home's 행동 가이드 spinner so the
+            user gets the same "loading is happening" cue across screens.
+            /saju/me/detailed is LLM-backed (~5–10s cold call), so silent
+            spinning made the page look frozen. */}
         {!saju && !error && (
-          <div className="flex justify-center pt-[80px]">
-            <div className="size-10 animate-spin rounded-full border-4 border-white/20 border-t-white" />
+          <div className="flex flex-col items-center gap-[14px] pt-[80px]">
+            <div className="text-[40px]">🔮</div>
+            <div className="size-9 animate-spin rounded-full border-[3px] border-white/20 border-t-white" />
+            <p className="text-center text-[13px] leading-[20px] text-white/70">
+              사주를 풀어보고 있어요...
+              <br />
+              5~10초 정도 걸려요. 잠시만 기다려주세요.
+            </p>
           </div>
         )}
 
