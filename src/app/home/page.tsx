@@ -75,7 +75,7 @@ export default function HomePage() {
   // both endpoints before onboarding is complete.
   useEffect(() => {
     if (!me || !me.birth_date) return;
-    apiFetch<MatchCandidate[]>("/compatibility/matches?top_k=2")
+    apiFetch<MatchCandidate[]>("/compatibility/matches?top_k=4")
       .then(setMatches)
       .catch(() => setMatches([]));
     apiFetch<SajuResponseLite>("/saju/me")
@@ -150,7 +150,7 @@ export default function HomePage() {
             </p>
           ) : (
             <div className="mt-[18px] grid grid-cols-2 gap-[16px]">
-              {matches.slice(0, 2).map((m) => (
+              {matches.slice(0, 4).map((m) => (
                 <button
                   key={m.user_id}
                   type="button"
