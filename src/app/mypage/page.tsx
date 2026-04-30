@@ -146,37 +146,8 @@ function MypageContent() {
           </button>
         </div>
 
-        {/* Profile photo + side action icons */}
-        <div className="relative mt-[24px] flex justify-center">
-          {/* Side action icons — placeholder targets for now */}
-          <div className="absolute left-[10px] top-[12px] flex flex-col items-center gap-[24px] text-[10px] text-white">
-            <button
-              type="button"
-              onClick={() => setPhotoModalOpen(true)}
-              className="flex flex-col items-center gap-[6px]"
-            >
-              <Camera className="size-[20px] stroke-white stroke-[1.5]" />
-              프로필 사진
-            </button>
-            <button
-              type="button"
-              onClick={() => setBioOpen(true)}
-              className="flex flex-col items-center gap-[6px]"
-            >
-              <Pencil className="size-[20px] stroke-white stroke-[1.5]" />
-              자기소개
-            </button>
-            <button
-              type="button"
-              onClick={() => setRequiredOpen(true)}
-              className="flex flex-col items-center gap-[6px]"
-            >
-              <Search className="size-[20px] stroke-white stroke-[1.5]" />
-              필수 정보 수정
-            </button>
-          </div>
-
-          {/* Photo card */}
+        {/* Profile photo */}
+        <div className="mt-[24px] flex justify-center">
           <div className="relative size-[230px] overflow-hidden rounded-[18px] bg-white/10">
             {me?.photo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -191,6 +162,34 @@ function MypageContent() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Action icons — under the photo, evenly spaced */}
+        <div className="mt-[16px] flex items-start justify-around text-[11px] text-white">
+          <button
+            type="button"
+            onClick={() => setPhotoModalOpen(true)}
+            className="flex flex-1 flex-col items-center gap-[6px]"
+          >
+            <Camera className="size-[22px] stroke-white stroke-[1.5]" />
+            프로필 사진
+          </button>
+          <button
+            type="button"
+            onClick={() => setBioOpen(true)}
+            className="flex flex-1 flex-col items-center gap-[6px]"
+          >
+            <Pencil className="size-[22px] stroke-white stroke-[1.5]" />
+            자기소개
+          </button>
+          <button
+            type="button"
+            onClick={() => setRequiredOpen(true)}
+            className="flex flex-1 flex-col items-center gap-[6px]"
+          >
+            <Search className="size-[22px] stroke-white stroke-[1.5]" />
+            필수 정보 수정
+          </button>
         </div>
 
         {/* Completion progress bar */}

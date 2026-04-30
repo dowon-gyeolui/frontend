@@ -178,11 +178,7 @@ export default function MatchingPage() {
           candidate={activeMatch}
           onClose={() => setActiveMatch(null)}
           onOpenDetail={() => {
-            // Detail page (Figma 37:1176) is a future task — for now, route
-            // to the chat room which already shows the same person's saju
-            // tip up top. Users still get something useful from this CTA.
-            sessionStorage.setItem("activeChat", JSON.stringify(activeMatch));
-            router.push(`/matching/${activeMatch.user_id}`);
+            router.push(`/profile/${activeMatch.user_id}`);
           }}
           onStartChat={() => {
             // Free users hit the payment modal first; paying flips is_paid

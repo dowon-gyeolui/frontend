@@ -28,7 +28,7 @@ type DetailedSajuResponse = {
 type SubmitState =
   | { kind: "submitting" }                              // saving profile + birth-data
   | { kind: "analyzing" }                               // LLM call in progress
-  | { kind: "ready"; saju: DetailedSajuResponse | null } // LLM done (or skipped on failure)
+  | { kind: "ready"; saju: DetailedSajuResponse | null; nickname: string } // LLM done (or skipped on failure)
   | { kind: "error"; message: string };
 
 export default function OnboardingDonePage() {
@@ -47,11 +47,16 @@ export default function OnboardingDonePage() {
         return;
       }
 
+      // Snapshot nickname before any state mutation — `reset()` later in
+      // this handler clears the onboarding context, so reading
+      // `state.nickname` from the ReadyView render would yield "".
+      const nickname = state.nickname;
+
       try {
         // 1) Nickname → PATCH /users/me/profile
         await apiFetch("/users/me/profile", {
           method: "PATCH",
-          body: JSON.stringify({ nickname: state.nickname }),
+          body: JSON.stringify({ nickname }),
         });
 
         // 2) Birth data → POST /users/me/birth-data
@@ -75,10 +80,10 @@ export default function OnboardingDonePage() {
         try {
           const saju = await apiFetch<DetailedSajuResponse>("/saju/me/detailed");
           if (cancelled) return;
-          setStatus({ kind: "ready", saju });
+          setStatus({ kind: "ready", saju, nickname });
         } catch {
           if (cancelled) return;
-          setStatus({ kind: "ready", saju: null });
+          setStatus({ kind: "ready", saju: null, nickname });
         }
         reset();
       } catch (e) {
@@ -122,7 +127,7 @@ export default function OnboardingDonePage() {
 
         {status.kind === "ready" && (
           <ReadyView
-            nickname={state.nickname ?? ""}
+            nickname={status.nickname}
             saju={status.saju}
             onGoSaju={() => router.replace("/saju")}
             onGoHome={() => router.replace("/home")}

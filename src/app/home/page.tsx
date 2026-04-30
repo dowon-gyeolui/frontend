@@ -217,8 +217,7 @@ export default function HomePage() {
           candidate={activeMatch}
           onClose={() => setActiveMatch(null)}
           onOpenDetail={() => {
-            sessionStorage.setItem("activeChat", JSON.stringify(activeMatch));
-            router.push(`/matching/${activeMatch.user_id}`);
+            router.push(`/profile/${activeMatch.user_id}`);
           }}
           onStartChat={() => {
             // Free users hit the payment modal; paid users go straight in.
