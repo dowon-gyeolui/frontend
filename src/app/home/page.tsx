@@ -164,17 +164,32 @@ export default function HomePage() {
           )}
         </section>
 
-        {/* 행동 가이드 — saju가 도착한 뒤에만 렌더 */}
-        {tips && (
+        {/* 행동 가이드 — saju 호출이 5~10초 걸리니까 로딩 상태도 보여준다. */}
+        {me?.birth_date && (
           <section className="mt-[40px]">
             <h2 className="text-center text-[20px] font-bold text-white">
               행동 가이드
             </h2>
-            <div className="mt-[14px] flex flex-col items-center gap-[6px] text-center text-[14px] text-white">
-              {tips.map((tip) => (
-                <p key={tip} className="leading-[25px]">{`"${tip}"`}</p>
-              ))}
-            </div>
+            {tips ? (
+              <div className="mt-[14px] flex flex-col items-center gap-[6px] text-center text-[14px] text-white">
+                {tips.map((tip) => (
+                  <p key={tip} className="leading-[25px]">{`"${tip}"`}</p>
+                ))}
+              </div>
+            ) : saju === null ? (
+              <div className="mt-[14px] flex flex-col items-center gap-[10px]">
+                <div className="size-7 animate-spin rounded-full border-[3px] border-white/20 border-t-white" />
+                <p className="text-[12px] leading-[18px] text-white/60">
+                  사주를 풀어 오늘의 행동 가이드를 찾고 있어요...
+                  <br />
+                  잠시만 기다려주세요.
+                </p>
+              </div>
+            ) : (
+              <p className="mt-[14px] text-center text-[12px] text-white/55">
+                오늘은 추천드릴 가이드가 없어요.
+              </p>
+            )}
           </section>
         )}
 

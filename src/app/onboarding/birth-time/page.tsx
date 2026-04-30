@@ -27,8 +27,8 @@ export default function OnboardingBirthTimePage() {
   return (
     <OnboardingShell step={3}>
       <div className="flex flex-1 flex-col px-[36px] pb-[40px]">
-        {/* Vertically-centered form group */}
-        <div className="flex flex-1 flex-col justify-center gap-[20px] pt-[20px]">
+        {/* Form group near the top — keyboard / time picker shouldn't cover it. */}
+        <div className="flex flex-1 flex-col justify-start gap-[20px] pt-[40px]">
           <div className="flex flex-col gap-[10px]">
             <h1 className="text-center text-[24px] font-bold tracking-tight text-white">
               태어난 시간을
@@ -66,7 +66,7 @@ export default function OnboardingBirthTimePage() {
         </div>
 
         {/* Bottom: 이전 + 다음 */}
-        <div className="mt-[40px] flex gap-[10px]">
+        <div className="mt-[80px] flex gap-[10px]">
           <button
             type="button"
             onClick={() => router.back()}

@@ -25,9 +25,9 @@ export default function OnboardingNamePage() {
   return (
     <OnboardingShell step={1}>
       <div className="flex flex-1 flex-col px-[36px] pb-[40px]">
-        {/* Form group — vertically centered between step header and CTA so
-            the layout looks symmetric on tall and short viewports alike. */}
-        <div className="flex flex-1 flex-col justify-center gap-[26px] pt-[20px]">
+        {/* Form group — sits near the top of the available space so the
+            keyboard doesn't push it out of view on mobile. */}
+        <div className="flex flex-1 flex-col justify-start gap-[26px] pt-[40px]">
           <h1 className="text-center text-[24px] font-bold tracking-tight text-white">
             당신은 누구인가요?
           </h1>
@@ -75,7 +75,7 @@ export default function OnboardingNamePage() {
           type="button"
           disabled={!canContinue}
           onClick={onNext}
-          className={`mt-[40px] h-[52px] w-full rounded-[5px] text-[18px] font-semibold transition ${
+          className={`mt-[80px] h-[52px] w-full rounded-[5px] text-[18px] font-semibold transition ${
             canContinue
               ? "bg-[#6366f1] text-white shadow-[0px_4px_15px_-2px_rgba(99,102,241,0.5)] hover:opacity-90"
               : "bg-[rgba(75,58,112,0.7)] text-white/40"

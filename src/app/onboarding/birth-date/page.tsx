@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { ScrollableDateInput } from "@/components/common/scrollable-date-input";
 import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
 import {
   useOnboarding,
@@ -36,20 +37,20 @@ export default function OnboardingBirthDatePage() {
   return (
     <OnboardingShell step={2}>
       <div className="flex flex-1 flex-col px-[36px] pb-[40px]">
-        {/* Vertically-centered form group */}
-        <div className="flex flex-1 flex-col justify-center gap-[24px] pt-[20px]">
+        {/* Form group — sits near the top so keyboard / month picker don't
+            cover it on mobile. */}
+        <div className="flex flex-1 flex-col justify-start gap-[24px] pt-[40px]">
           <h1 className="text-center text-[24px] font-bold tracking-tight text-white">
             당신이 우주에
             <br />
             기록된 날은 언제인가요?
           </h1>
 
-          <input
-            type="date"
-            value={birthDate}
-            onChange={(e) => setBirthDate(e.target.value)}
-            className="h-[52px] w-full rounded-[5px] border border-[#5a3a82] bg-[#352052] px-4 text-center text-[18px] font-medium text-white placeholder:text-white/70 focus:border-white/60 focus:outline-none [color-scheme:dark]"
-          />
+          {/* 휠/키보드로 년·월·일 각각 변경 가능. native date input 은
+              모바일에서 월 휠이 안 되는 경우가 많아 자체 위젯으로 교체. */}
+          <div className="flex h-[52px] items-center justify-center rounded-[5px] border border-[#5a3a82] bg-[#352052] px-[12px]">
+            <ScrollableDateInput value={birthDate} onChange={setBirthDate} />
+          </div>
 
           <div className="flex gap-[10px]">
             <button
@@ -90,7 +91,7 @@ export default function OnboardingBirthDatePage() {
         </div>
 
         {/* Bottom: 이전 + 다음 */}
-        <div className="mt-[40px] flex gap-[10px]">
+        <div className="mt-[80px] flex gap-[10px]">
           <button
             type="button"
             onClick={() => router.back()}

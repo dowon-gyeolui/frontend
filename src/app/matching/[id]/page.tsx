@@ -9,6 +9,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { CompatibilityReportDrawer } from "@/components/matching/compatibility-report-drawer";
 import type { MatchCandidate } from "@/components/matching/match-card";
+import { ReportModal } from "@/components/matching/report-modal";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import {
@@ -37,6 +38,7 @@ export default function ChatRoomPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   // Track the last seen message id for incremental polling.
@@ -302,8 +304,22 @@ export default function ChatRoomPage() {
         onClose={() => setReportOpen(false)}
         onUpgrade={() => router.push("/premium?from=jamidusu")}
         onLeaveRoom={() => router.push("/matching")}
-        onReport={() => alert("신고가 접수되었습니다. 검토 후 조치할게요.")}
+        onReport={() => {
+          setReportOpen(false);
+          setReportModalOpen(true);
+        }}
       />
+
+      {reportModalOpen && (
+        <ReportModal
+          reportedUserId={peerId}
+          onClose={() => setReportModalOpen(false)}
+          onSubmitted={() => {
+            setReportModalOpen(false);
+            alert("신고가 접수되었습니다. 운영팀이 대화 기록과 함께 검토할게요.");
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -17,6 +17,10 @@ import {
 } from "@/components/mypage/basic-info-edit-modal";
 import { BioEditModal } from "@/components/mypage/bio-edit-modal";
 import { PhotoUploadModal } from "@/components/mypage/photo-upload-modal";
+import {
+  RequiredInfoEditModal,
+  type RequiredInfoInitial,
+} from "@/components/mypage/required-info-edit-modal";
 import { apiFetch } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
 import { completionRows, profileCompletionPct } from "@/lib/profile-completion";
@@ -80,6 +84,7 @@ function MypageContent() {
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [bioOpen, setBioOpen] = useState(false);
   const [basicOpen, setBasicOpen] = useState(false);
+  const [requiredOpen, setRequiredOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [leaveError, setLeaveError] = useState<string | null>(null);
@@ -162,11 +167,11 @@ function MypageContent() {
             </button>
             <button
               type="button"
-              onClick={() => setBasicOpen(true)}
+              onClick={() => setRequiredOpen(true)}
               className="flex flex-col items-center gap-[6px]"
             >
               <Search className="size-[20px] stroke-white stroke-[1.5]" />
-              정보 수정
+              필수 정보 수정
             </button>
           </div>
 
@@ -232,8 +237,8 @@ function MypageContent() {
                         else if (r.label === "기본 정보 입력") setBasicOpen(true);
                         else if (r.label === "프로필 사진 추가")
                           setPhotoModalOpen(true);
-                        else if (r.label === "시간 (출생 시간)") setBasicOpen(true); // closest tap target
-                        else router.push("/onboarding/name");
+                        else if (r.label === "시간 (출생 시간)") setRequiredOpen(true);
+                        else setRequiredOpen(true);
                       }}
                       className="flex w-full items-center justify-between rounded-[10px] bg-white/5 px-[10px] py-[8px] text-left hover:bg-white/10"
                     >
@@ -351,13 +356,6 @@ function MypageContent() {
         <BasicInfoEditModal
           initial={
             {
-              nickname: me.nickname,
-              gender: me.gender,
-              birth_date: me.birth_date,
-              birth_time: me.birth_time,
-              calendar_type: me.calendar_type,
-              is_leap_month: me.is_leap_month,
-              age,
               height_cm: me.height_cm,
               mbti: me.mbti,
               job: me.job,
@@ -368,6 +366,40 @@ function MypageContent() {
             } satisfies BasicInfoInitial
           }
           onClose={() => setBasicOpen(false)}
+          onSaved={(patch) => {
+            setMe((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    height_cm: patch.height_cm ?? prev.height_cm,
+                    mbti: patch.mbti ?? prev.mbti,
+                    job: patch.job ?? prev.job,
+                    region: patch.region ?? prev.region,
+                    religion: patch.religion ?? prev.religion,
+                    smoking: patch.smoking ?? prev.smoking,
+                    drinking: patch.drinking ?? prev.drinking,
+                  }
+                : prev,
+            );
+            setBasicOpen(false);
+          }}
+        />
+      )}
+
+      {requiredOpen && me && (
+        <RequiredInfoEditModal
+          initial={
+            {
+              nickname: me.nickname,
+              gender: me.gender,
+              birth_date: me.birth_date,
+              birth_time: me.birth_time,
+              calendar_type: me.calendar_type,
+              is_leap_month: me.is_leap_month,
+              age,
+            } satisfies RequiredInfoInitial
+          }
+          onClose={() => setRequiredOpen(false)}
           onSaved={(patch) => {
             setMe((prev) =>
               prev
@@ -385,17 +417,10 @@ function MypageContent() {
                       patch.is_leap_month !== undefined
                         ? patch.is_leap_month
                         : prev.is_leap_month,
-                    height_cm: patch.height_cm ?? prev.height_cm,
-                    mbti: patch.mbti ?? prev.mbti,
-                    job: patch.job ?? prev.job,
-                    region: patch.region ?? prev.region,
-                    religion: patch.religion ?? prev.religion,
-                    smoking: patch.smoking ?? prev.smoking,
-                    drinking: patch.drinking ?? prev.drinking,
                   }
                 : prev,
             );
-            setBasicOpen(false);
+            setRequiredOpen(false);
           }}
         />
       )}
