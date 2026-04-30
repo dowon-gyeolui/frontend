@@ -16,8 +16,8 @@ type Preset = {
   trackingEm: number;
   /** Visible sparkle height (px). 1:1.6 wide-to-tall ratio retained. */
   sparkleHeightPx: number;
-  /** Horizontal offset from start of ZAMI text — sparkle sits in the
-   *  gap between A and M as in the Figma frame. */
+  /** Horizontal offset from start of ZAMI text. ~35% lands the sparkle
+   *  inside the A glyph (4-letter ZAMI: Z=12.5%, A≈37%, M≈63%, I=87.5%). */
   sparkleLeftPct: number;
   /** Vertical offset of sparkle top relative to the text top. Negative
    *  = above baseline. */
@@ -29,21 +29,21 @@ const SIZE_PRESETS: Record<Size, Preset> = {
     textPx: 18,
     trackingEm: 0.4,
     sparkleHeightPx: 12,
-    sparkleLeftPct: 49,
+    sparkleLeftPct: 35,
     sparkleTopOffsetPx: 5,
   },
   md: {
     textPx: 28,
     trackingEm: 0.4,
     sparkleHeightPx: 19,
-    sparkleLeftPct: 49,
+    sparkleLeftPct: 35,
     sparkleTopOffsetPx: 8,
   },
   lg: {
     textPx: 36,
     trackingEm: 0.4,
     sparkleHeightPx: 24,
-    sparkleLeftPct: 49,
+    sparkleLeftPct: 35,
     sparkleTopOffsetPx: 11,
   },
 };
@@ -94,7 +94,9 @@ export function ZamiLogo({
         aria-hidden="true"
         className="pointer-events-none absolute"
         style={{
-          left: `${preset.sparkleLeftPct + 1.4}%`,
+          // Small accent shares the big sparkle's horizontal centre
+          // (Figma node 14:1913 sits exactly under 14:1912's center).
+          left: `${preset.sparkleLeftPct}%`,
           top: `${preset.sparkleTopOffsetPx + preset.sparkleHeightPx * 0.55}px`,
           width: `${sparkleWidth * 0.55}px`,
           height: `${sparkleWidth * 0.55}px`,
