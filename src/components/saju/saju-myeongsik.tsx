@@ -14,6 +14,15 @@ import {
   type SajuPillar,
 } from "@/lib/saju";
 
+// 컬럼 헤더 라벨 — 백엔드는 [년주, 월주, 일주, 시주] 순서로 보내지만
+// 명식표는 한국 사주에서 통상 시→일→월→년 순서로 좌→우 배열한다.
+const PILLAR_HEADER_BY_LABEL: Record<string, string> = {
+  시주: "생시",
+  일주: "생일",
+  월주: "생월",
+  년주: "생년",
+};
+
 /**
  * 사주 명식(命式) 화면 — Figma-style icon card layout.
  *
@@ -69,7 +78,12 @@ const COMPAT_POINT: Record<Element, { title: string; desc: string }> = {
 };
 
 /**
- * 사주 명식 카드 묶음 — 4-기둥 + 4-스탯.
+ * 사주 명식 카드 묶음 — 명식 표 그리드 + 4-스탯 카드.
+ *
+ * 표 그리드는 한국 사주명리 표준 명식표 레이아웃(시→일→월→년 순서,
+ * 천간 / 십성 / 지지 / 십성 / 지장간 / 12운성 / 12신살 행)을 따른다.
+ * 백엔드의 SajuPillar 가 이미 모든 행에 필요한 필드를 채워서 보내주므로
+ * 여기선 단순히 표로 매핑만.
  */
 export function SajuMyeongsik({
   pillars,
@@ -80,62 +94,177 @@ export function SajuMyeongsik({
 }) {
   return (
     <div className="space-y-[14px]">
-      <PillarRow pillars={pillars} />
+      <MyeongsikChart pillars={pillars} />
       <StatGrid pillars={pillars} profile={profile} />
     </div>
   );
 }
 
-function PillarRow({ pillars }: { pillars: SajuPillar[] }) {
+function MyeongsikChart({ pillars }: { pillars: SajuPillar[] }) {
+  // 표는 시→일→월→년 순서. 백엔드는 [년,월,일,시] 로 보내므로 reverse.
+  const reversed = [...pillars].reverse();
+  const dayIndex = reversed.findIndex((p) => p.label === "일주"); // 일주 컬럼 강조
+
   return (
-    <div className="grid grid-cols-4 gap-[8px]">
-      {pillars.map((p, i) => (
-        <PillarIconCard key={p.label} pillar={p} isDay={i === 2} />
+    <div className="overflow-hidden rounded-[14px] border border-white/15 bg-white/5 backdrop-blur-sm">
+      {/* Column header row — 생시 / 생일 / 생월 / 생년 */}
+      <div className="grid grid-cols-[44px_1fr_1fr_1fr_1fr] border-b border-white/10 bg-white/5">
+        <div />
+        {reversed.map((p, i) => (
+          <div
+            key={p.label}
+            className={`py-[8px] text-center text-[11px] font-medium ${
+              i === dayIndex ? "text-[#fde047]" : "text-white/55"
+            }`}
+          >
+            {PILLAR_HEADER_BY_LABEL[p.label] ?? p.label}
+          </div>
+        ))}
+      </div>
+
+      <ChartRow label="천간" dayIndex={dayIndex}>
+        {reversed.map((p) => (
+          <StemCell key={p.label} pillar={p} />
+        ))}
+      </ChartRow>
+      <ChartRow label="십성" dayIndex={dayIndex} muted>
+        {reversed.map((p) => (
+          <SmallTextCell key={p.label} text={p.stem_ten_god ?? "—"} />
+        ))}
+      </ChartRow>
+      <ChartRow label="지지" dayIndex={dayIndex}>
+        {reversed.map((p) => (
+          <BranchCell key={p.label} pillar={p} />
+        ))}
+      </ChartRow>
+      <ChartRow label="십성" dayIndex={dayIndex} muted>
+        {reversed.map((p) => (
+          <SmallTextCell key={p.label} text={p.branch_ten_god ?? "—"} />
+        ))}
+      </ChartRow>
+      <ChartRow label="지장간" dayIndex={dayIndex} muted>
+        {reversed.map((p) => (
+          <SmallTextCell
+            key={p.label}
+            text={
+              p.hidden_stems && p.hidden_stems.length > 0
+                ? p.hidden_stems.join("")
+                : "—"
+            }
+          />
+        ))}
+      </ChartRow>
+      <ChartRow label="12운성" dayIndex={dayIndex} muted>
+        {reversed.map((p) => (
+          <SmallTextCell key={p.label} text={p.twelve_stage ?? "—"} />
+        ))}
+      </ChartRow>
+      <ChartRow label="12신살" dayIndex={dayIndex} muted last>
+        {reversed.map((p) => (
+          <SmallTextCell key={p.label} text={p.twelve_spirit ?? "—"} />
+        ))}
+      </ChartRow>
+    </div>
+  );
+}
+
+function ChartRow({
+  label,
+  children,
+  dayIndex,
+  muted = false,
+  last = false,
+}: {
+  label: string;
+  children: React.ReactNode[];
+  dayIndex: number;
+  muted?: boolean;
+  last?: boolean;
+}) {
+  return (
+    <div
+      className={`grid grid-cols-[44px_1fr_1fr_1fr_1fr] ${
+        last ? "" : "border-b border-white/10"
+      }`}
+    >
+      <div className="grid place-items-center bg-white/5 text-[10px] font-medium text-white/55">
+        {label}
+      </div>
+      {children.map((c, i) => (
+        <div
+          key={i}
+          className={`flex items-center justify-center px-[2px] py-[6px] ${
+            i !== children.length - 1 ? "border-r border-white/5" : ""
+          } ${i === dayIndex ? "bg-purple-500/10" : ""} ${
+            muted ? "text-[12px] text-white/75" : ""
+          }`}
+        >
+          {c}
+        </div>
       ))}
     </div>
   );
 }
 
-function PillarIconCard({
-  pillar,
-  isDay,
-}: {
-  pillar: SajuPillar;
-  isDay: boolean;
-}) {
+function StemCell({ pillar }: { pillar: SajuPillar }) {
   const stemEl: Element | null =
     pillar.stem_element ?? STEM_HANJA[pillar.stem]?.element ?? null;
-  const branchInfo = BRANCH_DATA[pillar.branch];
-  const animal = pillar.branch_animal ?? branchInfo?.animal ?? "?";
-  const colorWord = stemEl ? ELEMENT_COLOR_KO[stemEl] : "";
   const stemHanja = pillar.stem_hanja ?? STEM_HANJA[pillar.stem]?.hanja ?? "";
-  const branchHanja = pillar.branch_hanja ?? branchInfo?.hanja ?? "";
-  const emoji = ZODIAC_EMOJI[pillar.branch] ?? "·";
-
+  const polarity = pillar.stem_polarity ?? "+";
+  const elColor = stemEl ? ELEMENT_DISPLAY[stemEl].color : "#fff";
+  const elKo = stemEl ? ELEMENT_DISPLAY[stemEl].ko : "";
   return (
-    <div
-      className={`relative flex flex-col items-center gap-[4px] rounded-[14px] p-[8px] backdrop-blur-sm ${
-        isDay
-          ? "border-[1.5px] border-purple-400/60 bg-gradient-to-b from-purple-500/30 to-purple-600/15 shadow-[0_0_20px_-4px_rgba(168,85,247,0.55)]"
-          : "border border-white/10 bg-white/5"
-      }`}
-    >
-      <p className="text-[10px] font-medium text-white/55">{pillar.label}</p>
-      <div className="text-[28px] leading-none">{emoji}</div>
-      <p className="text-[12px] font-bold text-white">
-        {pillar.combined}
-        {stemHanja && (
-          <span className="ml-[2px] text-[10px] font-medium text-white/55">
-            ({stemHanja}
-            {branchHanja})
-          </span>
-        )}
-      </p>
-      <p className="text-[10px] text-white/65">
-        {colorWord} {animal}
-      </p>
+    <div className="flex flex-col items-center gap-[2px] py-[4px]">
+      <div className="flex items-baseline gap-[2px]" style={{ color: elColor }}>
+        <span className="text-[20px] font-bold leading-none">{pillar.stem}</span>
+        <span className="text-[14px] font-bold leading-none opacity-80">
+          {stemHanja}
+        </span>
+      </div>
+      {elKo && (
+        <span
+          className="text-[10px] font-medium"
+          style={{ color: elColor }}
+        >
+          {polarity}
+          {elKo}
+        </span>
+      )}
     </div>
   );
+}
+
+function BranchCell({ pillar }: { pillar: SajuPillar }) {
+  const branchEl: Element | null =
+    pillar.branch_element ?? BRANCH_DATA[pillar.branch]?.element ?? null;
+  const branchHanja =
+    pillar.branch_hanja ?? BRANCH_DATA[pillar.branch]?.hanja ?? "";
+  const polarity = pillar.branch_polarity ?? "+";
+  const elColor = branchEl ? ELEMENT_DISPLAY[branchEl].color : "#fff";
+  const elKo = branchEl ? ELEMENT_DISPLAY[branchEl].ko : "";
+  return (
+    <div className="flex flex-col items-center gap-[2px] py-[4px]">
+      <div className="flex items-baseline gap-[2px]" style={{ color: elColor }}>
+        <span className="text-[20px] font-bold leading-none">{pillar.branch}</span>
+        <span className="text-[14px] font-bold leading-none opacity-80">
+          {branchHanja}
+        </span>
+      </div>
+      {elKo && (
+        <span
+          className="text-[10px] font-medium"
+          style={{ color: elColor }}
+        >
+          {polarity}
+          {elKo}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function SmallTextCell({ text }: { text: string }) {
+  return <span className="text-[12px] leading-none">{text}</span>;
 }
 
 function StatGrid({
