@@ -175,7 +175,11 @@ export function RequiredInfoEditModal({
           <PillRow>
             <span className="text-[16px] font-medium text-black shrink-0">생년월일</span>
             <div className="ml-auto">
-              <ScrollableDateInput value={birthDate} onChange={setBirthDate} />
+              <ScrollableDateInput
+                value={birthDate}
+                onChange={setBirthDate}
+                variant="light"
+              />
             </div>
           </PillRow>
 
