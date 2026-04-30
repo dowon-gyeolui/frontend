@@ -302,7 +302,14 @@ export default function ChatRoomPage() {
         peerId={peerId}
         open={reportOpen}
         onClose={() => setReportOpen(false)}
-        onUpgrade={() => router.push("/premium?from=jamidusu")}
+        onOpenSaju={() => {
+          setReportOpen(false);
+          router.push("/jamidusu");
+        }}
+        onOpenDateSpots={() => {
+          setReportOpen(false);
+          router.push(`/date-spots/${peerId}`);
+        }}
         onLeaveRoom={() => router.push("/matching")}
         onReport={() => {
           setReportOpen(false);

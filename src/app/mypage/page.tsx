@@ -35,6 +35,7 @@ type Me = {
   calendar_type: string | null;
   is_leap_month: boolean;
   gender: string | null;
+  birth_place: string | null;
   bio: string | null;
   height_cm: number | null;
   mbti: string | null;
@@ -396,6 +397,7 @@ function MypageContent() {
               birth_time: me.birth_time,
               calendar_type: me.calendar_type,
               is_leap_month: me.is_leap_month,
+              birth_place: me.birth_place,
               age,
             } satisfies RequiredInfoInitial
           }
@@ -417,6 +419,10 @@ function MypageContent() {
                       patch.is_leap_month !== undefined
                         ? patch.is_leap_month
                         : prev.is_leap_month,
+                    birth_place:
+                      patch.birth_place !== undefined
+                        ? patch.birth_place
+                        : prev.birth_place,
                   }
                 : prev,
             );

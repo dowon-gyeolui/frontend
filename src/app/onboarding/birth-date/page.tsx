@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { ScrollableDateInput } from "@/components/common/scrollable-date-input";
 import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
+import { BIRTH_PLACE_OPTIONS } from "@/lib/birth-place";
 import {
   useOnboarding,
   type CalendarType,
@@ -19,6 +20,7 @@ export default function OnboardingBirthDatePage() {
     state.calendar_type,
   );
   const [isLeap, setIsLeap] = useState<boolean>(state.is_leap_month ?? false);
+  const [birthPlace, setBirthPlace] = useState(state.birth_place ?? "");
 
   const canContinue =
     /^\d{4}-\d{2}-\d{2}$/.test(birthDate) && calendar !== undefined;
@@ -30,6 +32,7 @@ export default function OnboardingBirthDatePage() {
       calendar_type: calendar,
       // Leap month is meaningful only for lunar calendars; force false on solar.
       is_leap_month: calendar === "lunar" ? isLeap : false,
+      birth_place: birthPlace || undefined,
     });
     router.push("/onboarding/birth-time");
   };
@@ -88,6 +91,28 @@ export default function OnboardingBirthDatePage() {
               윤달
             </label>
           )}
+
+          {/* 출생지 — 시·도. 사주 시간 보정에 사용 (KST vs 실제 경도 차이) */}
+          <div className="flex flex-col gap-[6px]">
+            <label className="text-center text-[13px] text-white/70">
+              출생지 (선택)
+            </label>
+            <select
+              value={birthPlace}
+              onChange={(e) => setBirthPlace(e.target.value)}
+              className="h-[52px] w-full rounded-[5px] border border-[#5a3a82] bg-[#352052] px-4 text-center text-[16px] font-medium text-white focus:border-white/60 focus:outline-none"
+            >
+              <option value="">출생지를 선택하세요</option>
+              {BIRTH_PLACE_OPTIONS.map((p) => (
+                <option key={p} value={p} className="bg-[#1b0e2e] text-white">
+                  {p}
+                </option>
+              ))}
+            </select>
+            <p className="text-center text-[10px] text-white/45">
+              한국 표준시(KST)와 출생지 경도 차이로 사주 시각을 보정해요.
+            </p>
+          </div>
         </div>
 
         {/* Bottom: 이전 + 다음 */}

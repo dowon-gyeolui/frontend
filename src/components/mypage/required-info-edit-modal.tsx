@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { ScrollableDateInput } from "@/components/common/scrollable-date-input";
 import { apiFetch } from "@/lib/api";
+import { BIRTH_PLACE_OPTIONS } from "@/lib/birth-place";
 
 export type RequiredInfoInitial = {
   nickname: string | null;
@@ -13,6 +14,7 @@ export type RequiredInfoInitial = {
   birth_time: string | null;          // "HH:MM" or null when unknown
   calendar_type: string | null;       // "solar" | "lunar"
   is_leap_month: boolean;
+  birth_place: string | null;
   age: number | null;                 // derived — display only
 };
 
@@ -23,6 +25,7 @@ export type RequiredInfoPatch = {
   birth_time?: string | null;
   calendar_type?: string | null;
   is_leap_month?: boolean;
+  birth_place?: string | null;
 };
 
 /**
@@ -47,6 +50,7 @@ export function RequiredInfoEditModal({
   const [timeUnknown, setTimeUnknown] = useState(initial.birth_time === null);
   const [calendar, setCalendar] = useState(initial.calendar_type ?? "solar");
   const [isLeap, setIsLeap] = useState(initial.is_leap_month);
+  const [birthPlace, setBirthPlace] = useState(initial.birth_place ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,6 +82,9 @@ export function RequiredInfoEditModal({
     if (calendar !== initial.calendar_type) birthPayload.calendar_type = calendar;
     if (isLeap !== initial.is_leap_month) birthPayload.is_leap_month = isLeap;
     if (gender && gender !== initial.gender) birthPayload.gender = gender;
+    if (birthPlace !== (initial.birth_place ?? "")) {
+      birthPayload.birth_place = birthPlace || null;
+    }
 
     try {
       const requests: Promise<unknown>[] = [];
@@ -110,6 +117,10 @@ export function RequiredInfoEditModal({
         is_leap_month:
           (birthPayload.is_leap_month as boolean | undefined) ?? undefined,
         gender: (birthPayload.gender as string | undefined) ?? null,
+        birth_place:
+          "birth_place" in birthPayload
+            ? (birthPayload.birth_place as string | null)
+            : null,
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "저장 실패");
@@ -240,6 +251,25 @@ export function RequiredInfoEditModal({
               />
               모름
             </label>
+          </PillRow>
+
+          {/* 출생지 — 사주 시각 보정에 사용 */}
+          <PillRow>
+            <span className="text-[16px] font-medium text-black shrink-0">
+              출생지 :
+            </span>
+            <select
+              value={birthPlace}
+              onChange={(e) => setBirthPlace(e.target.value)}
+              className="flex-1 bg-transparent text-[16px] font-medium text-black focus:outline-none"
+            >
+              <option value="">선택 안 함</option>
+              {BIRTH_PLACE_OPTIONS.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
           </PillRow>
 
           {initial.age !== null && (

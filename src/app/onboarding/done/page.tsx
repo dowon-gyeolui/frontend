@@ -63,6 +63,7 @@ export default function OnboardingDonePage() {
             calendar_type: state.calendar_type,
             is_leap_month: state.is_leap_month ?? false,
             gender: state.gender,
+            birth_place: state.birth_place ?? null,
           }),
         });
         if (cancelled) return;

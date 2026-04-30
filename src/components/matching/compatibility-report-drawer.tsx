@@ -26,14 +26,18 @@ export function CompatibilityReportDrawer({
   peerId,
   open,
   onClose,
-  onUpgrade,
+  onOpenSaju,
+  onOpenDateSpots,
   onLeaveRoom,
   onReport,
 }: {
   peerId: number;
   open: boolean;
   onClose: () => void;
-  onUpgrade: () => void;
+  /** "운명의 실타래" 버튼 — 자미두수 페이지로. */
+  onOpenSaju: () => void;
+  /** "두 분만을 위한 최적의 데이트" 버튼 — 데이트 추천 페이지로. */
+  onOpenDateSpots: () => void;
   onLeaveRoom: () => void;
   onReport: () => void;
 }) {
@@ -149,17 +153,17 @@ export function CompatibilityReportDrawer({
                 ))}
               </div>
 
-              {/* CTA cards — both premium gated */}
+              {/* CTA cards — both premium gated, but each opens its own page */}
               <div className="mt-[18px] space-y-[10px]">
                 <CtaCard
                   title="운명의 실타래 더 깊이 알아보기"
                   height={84}
-                  onClick={onUpgrade}
+                  onClick={onOpenSaju}
                 />
                 <CtaCard
                   title="두 분만을 위한 최적의 데이트 확인"
                   height={104}
-                  onClick={onUpgrade}
+                  onClick={onOpenDateSpots}
                 />
               </div>
             </>

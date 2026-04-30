@@ -29,6 +29,7 @@ export type OnboardingState = {
   calendar_type?: CalendarType;
   is_leap_month?: boolean;
   birth_time?: string; // HH:MM (24h)
+  birth_place?: string; // 출생지 — 시·도 단위
 };
 
 type OnboardingCtx = {
