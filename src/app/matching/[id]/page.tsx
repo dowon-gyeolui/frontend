@@ -355,7 +355,7 @@ export default function ChatRoomPage() {
         onClose={() => setReportOpen(false)}
         onOpenSaju={() => {
           setReportOpen(false);
-          router.push("/jamidusu");
+          router.push(`/destiny/${peerId}`);
         }}
         onOpenDateSpots={() => {
           setReportOpen(false);
