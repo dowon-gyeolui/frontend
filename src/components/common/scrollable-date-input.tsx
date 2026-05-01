@@ -43,21 +43,28 @@ export function ScrollableDateInput({
   const dayRef = useRef<HTMLInputElement>(null);
   const pickerRef = useRef<HTMLInputElement>(null);
 
-  // Keep local input strings in sync when the parent updates `value`
-  // (e.g., picker selection or initial load).
+  // Sync local input strings FROM the parent only when the parent's
+  // value is a NEW parseable date that differs from what local state
+  // currently represents. Two reasons:
+  //
+  //   1. Don't clear when value === "" — most often that's the user
+  //      mid-typing in the day box; clearing all three fields would
+  //      wipe their year/month progress too.
+  //   2. Don't re-pad while typing — entering "3" in the day box
+  //      causes commit() → onChange("YYYY-MM-03") → and without this
+  //      check we'd setDText("03") via useEffect, dropping the "1"
+  //      the user is about to type to make "31".
+  //
+  // Net: the effect only fires for genuine external updates (initial
+  // load, native picker selection, parent reset via remount).
   useEffect(() => {
     const p = parseDate(value);
-    if (!p) {
-      // Don't wipe the user's mid-typing state on every render — only
-      // clear when the parent explicitly resets to empty AND the local
-      // boxes are all already complete (so we know it's an external reset).
-      if (value === "" && yText.length === 4 && mText.length >= 1 && dText.length >= 1) {
-        setYText("");
-        setMText("");
-        setDText("");
-      }
-      return;
-    }
+    if (!p) return;
+    const localISO =
+      yText.length === 4 && mText.length > 0 && dText.length > 0
+        ? `${pad4(Number(yText))}-${pad2(Number(mText))}-${pad2(Number(dText))}`
+        : null;
+    if (localISO === value) return; // already in sync, leave typing alone
     setYText(String(p.y));
     setMText(pad2(p.m));
     setDText(pad2(p.d));
