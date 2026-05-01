@@ -111,7 +111,14 @@ export async function sendMediaMessageTo(
   });
   if (!resp.ok) {
     const body = await resp.text();
-    throw new Error(`API ${resp.status}: ${body}`);
+    let detail: string | null = null;
+    try {
+      const parsed = JSON.parse(body) as { detail?: unknown };
+      if (typeof parsed.detail === "string") detail = parsed.detail;
+    } catch {
+      /* not JSON */
+    }
+    throw new Error(detail ?? `API ${resp.status}: ${body}`);
   }
   return (await resp.json()) as Message;
 }

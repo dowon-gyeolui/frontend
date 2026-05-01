@@ -21,7 +21,17 @@ export async function apiFetch<T = unknown>(
   const resp = await fetch(`${API_URL}${path}`, { ...init, headers });
   if (!resp.ok) {
     const body = await resp.text();
-    throw new Error(`API ${resp.status}: ${body}`);
+    // FastAPI raises HTTPException with `{ "detail": "사용자용 메시지" }`.
+    // Surface that detail directly so toast / error UI can render the
+    // Korean copy instead of "API 400: {"detail":"..."}".
+    let message: string | null = null;
+    try {
+      const parsed = JSON.parse(body) as { detail?: unknown };
+      if (typeof parsed.detail === "string") message = parsed.detail;
+    } catch {
+      /* not JSON — fall through */
+    }
+    throw new Error(message ?? `API ${resp.status}: ${body}`);
   }
   if (resp.status === 204) return undefined as T;
   return resp.json() as Promise<T>;

@@ -90,7 +90,16 @@ export function PhotoUploadModal({ currentPhoto, onClose, onSave }: Props) {
       });
       if (!resp.ok) {
         const body = await resp.text();
-        throw new Error(`${resp.status}: ${body}`);
+        // FastAPI 응답은 { "detail": "..." } 형태. moderation 거절도
+        // 이걸로 사용자용 한국어 사유가 내려오니 detail 만 노출.
+        let detail: string | null = null;
+        try {
+          const parsed = JSON.parse(body) as { detail?: unknown };
+          if (typeof parsed.detail === "string") detail = parsed.detail;
+        } catch {
+          /* not JSON */
+        }
+        throw new Error(detail ?? `${resp.status}: ${body}`);
       }
       await refresh();
     } catch (e) {

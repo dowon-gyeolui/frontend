@@ -194,6 +194,7 @@ export default function ChatRoomPage() {
     const text = input.trim();
     if (!text || sending) return;
     setSending(true);
+    setError(null);
     try {
       const msg = await sendMessageTo(peerId, text);
       setMessages((prev) => {
