@@ -81,7 +81,7 @@ export function DailyMatchSlotCard({
       </div>
 
       {stillLocked ? (
-        <LockedTeaser remainingMs={remaining} />
+        <LockedTeaser remainingMs={remaining} unlockAt={slot.unlock_at} />
       ) : (
         <div className="relative">
           <MatchCard data={slot.candidate} />
@@ -94,8 +94,18 @@ export function DailyMatchSlotCard({
   );
 }
 
-function LockedTeaser({ remainingMs }: { remainingMs: number }) {
+function LockedTeaser({
+  remainingMs,
+  unlockAt,
+}: {
+  remainingMs: number;
+  unlockAt: string;
+}) {
   const { hh, mm, ss } = splitDuration(remainingMs);
+  // unlockAt 은 항상 KST 정오 12:00 시각이라 사용자에겐 "X일 후 정오"
+  // 형태로 보여주는 게 가장 정확. M월 D일 12:00 형식.
+  const unlockDate = new Date(unlockAt);
+  const unlockLabel = formatKstNoon(unlockDate);
   return (
     <article className="relative aspect-[150/245] overflow-hidden rounded-[18px] border border-white/15 bg-gradient-to-br from-[#1f1235]/90 via-[#2a1648]/90 to-[#3a1c5e]/90 shadow-[0px_10px_20px_0px_rgba(0,0,0,0.35)] backdrop-blur-sm">
       <div className="flex h-full flex-col items-center justify-center gap-[10px] px-[10px] text-center">
@@ -107,13 +117,25 @@ function LockedTeaser({ remainingMs }: { remainingMs: number }) {
           {pad2(hh)}:{pad2(mm)}:{pad2(ss)}
         </p>
         <p className="text-[10px] leading-[14px] text-white/55">
-          하루가 지나면
+          {unlockLabel}
           <br />
-          새로운 매칭이 열려요
+          정오에 열려요
         </p>
       </div>
     </article>
   );
+}
+
+/** ISO 시각을 "M월 D일" 한국어 라벨로 변환 (KST 기준). */
+function formatKstNoon(date: Date): string {
+  // KST = UTC + 9. 브라우저 Intl 로 한국 표준시 변환.
+  const kst = new Intl.DateTimeFormat("ko-KR", {
+    timeZone: "Asia/Seoul",
+    month: "long",
+    day: "numeric",
+  }).format(date);
+  // 결과: "5월 4일" 같은 형태
+  return kst;
 }
 
 function PaywallOverlay() {
