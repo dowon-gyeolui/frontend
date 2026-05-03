@@ -168,6 +168,31 @@ export default function HomePage() {
           </p>
         </section>
 
+        {/* 얼굴 사진 미등록 시 게이트 배너 — 매칭 카드 자체를 가리고
+            대신 안내 + CTA 노출. 백엔드도 photo_url IS NULL 인 사용자
+            에겐 빈 pack 을 돌려주지만, 이 배너로 사용자 인지 강화. */}
+        {me && me.photo_url === null && (
+          <section
+            className="mt-[24px] rounded-[18px] border border-[#fde047]/40 bg-gradient-to-br from-[#fde047]/15 to-[#a78bfa]/10 p-[16px] backdrop-blur-sm"
+          >
+            <h2 className="text-center text-[16px] font-bold text-[#fde047]">
+              ZAMI 인증 얼굴 사진을 등록해주세요
+            </h2>
+            <p className="mt-[8px] text-center text-[12px] leading-[18px] text-white/80">
+              매칭은 얼굴이 잘 보이는 본인 사진(얼굴 면적 25% 이상)을
+              메인으로 등록해야 시작돼요.
+              <br />
+              등록 시 ZAMI 공식 인증 뱃지가 함께 노출됩니다.
+            </p>
+            <Link
+              href="/mypage"
+              className="mx-auto mt-[14px] block w-fit rounded-full bg-[#fde047] px-[16px] py-[6px] text-[13px] font-bold text-[#1b1029]"
+            >
+              지금 등록하기 →
+            </Link>
+          </section>
+        )}
+
         {/* 오늘의 매칭 카드 — 4-슬롯 (saju 무료 / jamidusu 유료 / 24h × 2). */}
         <section className="mt-[36px]">
           <h2 className="text-center text-[20px] font-bold text-white">

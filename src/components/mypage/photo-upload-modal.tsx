@@ -1,6 +1,8 @@
 "use client";
 
 import { Camera, Check, ImagePlus, Star, Trash2, X } from "lucide-react";
+
+import { ZamiVerifiedBadge } from "@/components/brand/zami-verified-badge";
 import { useEffect, useRef, useState } from "react";
 
 import { apiFetch } from "@/lib/api";
@@ -13,6 +15,7 @@ type GalleryPhoto = {
   id: number;
   url: string;
   is_primary: boolean;
+  is_face_verified: boolean;
   position: number;
   created_at: string;
 };
@@ -309,6 +312,13 @@ function PhotoTile({
         <div className="absolute left-[6px] top-[6px] flex items-center gap-[3px] rounded-full bg-purple-500 px-[7px] py-[2px] text-[10px] font-semibold text-white shadow-[0_0_6px_-1px_rgba(168,85,247,0.7)]">
           <Star className="size-[10px] fill-white stroke-white" />
           메인
+        </div>
+      )}
+      {/* ZAMI 공식 얼굴 인증 — strict face check 통과 사진에만 노출.
+          사용자가 본인 갤러리에서 어떤 사진이 인증되었는지 확인 가능. */}
+      {photo.is_face_verified && (
+        <div className="absolute right-[6px] top-[6px]">
+          <ZamiVerifiedBadge size="sm" />
         </div>
       )}
       <div className="absolute inset-x-0 bottom-0 flex justify-end gap-[4px] bg-gradient-to-t from-black/55 to-transparent p-[4px]">

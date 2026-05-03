@@ -4,6 +4,7 @@ import { ArrowLeft, Lock, Sparkles } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { ZamiVerifiedBadge } from "@/components/brand/zami-verified-badge";
 import { AppShell } from "@/components/layout/app-shell";
 import { PaymentModal } from "@/components/payment/payment-modal";
 import { apiFetch } from "@/lib/api";
@@ -30,6 +31,7 @@ type PublicProfile = {
   dominant_element: string | null;
   day_pillar: string | null;
   compatibility_score: number | null;
+  is_face_verified: boolean;
 };
 
 type Me = { id: number; is_paid: boolean };
@@ -142,6 +144,13 @@ export default function ProfileDetailPage() {
               {data.compatibility_score !== null && (
                 <div className="absolute left-[14px] top-[14px] rounded-full bg-purple-500/95 px-[12px] py-[4px] text-[13px] font-bold text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.8)]">
                   궁합 {data.compatibility_score}%
+                </div>
+              )}
+              {/* ZAMI 공식 얼굴 인증 뱃지 — 메인 사진이 strict face check
+                  통과한 사용자에게 우상단에 노출. 신뢰도 시그널. */}
+              {data.is_face_verified && !data.is_blinded && (
+                <div className="absolute right-[14px] top-[14px]">
+                  <ZamiVerifiedBadge size="md" />
                 </div>
               )}
               <p className="absolute bottom-[16px] right-[18px] text-[28px] font-semibold tracking-tight text-white">

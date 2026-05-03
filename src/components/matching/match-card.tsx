@@ -1,5 +1,6 @@
 "use client";
 
+import { ZamiVerifiedBadge } from "@/components/brand/zami-verified-badge";
 import { matchCardComment } from "@/lib/match-keywords";
 
 /**
@@ -18,6 +19,8 @@ export type MatchCandidate = {
   birth_year: number | null;
   dominant_element: string | null;
   mbti: string | null;
+  /** ZAMI strict 얼굴 인증을 통과한 사진을 메인으로 가진 사용자 */
+  is_face_verified?: boolean;
 };
 
 const PLACEHOLDER_PHOTO =
@@ -76,6 +79,15 @@ export function MatchCard({ data }: { data: MatchCandidate }) {
       <div className="absolute left-[6%] top-[3%] rounded-full bg-purple-500/95 px-[8px] py-[2px] text-[11px] font-bold text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.8)]">
         {data.score}%
       </div>
+
+      {/* ZAMI 공식 얼굴 인증 뱃지 — 사진이 strict face check 를 통과한
+          사용자에게만 노출. 매칭 카드 내에서 사진 우상단에 작은
+          원형 뱃지로 신뢰도 시그널을 줌. */}
+      {data.is_face_verified && !data.is_blinded && (
+        <div className="absolute right-[6%] top-[3%]">
+          <ZamiVerifiedBadge size="sm" />
+        </div>
+      )}
 
       {/* Name — Figma inset-[53.88% 12% 36.33% 64%] (over photo, bottom-right) */}
       <p className="absolute right-[10%] top-[53%] text-[14px] font-medium tracking-tight text-white">
