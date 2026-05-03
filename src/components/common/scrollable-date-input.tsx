@@ -23,6 +23,7 @@ export function ScrollableDateInput({
   minYear = 1930,
   maxYear,
   variant = "dark",
+  compact = false,
 }: {
   value: string;
   onChange: (next: string) => void;
@@ -30,6 +31,9 @@ export function ScrollableDateInput({
   maxYear?: number;
   /** "dark" — onboarding (purple bg). "light" — modal (white bg). */
   variant?: "dark" | "light";
+  /** compact 모드 — 좁은 모달 안에서 사용. 픽 너비 축소 + 년/월/일
+   *  접미사 라벨 제거. 풀-페이지에선 false. */
+  compact?: boolean;
 }) {
   const today = new Date();
   const cappedMaxYear = maxYear ?? today.getFullYear();
@@ -132,26 +136,36 @@ export function ScrollableDateInput({
     commit(yText, mText, digits);
   };
 
+  // compact: 좁은 모달 안 사용 — 픽 너비 줄이고 접미사 제거.
+  const yWidth = compact ? 60 : 78;
+  const mdWidth = compact ? 40 : 50;
+  const showSuffix = !compact;
+  const iconSize = compact ? 32 : 36;
+  const gap = compact ? 4 : 6;
+
   return (
-    <div className="relative flex items-center gap-[6px]">
+    <div
+      className="relative flex items-center"
+      style={{ gap: `${gap}px` }}
+    >
       <PillInput
         variant={variant}
-        suffix="년"
-        width={78}
+        suffix={showSuffix ? "년" : ""}
+        width={yWidth}
         inputProps={{
           inputMode: "numeric",
           pattern: "[0-9]*",
           maxLength: 4,
           value: yText,
           onChange: (e) => onYearChange(e.target.value),
-          placeholder: "----",
+          placeholder: "YYYY",
           "aria-label": "출생 연도",
         }}
       />
       <PillInput
         variant={variant}
-        suffix="월"
-        width={50}
+        suffix={showSuffix ? "월" : ""}
+        width={mdWidth}
         inputRef={monthRef}
         inputProps={{
           inputMode: "numeric",
@@ -159,14 +173,14 @@ export function ScrollableDateInput({
           maxLength: 2,
           value: mText,
           onChange: (e) => onMonthChange(e.target.value),
-          placeholder: "--",
+          placeholder: "MM",
           "aria-label": "출생 월",
         }}
       />
       <PillInput
         variant={variant}
-        suffix="일"
-        width={50}
+        suffix={showSuffix ? "일" : ""}
+        width={mdWidth}
         inputRef={dayRef}
         inputProps={{
           inputMode: "numeric",
@@ -174,7 +188,7 @@ export function ScrollableDateInput({
           maxLength: 2,
           value: dText,
           onChange: (e) => onDayChange(e.target.value),
-          placeholder: "--",
+          placeholder: "DD",
           "aria-label": "출생 일",
         }}
       />
@@ -184,13 +198,14 @@ export function ScrollableDateInput({
         type="button"
         onClick={openPicker}
         aria-label="달력에서 선택"
-        className={`grid size-[36px] flex-shrink-0 place-items-center rounded-[8px] ${
+        style={{ width: iconSize, height: iconSize }}
+        className={`grid flex-shrink-0 place-items-center rounded-[8px] ${
           variant === "light"
             ? "bg-white/90 hover:bg-white text-black/70"
             : "bg-white/15 hover:bg-white/25 text-white"
         }`}
       >
-        <Calendar className="size-[18px]" />
+        <Calendar className={compact ? "size-[16px]" : "size-[18px]"} />
       </button>
 
       {/* Hidden native picker. We never show it directly — the icon button
@@ -250,7 +265,9 @@ function PillInput({
           className="absolute inset-0 size-full bg-transparent text-center text-[15px] font-semibold text-black outline-none placeholder:text-black/30"
         />
       </div>
-      <span className={`text-[12px] font-medium ${suffixCls}`}>{suffix}</span>
+      {suffix && (
+        <span className={`text-[12px] font-medium ${suffixCls}`}>{suffix}</span>
+      )}
     </div>
   );
 }

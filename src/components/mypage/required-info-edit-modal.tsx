@@ -155,7 +155,8 @@ export function RequiredInfoEditModal({
           처음 가입할 때 입력했던 정보를 수정할 수 있어요.
         </p>
 
-        <div className="mt-[20px] space-y-[9px]">
+        <div className="mt-[20px] space-y-[8px]">
+          {/* 이름 — 단순 한 줄 */}
           <PillRow>
             <PillInput
               label="이름"
@@ -166,6 +167,7 @@ export function RequiredInfoEditModal({
             />
           </PillRow>
 
+          {/* 성별 — 단순 한 줄 */}
           <PillRow>
             <span className="text-[14px] font-medium text-black shrink-0">성별</span>
             <div className="ml-auto flex gap-[6px]">
@@ -184,20 +186,22 @@ export function RequiredInfoEditModal({
             </div>
           </PillRow>
 
-          <PillRow>
-            <span className="text-[16px] font-medium text-black shrink-0">생년월일</span>
-            <div className="ml-auto">
-              <ScrollableDateInput
-                value={birthDate}
-                onChange={setBirthDate}
-                variant="light"
-              />
-            </div>
-          </PillRow>
+          {/* 생년월일 — 2줄 (라벨 + 입력기 stacked). 단일 줄에 모두
+              넣으면 좁은 모달에서 잘려보이므로 라벨 위 / 입력 아래로
+              분리. 입력기는 compact 모드 (픽 너비 축소). */}
+          <StackedRow label="생년월일">
+            <ScrollableDateInput
+              value={birthDate}
+              onChange={setBirthDate}
+              variant="light"
+              compact
+            />
+          </StackedRow>
 
+          {/* 달력 + 윤달 — 한 줄에 묶음 */}
           <PillRow>
             <span className="text-[14px] font-medium text-black shrink-0">달력</span>
-            <div className="ml-auto flex gap-[6px]">
+            <div className="ml-auto flex items-center gap-[6px]">
               <SegmentChip
                 label="양력"
                 active={calendar === "solar"}
@@ -213,57 +217,58 @@ export function RequiredInfoEditModal({
                 onClick={() => setCalendar("lunar")}
                 width={50}
               />
+              {calendar === "lunar" && (
+                <label className="ml-[4px] flex cursor-pointer items-center gap-[3px] text-[12px] text-black">
+                  <input
+                    type="checkbox"
+                    checked={isLeap}
+                    onChange={(e) => setIsLeap(e.target.checked)}
+                    className="size-[14px] cursor-pointer accent-[#7c3aed]"
+                  />
+                  윤달
+                </label>
+              )}
             </div>
           </PillRow>
 
-          {calendar === "lunar" && (
-            <PillRow>
-              <span className="text-[14px] font-medium text-black">윤달</span>
-              <input
-                type="checkbox"
-                checked={isLeap}
-                onChange={(e) => setIsLeap(e.target.checked)}
-                className="ml-auto size-[16px] cursor-pointer accent-[#7c3aed]"
-              />
-            </PillRow>
-          )}
-
-          <PillRow>
-            <span className="text-[16px] font-medium text-black shrink-0">생시 :</span>
-            <div className="flex-1">
-              <TypingTimeInput
-                value={birthTime}
-                disabled={timeUnknown}
-                variant="light"
-                onChange={(next) => {
-                  setBirthTime(next);
-                  if (next) setTimeUnknown(false);
-                }}
-              />
+          {/* 생시 — 2줄 (라벨 + 입력기 + 모름). 시간 입력기에 시계
+              아이콘이 inset 으로 박혀있어 가로 폭이 작아도 OK 지만,
+              모름 체크박스까지 넣으면 좁아지므로 stacked. */}
+          <StackedRow label="생시">
+            <div className="flex items-center gap-[10px]">
+              <div className="flex-1">
+                <TypingTimeInput
+                  value={birthTime}
+                  disabled={timeUnknown}
+                  variant="light"
+                  onChange={(next) => {
+                    setBirthTime(next);
+                    if (next) setTimeUnknown(false);
+                  }}
+                />
+              </div>
+              <label className="flex shrink-0 cursor-pointer items-center gap-[4px] text-[12px] text-black">
+                <input
+                  type="checkbox"
+                  checked={timeUnknown}
+                  onChange={(e) => {
+                    setTimeUnknown(e.target.checked);
+                    if (e.target.checked) setBirthTime("");
+                  }}
+                  className="size-[14px] cursor-pointer accent-[#7c3aed]"
+                />
+                모름
+              </label>
             </div>
-            <label className="flex cursor-pointer items-center gap-[4px] text-[12px] text-black">
-              <input
-                type="checkbox"
-                checked={timeUnknown}
-                onChange={(e) => {
-                  setTimeUnknown(e.target.checked);
-                  if (e.target.checked) setBirthTime("");
-                }}
-                className="size-[14px] cursor-pointer accent-[#7c3aed]"
-              />
-              모름
-            </label>
-          </PillRow>
+          </StackedRow>
 
-          {/* 출생지 — 사주 시각 보정에 사용 */}
+          {/* 출생지 — 단순 한 줄 (select) */}
           <PillRow>
-            <span className="text-[16px] font-medium text-black shrink-0">
-              출생지 :
-            </span>
+            <span className="text-[14px] font-medium text-black shrink-0">출생지</span>
             <select
               value={birthPlace}
               onChange={(e) => setBirthPlace(e.target.value)}
-              className="flex-1 bg-transparent text-[16px] font-medium text-black focus:outline-none"
+              className="ml-auto bg-transparent text-right text-[14px] font-medium text-black focus:outline-none"
             >
               <option value="">선택 안 함</option>
               {BIRTH_PLACE_OPTIONS.map((p) => (
@@ -307,6 +312,25 @@ export function RequiredInfoEditModal({
 function PillRow({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-[45px] items-center gap-[8px] rounded-[12px] border border-white/20 bg-white/55 px-[16px] backdrop-blur-[5px]">
+      {children}
+    </div>
+  );
+}
+
+/** 라벨이 위에 작게, 입력기가 아래에 오는 2-line row.
+ *  생년월일/생시처럼 입력기가 가로로 길어 PillRow 안에 안 들어가는
+ *  케이스 전용. 같은 wash + border + padding 으로 PillRow 와 시각
+ *  통일감 유지. */
+function StackedRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-[6px] rounded-[12px] border border-white/20 bg-white/55 px-[16px] py-[10px] backdrop-blur-[5px]">
+      <span className="text-[12px] font-medium text-black/65">{label}</span>
       {children}
     </div>
   );
