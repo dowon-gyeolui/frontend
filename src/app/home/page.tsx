@@ -24,6 +24,15 @@ type DailyMatchPack = {
   slots: DailyMatchSlot[];
 };
 
+type TodayFortune = {
+  fortune_text: string;
+  today_pillar: string;
+  today_pillar_hanja: string;
+  relation: string;
+  element_today: string;
+  score: number;
+};
+
 type Me = {
   id: number;
   nickname: string | null;
@@ -68,6 +77,7 @@ export default function HomePage() {
   const [me, setMe] = useState<Me | null>(null);
   const [pack, setPack] = useState<DailyMatchPack | null>(null);
   const [saju, setSaju] = useState<SajuResponseLite | null>(null);
+  const [fortune, setFortune] = useState<TodayFortune | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeMatch, setActiveMatch] = useState<MatchCandidate | null>(null);
   // When set, the payment modal is shown over the home grid. The reason
@@ -113,6 +123,15 @@ export default function HomePage() {
       CACHE_TTL.saju,
       setSaju,
       { onError: () => setSaju(null) },
+    );
+    // 오늘의 인연운 — KST 일진 기반. 매일 자정에 결과가 바뀌므로
+    // 짧은 캐시 (5분 정도면 같은 세션 안에선 안정적이고, 자정 넘기면
+    // 자연스럽게 새 값으로 갱신됨).
+    fetchWithCache<TodayFortune>(
+      "/saju/me/today-fortune",
+      CACHE_TTL.short,
+      setFortune,
+      { onError: () => setFortune(null) },
     );
   }, [me]);
 
@@ -160,12 +179,34 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* 오늘의 인연운 */}
+        {/* 오늘의 인연운 — 백엔드 /saju/me/today-fortune 응답.
+            KST 일진(日辰)이 매일 바뀌므로 결과 문구도 매일 갱신됨.
+            응답 도착 전엔 프로필 미완성 사용자엔 기본 문구. */}
         <section className="mt-[20px] rounded-[18px] border border-white/20 bg-white/10 p-[16px] backdrop-blur-sm">
-          <h2 className="text-center text-[20px] font-bold text-white">오늘의 인연운</h2>
-          <p className="mt-[12px] whitespace-pre-line text-center text-[14px] text-[#d8c8f2]">
-            {`"${nickname}님은 오늘 운명의 상대를 만날 확률이 높아요!\n맘에 두고 있는 사람이 있다면 표현해볼까요?"`}
+          <div className="flex items-center justify-center gap-[8px]">
+            <h2 className="text-center text-[20px] font-bold text-white">
+              오늘의 인연운
+            </h2>
+            {fortune && (
+              <span className="rounded-full bg-white/15 px-[8px] py-[2px] text-[10px] font-medium text-[#fde047]">
+                오늘 일주 {fortune.today_pillar}
+              </span>
+            )}
+          </div>
+          <p className="mt-[12px] whitespace-pre-line text-center text-[14px] leading-[22px] text-[#d8c8f2]">
+            {fortune
+              ? fortune.fortune_text
+              : me?.birth_date
+                ? `"${nickname}님의 오늘 인연운을 풀고 있어요..."`
+                : `"${nickname}님, 생년월일을 입력하면 매일 오늘의 인연운을 받을 수 있어요!"`}
           </p>
+          {fortune && (
+            <p className="mt-[8px] text-center text-[11px] text-white/55">
+              {"★".repeat(fortune.score)}
+              {"☆".repeat(5 - fortune.score)}
+              <span className="ml-[6px]">{fortune.relation}</span>
+            </p>
+          )}
         </section>
 
         {/* 얼굴 사진 미등록 시 게이트 배너 — 매칭 카드 자체를 가리고
