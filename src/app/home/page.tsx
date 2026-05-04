@@ -12,10 +12,17 @@ import {
 import { type MatchCandidate } from "@/components/matching/match-card";
 import { MatchInfoModal } from "@/components/matching/match-info-modal";
 import { PaymentModal } from "@/components/payment/payment-modal";
+import { InfoBadge } from "@/components/saju/info-badge";
 import { apiFetch } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
 import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
 import { profileCompletionPct } from "@/lib/profile-completion";
+import {
+  BADGE_GLOSSARY,
+  ELEMENT_GLOSSARY,
+  TEN_GOD_GLOSSARY,
+  TODAY_PILLAR_GLOSSARY,
+} from "@/lib/saju-glossary-data";
 
 type DailyMatchPack = {
   assigned_at: string;
@@ -181,9 +188,13 @@ export default function HomePage() {
               오늘의 인연운
             </h2>
             {fortune && (
-              <span className="rounded-full bg-white/15 px-[8px] py-[2px] text-[10px] font-medium text-[#fde047]">
-                오늘 일주 {fortune.today_pillar}
-              </span>
+              <InfoBadge
+                label={`오늘 일주 ${fortune.today_pillar}`}
+                entry={
+                  ELEMENT_GLOSSARY[fortune.element_today] ?? TODAY_PILLAR_GLOSSARY
+                }
+                variant="yellow"
+              />
             )}
           </div>
           <p className="mt-[12px] whitespace-pre-line text-center text-[14px] leading-[22px] text-[#d8c8f2]">
@@ -199,21 +210,38 @@ export default function HomePage() {
           </p>
           {fortune && (
             <>
-              <p className="mt-[8px] text-center text-[11px] text-white/55">
-                {"★".repeat(fortune.score)}
-                {"☆".repeat(5 - fortune.score)}
-                <span className="ml-[6px]">{fortune.relation}</span>
-              </p>
+              <div className="mt-[8px] flex items-center justify-center gap-[6px] text-[11px] text-white/55">
+                <span>
+                  {"★".repeat(fortune.score)}
+                  {"☆".repeat(5 - fortune.score)}
+                </span>
+                {TEN_GOD_GLOSSARY[fortune.relation] && (
+                  <InfoBadge
+                    label={fortune.relation}
+                    entry={TEN_GOD_GLOSSARY[fortune.relation]}
+                    variant="muted"
+                  />
+                )}
+              </div>
               {fortune.badges.length > 0 && (
                 <div className="mt-[8px] flex flex-wrap justify-center gap-[6px]">
-                  {fortune.badges.map((b) => (
-                    <span
-                      key={b}
-                      className="rounded-full bg-[#fde047]/15 px-[8px] py-[2px] text-[10px] font-semibold text-[#fde047]"
-                    >
-                      {b}
-                    </span>
-                  ))}
+                  {fortune.badges.map((b) =>
+                    BADGE_GLOSSARY[b] ? (
+                      <InfoBadge
+                        key={b}
+                        label={b}
+                        entry={BADGE_GLOSSARY[b]}
+                        variant="yellow"
+                      />
+                    ) : (
+                      <span
+                        key={b}
+                        className="rounded-full bg-[#fde047]/15 px-[8px] py-[2px] text-[10px] font-semibold text-[#fde047]"
+                      >
+                        {b}
+                      </span>
+                    ),
+                  )}
                 </div>
               )}
             </>
