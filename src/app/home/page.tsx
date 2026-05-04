@@ -78,6 +78,10 @@ export default function HomePage() {
   const [pack, setPack] = useState<DailyMatchPack | null>(null);
   const [saju, setSaju] = useState<SajuResponseLite | null>(null);
   const [fortune, setFortune] = useState<TodayFortune | null>(null);
+  // fortune fetch 가 실패한 적 있는지 — null 만으론 "로딩 중" 과
+  // "실패" 를 구분 못 해서 사용자가 영원히 placeholder 만 보게 됨.
+  // 한번이라도 실패하면 fallback 문구로 전환.
+  const [fortuneFailed, setFortuneFailed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeMatch, setActiveMatch] = useState<MatchCandidate | null>(null);
   // When set, the payment modal is shown over the home grid. The reason
@@ -131,7 +135,13 @@ export default function HomePage() {
       "/saju/me/today-fortune",
       CACHE_TTL.short,
       setFortune,
-      { onError: () => setFortune(null) },
+      {
+        onError: () => {
+          // 백엔드 미배포 / 일시 장애 시 placeholder 가 영원히 노출
+          // 되지 않도록 실패 플래그 세팅 → 정적 fallback 문구 표시.
+          setFortuneFailed(true);
+        },
+      },
     );
   }, [me]);
 
@@ -196,9 +206,13 @@ export default function HomePage() {
           <p className="mt-[12px] whitespace-pre-line text-center text-[14px] leading-[22px] text-[#d8c8f2]">
             {fortune
               ? fortune.fortune_text
-              : me?.birth_date
-                ? `"${nickname}님의 오늘 인연운을 풀고 있어요..."`
-                : `"${nickname}님, 생년월일을 입력하면 매일 오늘의 인연운을 받을 수 있어요!"`}
+              : !me?.birth_date
+                ? `"${nickname}님, 생년월일을 입력하면 매일 오늘의 인연운을 받을 수 있어요!"`
+                : fortuneFailed
+                  // API 실패 시: 옛 정적 문구로 fallback. 사용자에겐 빈
+                  // 화면보다 자연스러움. 백엔드 복구되면 자동 dynamic 으로.
+                  ? `"${nickname}님은 오늘 운명의 상대를 만날 확률이 높아요!\n맘에 두고 있는 사람이 있다면 표현해볼까요?"`
+                  : `"${nickname}님의 오늘 인연운을 풀고 있어요..."`}
           </p>
           {fortune && (
             <p className="mt-[8px] text-center text-[11px] text-white/55">
