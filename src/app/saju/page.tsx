@@ -82,7 +82,10 @@ export default function SajuPage() {
 
         {saju && (
           <div className="space-y-[20px] pt-[14px]">
-            {/* 오행 밸런스 펜타곤 */}
+            {/* 나의 사주 풀이 — 상단으로 (LLM 해석이 먼저 보이도록) */}
+            <NarrativeSections data={saju} />
+
+            {/* 나의 사주 구성 — 펜타곤 + 종합 해석 + 명식 (구조적 정보는 하단으로) */}
             <section className="relative rounded-[18px] border border-white/15 bg-white/5 p-[16px] backdrop-blur-sm">
               <div className="flex items-center justify-between">
                 <h2 className="text-[16px] font-bold text-white">
@@ -130,31 +133,8 @@ export default function SajuPage() {
               />
             </section>
 
-            {/* 4 narrative sections — inlined from /saju/me/detailed */}
-            <NarrativeSections data={saju} />
-
             {/* 자미두수 풀이 — 카드 자체는 CTA. 본문은 /jamidusu 안에서 결제 후에만 노출 */}
             <JamidusuCta onOpen={() => router.push("/jamidusu")} />
-
-            {/* Birth input echo */}
-            <section className="rounded-[12px] border border-white/10 bg-white/5 p-[12px] text-[12px] text-white/60">
-              <p>
-                계산 입력값:{" "}
-                <span className="text-white/80">
-                  {saju.input_summary.birth_date}
-                  {saju.input_summary.birth_time
-                    ? ` ${saju.input_summary.birth_time}`
-                    : " (시간 모름)"}
-                  {" / "}
-                  {saju.input_summary.calendar_type === "solar" ? "양력" : "음력"}
-                  {saju.input_summary.is_leap_month ? " (윤달)" : ""}
-                </span>
-              </p>
-              <p className="mt-1 text-white/40">
-                ※ 60갑자 정식 엔진 — 입춘 기준 년주, 24절기 기반 월주,
-                기준일 일주, 五鼠遁 시주. 음력 입력은 양력으로 자동 변환.
-              </p>
-            </section>
 
             {/* Plain-Korean glossary so the user can decode every term above */}
             <SajuGlossary />
