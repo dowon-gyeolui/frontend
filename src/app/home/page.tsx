@@ -16,7 +16,6 @@ import { apiFetch } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
 import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
 import { profileCompletionPct } from "@/lib/profile-completion";
-import { type ElementProfile } from "@/lib/saju";
 
 type DailyMatchPack = {
   assigned_at: string;
@@ -40,8 +39,7 @@ type TodayFortune = {
   badges: string[];
 };
 
-type ActionGuideTip = { label: string; value: string };
-type ActionGuide = { headline: string; tips: ActionGuideTip[] };
+type ActionGuide = { text: string };
 
 type Me = {
   id: number;
@@ -58,35 +56,10 @@ type Me = {
   region: string | null;
 };
 
-type SajuResponseLite = {
-  element_profile: ElementProfile;
-};
-
-// Action tips are derived from the user's dominant element when available.
-// Once the backend exposes per-day recommendations they'll come from
-// /recommendations/today; for now we render only what we can defend.
-function tipsForElement(dominant: string | null): string[] | null {
-  switch (dominant) {
-    case "wood":
-      return ["산책이나 자연 속 대화가 첫인상 상승에 유리", "오전 시간대 만남 추천", "초록색 액세서리로 포인트"];
-    case "fire":
-      return ["밝은 색 옷이 첫인상 상승에 유리", "저녁 시간대 대화 시작 추천", "직설적인 표현보다 돌려 말하는 게 좋음"];
-    case "earth":
-      return ["편안한 카페에서의 대화가 좋음", "오후 시간대 만남 추천", "황토색·베이지 톤 의상이 유리"];
-    case "metal":
-      return ["깔끔한 정장 스타일이 첫인상에 유리", "낮 시간대 짧고 명료한 대화 추천", "흰색·은색 포인트 추천"];
-    case "water":
-      return ["조용한 곳에서 깊은 대화가 좋음", "밤 시간대 진솔한 대화 추천", "남색·검은색 톤 의상이 유리"];
-    default:
-      return null;
-  }
-}
-
 export default function HomePage() {
   const router = useRouter();
   const [me, setMe] = useState<Me | null>(null);
   const [pack, setPack] = useState<DailyMatchPack | null>(null);
-  const [saju, setSaju] = useState<SajuResponseLite | null>(null);
   const [fortune, setFortune] = useState<TodayFortune | null>(null);
   const [guide, setGuide] = useState<ActionGuide | null>(null);
   // fortune fetch 가 실패한 적 있는지 — null 만으론 "로딩 중" 과
@@ -132,12 +105,6 @@ export default function HomePage() {
       CACHE_TTL.matches,
       setPack,
       { onError: () => setPack({ assigned_at: new Date().toISOString(), next_cycle_at: new Date().toISOString(), slots: [] }) },
-    );
-    fetchWithCache<SajuResponseLite>(
-      "/saju/me",
-      CACHE_TTL.saju,
-      setSaju,
-      { onError: () => setSaju(null) },
     );
     // 오늘의 인연운 — KST 일진 기반. 매일 자정에 결과가 바뀌므로
     // 짧은 캐시 (5분 정도면 같은 세션 안에선 안정적이고, 자정 넘기면
@@ -249,35 +216,6 @@ export default function HomePage() {
                   ))}
                 </div>
               )}
-              {/* 세부 항목 — 만나는 사람/시간대/장소/주의/컬러 */}
-              <div className="mt-[12px] grid grid-cols-2 gap-[8px] text-[12px] text-white/85">
-                {fortune.person_type && (
-                  <FortuneCell label="만나는 사람" value={fortune.person_type} />
-                )}
-                {fortune.timing && (
-                  <FortuneCell label="좋은 시간대" value={fortune.timing} />
-                )}
-                {fortune.place && (
-                  <FortuneCell
-                    label="좋은 장소"
-                    value={fortune.place}
-                    full
-                  />
-                )}
-                {fortune.lucky_color && (
-                  <FortuneCell
-                    label="오늘의 컬러"
-                    value={fortune.lucky_color}
-                  />
-                )}
-                {fortune.caution && (
-                  <FortuneCell
-                    label="주의할 점"
-                    value={fortune.caution}
-                    full
-                  />
-                )}
-              </div>
             </>
           )}
         </section>
@@ -352,28 +290,9 @@ export default function HomePage() {
               행동 가이드
             </h2>
             {guide ? (
-              <div className="mt-[14px] space-y-[8px]">
-                {guide.headline && (
-                  <p className="text-center text-[13px] leading-[20px] text-white/80">
-                    {guide.headline}
-                  </p>
-                )}
-                <div className="grid grid-cols-2 gap-[8px]">
-                  {guide.tips.map((tip) => (
-                    <div
-                      key={tip.label}
-                      className="rounded-[12px] border border-white/15 bg-white/5 p-[10px] backdrop-blur-sm"
-                    >
-                      <p className="text-[10px] font-medium text-[#fde047]">
-                        {tip.label}
-                      </p>
-                      <p className="mt-[4px] text-[12px] leading-[18px] text-white/85">
-                        {tip.value}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <p className="mt-[14px] whitespace-pre-line text-center text-[14px] leading-[24px] text-[#d8c8f2]">
+                {guide.text}
+              </p>
             ) : (
               <div className="mt-[14px] flex flex-col items-center gap-[10px]">
                 <div className="size-7 animate-spin rounded-full border-[3px] border-white/20 border-t-white" />
@@ -454,26 +373,3 @@ export default function HomePage() {
   );
 }
 
-/** 인연운 세부 항목 한 칸 — 라벨(작게) + 값. full=true 면 2칸 차지. */
-function FortuneCell({
-  label,
-  value,
-  full = false,
-}: {
-  label: string;
-  value: string;
-  full?: boolean;
-}) {
-  return (
-    <div
-      className={`rounded-[10px] border border-white/10 bg-white/5 p-[8px] ${
-        full ? "col-span-2" : ""
-      }`}
-    >
-      <p className="text-[10px] font-medium text-[#fde047]/85">{label}</p>
-      <p className="mt-[2px] text-[12px] leading-[16px] text-white/85">
-        {value}
-      </p>
-    </div>
-  );
-}
