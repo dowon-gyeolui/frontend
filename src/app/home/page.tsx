@@ -16,7 +16,7 @@ import { apiFetch } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
 import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
 import { profileCompletionPct } from "@/lib/profile-completion";
-import { dominantElement, type ElementProfile } from "@/lib/saju";
+import { type ElementProfile } from "@/lib/saju";
 
 type DailyMatchPack = {
   assigned_at: string;
@@ -31,7 +31,17 @@ type TodayFortune = {
   relation: string;
   element_today: string;
   score: number;
+  headline: string;
+  person_type: string;
+  timing: string;
+  place: string;
+  caution: string;
+  lucky_color: string;
+  badges: string[];
 };
+
+type ActionGuideTip = { label: string; value: string };
+type ActionGuide = { headline: string; tips: ActionGuideTip[] };
 
 type Me = {
   id: number;
@@ -78,6 +88,7 @@ export default function HomePage() {
   const [pack, setPack] = useState<DailyMatchPack | null>(null);
   const [saju, setSaju] = useState<SajuResponseLite | null>(null);
   const [fortune, setFortune] = useState<TodayFortune | null>(null);
+  const [guide, setGuide] = useState<ActionGuide | null>(null);
   // fortune fetch 가 실패한 적 있는지 — null 만으론 "로딩 중" 과
   // "실패" 를 구분 못 해서 사용자가 영원히 placeholder 만 보게 됨.
   // 한번이라도 실패하면 fallback 문구로 전환.
@@ -143,12 +154,17 @@ export default function HomePage() {
         },
       },
     );
+    // 행동 가이드 — 사주 기반 동적 추천 (색상/시간대/장소/의상 등).
+    fetchWithCache<ActionGuide>(
+      "/saju/me/action-guide",
+      CACHE_TTL.short,
+      setGuide,
+      { onError: () => setGuide(null) },
+    );
   }, [me]);
 
-  // Action tips depend on the user's dominant element. Hidden until saju
-  // arrives so we never show stale generic copy.
-  const tips =
-    saju !== null ? tipsForElement(dominantElement(saju.element_profile)) : null;
+  // 행동 가이드는 백엔드 /saju/me/action-guide 응답을 그대로 사용.
+  // 이전 tipsForElement(...) 정적 룩업은 더 이상 필요 없음.
 
   const completion = profileCompletionPct(me);
 
@@ -215,11 +231,54 @@ export default function HomePage() {
                   : `"${nickname}님의 오늘 인연운을 풀고 있어요..."`}
           </p>
           {fortune && (
-            <p className="mt-[8px] text-center text-[11px] text-white/55">
-              {"★".repeat(fortune.score)}
-              {"☆".repeat(5 - fortune.score)}
-              <span className="ml-[6px]">{fortune.relation}</span>
-            </p>
+            <>
+              <p className="mt-[8px] text-center text-[11px] text-white/55">
+                {"★".repeat(fortune.score)}
+                {"☆".repeat(5 - fortune.score)}
+                <span className="ml-[6px]">{fortune.relation}</span>
+              </p>
+              {fortune.badges.length > 0 && (
+                <div className="mt-[8px] flex flex-wrap justify-center gap-[6px]">
+                  {fortune.badges.map((b) => (
+                    <span
+                      key={b}
+                      className="rounded-full bg-[#fde047]/15 px-[8px] py-[2px] text-[10px] font-semibold text-[#fde047]"
+                    >
+                      {b}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {/* 세부 항목 — 만나는 사람/시간대/장소/주의/컬러 */}
+              <div className="mt-[12px] grid grid-cols-2 gap-[8px] text-[12px] text-white/85">
+                {fortune.person_type && (
+                  <FortuneCell label="만나는 사람" value={fortune.person_type} />
+                )}
+                {fortune.timing && (
+                  <FortuneCell label="좋은 시간대" value={fortune.timing} />
+                )}
+                {fortune.place && (
+                  <FortuneCell
+                    label="좋은 장소"
+                    value={fortune.place}
+                    full
+                  />
+                )}
+                {fortune.lucky_color && (
+                  <FortuneCell
+                    label="오늘의 컬러"
+                    value={fortune.lucky_color}
+                  />
+                )}
+                {fortune.caution && (
+                  <FortuneCell
+                    label="주의할 점"
+                    value={fortune.caution}
+                    full
+                  />
+                )}
+              </div>
+            </>
           )}
         </section>
 
@@ -285,31 +344,43 @@ export default function HomePage() {
           )}
         </section>
 
-        {/* 행동 가이드 — saju 호출이 5~10초 걸리니까 로딩 상태도 보여준다. */}
+        {/* 행동 가이드 — 백엔드 /saju/me/action-guide 응답.
+            사용자 사주(일주 + 오행) + 오늘 일진을 종합해 항목별 추천. */}
         {me?.birth_date && (
           <section className="mt-[40px]">
             <h2 className="text-center text-[20px] font-bold text-white">
               행동 가이드
             </h2>
-            {tips ? (
-              <div className="mt-[14px] flex flex-col items-center gap-[6px] text-center text-[14px] text-white">
-                {tips.map((tip) => (
-                  <p key={tip} className="leading-[25px]">{`"${tip}"`}</p>
-                ))}
+            {guide ? (
+              <div className="mt-[14px] space-y-[8px]">
+                {guide.headline && (
+                  <p className="text-center text-[13px] leading-[20px] text-white/80">
+                    {guide.headline}
+                  </p>
+                )}
+                <div className="grid grid-cols-2 gap-[8px]">
+                  {guide.tips.map((tip) => (
+                    <div
+                      key={tip.label}
+                      className="rounded-[12px] border border-white/15 bg-white/5 p-[10px] backdrop-blur-sm"
+                    >
+                      <p className="text-[10px] font-medium text-[#fde047]">
+                        {tip.label}
+                      </p>
+                      <p className="mt-[4px] text-[12px] leading-[18px] text-white/85">
+                        {tip.value}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ) : saju === null ? (
+            ) : (
               <div className="mt-[14px] flex flex-col items-center gap-[10px]">
                 <div className="size-7 animate-spin rounded-full border-[3px] border-white/20 border-t-white" />
                 <p className="text-[12px] leading-[18px] text-white/60">
-                  사주를 풀어 오늘의 행동 가이드를 찾고 있어요...
-                  <br />
-                  잠시만 기다려주세요.
+                  사주를 풀어 오늘의 행동 가이드를 찾고 있어...
                 </p>
               </div>
-            ) : (
-              <p className="mt-[14px] text-center text-[12px] text-white/55">
-                오늘은 추천드릴 가이드가 없어요.
-              </p>
             )}
           </section>
         )}
@@ -380,5 +451,29 @@ export default function HomePage() {
         </div>
       )}
     </AppShell>
+  );
+}
+
+/** 인연운 세부 항목 한 칸 — 라벨(작게) + 값. full=true 면 2칸 차지. */
+function FortuneCell({
+  label,
+  value,
+  full = false,
+}: {
+  label: string;
+  value: string;
+  full?: boolean;
+}) {
+  return (
+    <div
+      className={`rounded-[10px] border border-white/10 bg-white/5 p-[8px] ${
+        full ? "col-span-2" : ""
+      }`}
+    >
+      <p className="text-[10px] font-medium text-[#fde047]/85">{label}</p>
+      <p className="mt-[2px] text-[12px] leading-[16px] text-white/85">
+        {value}
+      </p>
+    </div>
   );
 }
