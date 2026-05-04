@@ -36,7 +36,7 @@ export function CompatibilityReportDrawer({
   onClose: () => void;
   /** "운명의 실타래" 버튼 — 자미두수 페이지로. */
   onOpenSaju: () => void;
-  /** "두 분만을 위한 최적의 데이트" 버튼 — 데이트 추천 페이지로. */
+  /** "두 분만을 위한 최적의 데이트 코스" 버튼 — 데이트 추천 페이지로. */
   onOpenDateSpots: () => void;
   onLeaveRoom: () => void;
   onReport: () => void;
@@ -161,7 +161,7 @@ export function CompatibilityReportDrawer({
                   onClick={onOpenSaju}
                 />
                 <CtaCard
-                  title="두 분만을 위한 최적의 데이트 확인"
+                  title="두 분만을 위한 최적의 데이트 코스"
                   height={104}
                   onClick={onOpenDateSpots}
                 />

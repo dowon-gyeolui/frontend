@@ -23,6 +23,7 @@ type DateRecommendation = {
 };
 
 type Me = { id: number; is_paid: boolean };
+type PeerProfile = { id: number; nickname: string | null };
 
 /**
  * /date-spots/[id] — 운명 분석 리포트의 "두 분만을 위한 최적의 데이트 확인"
@@ -36,6 +37,7 @@ export default function DateSpotsPage() {
   const params = useParams<{ id: string }>();
   const peerId = Number(params.id);
   const [me, setMe] = useState<Me | null>(null);
+  const [peer, setPeer] = useState<PeerProfile | null>(null);
   const [data, setData] = useState<DateRecommendation | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -49,6 +51,14 @@ export default function DateSpotsPage() {
       .then(setMe)
       .catch(() => {});
   }, [router]);
+
+  // Fast call — partner의 닉네임은 LLM 결과(5~10초) 와 무관하게 즉시 표시.
+  useEffect(() => {
+    if (!Number.isFinite(peerId)) return;
+    apiFetch<PeerProfile>(`/users/${peerId}/public-profile`)
+      .then(setPeer)
+      .catch(() => {});
+  }, [peerId]);
 
   useEffect(() => {
     if (!me || !me.is_paid) return;
@@ -75,7 +85,7 @@ export default function DateSpotsPage() {
             <ArrowLeft className="size-[24px] stroke-white stroke-[2]" />
           </button>
           <h1 className="text-center text-[20px] font-bold text-white">
-            데이트 장소 추천
+            두 분만을 위한 최적의 데이트 코스
           </h1>
           <div className="mt-[10px] h-px bg-white/30" />
         </div>
@@ -83,7 +93,7 @@ export default function DateSpotsPage() {
         {!me?.is_paid ? (
           <Paywall onUpgrade={() => setPaymentOpen(true)} />
         ) : (
-          <PaidView data={data} error={error} />
+          <PaidView data={data} error={error} peer={peer} />
         )}
       </div>
 
@@ -105,10 +115,15 @@ export default function DateSpotsPage() {
 function PaidView({
   data,
   error,
+  peer,
 }: {
   data: DateRecommendation | null;
   error: string | null;
+  peer: { id: number; nickname: string | null } | null;
 }) {
+  // peer.nickname (fast endpoint) 가 먼저 도착, data.nickname_b (LLM)
+  // 가 나중에 도착. 둘 중 먼저 들어오는 값을 사용해 로딩 중에도 이름 표시.
+  const peerName = data?.nickname_b ?? peer?.nickname ?? "상대";
   return (
     <>
       <section className="mt-[24px] rounded-[18px] border border-pink-300/30 bg-gradient-to-br from-pink-700/30 via-purple-700/30 to-purple-900/40 p-[20px] backdrop-blur-sm">
@@ -118,7 +133,7 @@ function PaidView({
           </div>
         </div>
         <h2 className="mt-[14px] text-center text-[22px] font-bold text-white">
-          {data?.nickname_b ?? "상대"} 님과의 데이트
+          {peerName}님과의 데이트
         </h2>
         <p className="mt-[8px] text-center text-[12px] text-white/70">
           사주 궁합 {data?.score ?? "—"}점 · 두 분의 기운에 어울리는 데이트 장소를
@@ -208,12 +223,12 @@ function Paywall({ onUpgrade }: { onUpgrade: () => void }) {
           </div>
         </div>
         <h2 className="mt-[14px] text-[20px] font-bold text-white">
-          두 분만을 위한 최적의 데이트
+          두 분만을 위한 최적의 데이트 코스
         </h2>
         <p className="mt-[10px] text-[13px] leading-[20px] text-white/80">
           두 분의 사주·MBTI 를 분석해
           <br />
-          어울리는 데이트 장소 4~5곳을 추천해드려요.
+          어울리는 데이트 코스 4~5곳을 추천해드려요.
         </p>
       </section>
 

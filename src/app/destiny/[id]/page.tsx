@@ -34,6 +34,7 @@ type DestinyAnalysis = {
 };
 
 type Me = { id: number; is_paid: boolean; nickname: string | null };
+type PeerProfile = { id: number; nickname: string | null };
 
 /**
  * /destiny/[id] — "운명의 실타래 더 깊이 알아보기" CTA 의 도착지.
@@ -47,6 +48,7 @@ export default function DestinyPage() {
   const params = useParams<{ id: string }>();
   const peerId = Number(params.id);
   const [me, setMe] = useState<Me | null>(null);
+  const [peer, setPeer] = useState<PeerProfile | null>(null);
   const [data, setData] = useState<DestinyAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -60,6 +62,14 @@ export default function DestinyPage() {
       .then(setMe)
       .catch(() => {});
   }, [router]);
+
+  // Fast call — partner의 닉네임을 LLM 결과(5~10초) 와 무관하게 즉시 표시.
+  useEffect(() => {
+    if (!Number.isFinite(peerId)) return;
+    apiFetch<PeerProfile>(`/users/${peerId}/public-profile`)
+      .then(setPeer)
+      .catch(() => {});
+  }, [peerId]);
 
   useEffect(() => {
     if (!me || !me.is_paid) return;
@@ -94,7 +104,12 @@ export default function DestinyPage() {
         {!me?.is_paid ? (
           <Paywall onUpgrade={() => setPaymentOpen(true)} />
         ) : (
-          <PaidView data={data} error={error} myNickname={me?.nickname ?? null} />
+          <PaidView
+            data={data}
+            error={error}
+            myNickname={me?.nickname ?? null}
+            peer={peer}
+          />
         )}
       </div>
 
@@ -116,11 +131,16 @@ function PaidView({
   data,
   error,
   myNickname,
+  peer,
 }: {
   data: DestinyAnalysis | null;
   error: string | null;
   myNickname: string | null;
+  peer: { id: number; nickname: string | null } | null;
 }) {
+  // peer (fast endpoint) 가 LLM 결과(5~10초) 보다 먼저 도착하므로
+  // 로딩 중에도 실제 닉네임이 표시됨. 둘 다 없으면 "상대" 로 폴백.
+  const peerName = data?.nickname_b ?? peer?.nickname ?? "상대";
   return (
     <>
       {/* Hero */}
@@ -131,7 +151,7 @@ function PaidView({
           </div>
         </div>
         <h2 className="mt-[14px] text-center text-[20px] font-bold tracking-tight text-white">
-          {myNickname ?? "나"} ↔ {data?.nickname_b ?? "상대"}
+          {myNickname ?? "나"} ↔ {peerName}
         </h2>
         <p className="mt-[6px] text-center text-[12px] text-white/65">
           사주 궁합 점수{" "}
