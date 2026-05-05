@@ -198,7 +198,7 @@ export default function HomePage() {
               />
             )}
           </div>
-          <p className="mt-[12px] whitespace-pre-line text-center text-[14px] leading-[22px] text-[#d8c8f2]">
+          <p className="mt-[12px] whitespace-pre-line text-center text-[14px] leading-[22px] text-[#d8c8f2] text-ko">
             {fortune
               ? fortune.fortune_text
               : !me?.birth_date
@@ -319,7 +319,7 @@ export default function HomePage() {
               행동 가이드
             </h2>
             {guide ? (
-              <p className="mt-[14px] whitespace-pre-line text-center text-[14px] leading-[24px] text-[#d8c8f2]">
+              <p className="mt-[14px] whitespace-pre-line text-center text-[14px] leading-[24px] text-[#d8c8f2] text-ko">
                 {guide.text}
               </p>
             ) : (

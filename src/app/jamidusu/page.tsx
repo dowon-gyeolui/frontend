@@ -179,7 +179,7 @@ function PaidView({ nickname }: { nickname: string | null }) {
           {/* Headline */}
           {data.headline && (
             <section className="mt-[20px] rounded-[14px] border border-yellow-300/30 bg-gradient-to-br from-yellow-300/10 to-pink-400/10 p-[16px]">
-              <p className="text-center text-[15px] font-bold leading-[22px] text-white">
+              <p className="text-center text-[15px] font-bold leading-[22px] text-white text-ko">
                 “{data.headline}”
               </p>
             </section>
@@ -192,7 +192,7 @@ function PaidView({ nickname }: { nickname: string | null }) {
                 <Sparkles className="size-[14px] fill-yellow-300 stroke-yellow-300" />
                 종합 풀이
               </h3>
-              <p className="mt-[8px] whitespace-pre-line text-[13px] leading-[22px] text-white/85">
+              <p className="mt-[8px] whitespace-pre-line text-[13px] leading-[22px] text-white/85 text-ko">
                 {data.overview}
               </p>
             </section>
@@ -256,7 +256,7 @@ function PaidView({ nickname }: { nickname: string | null }) {
                 <StarIcon className="size-[14px] fill-yellow-300 stroke-yellow-300" />
                 14주성 종합
               </h3>
-              <p className="mt-[8px] whitespace-pre-line text-[13px] leading-[22px] text-white/85">
+              <p className="mt-[8px] whitespace-pre-line text-[13px] leading-[22px] text-white/85 text-ko">
                 {data.main_stars_summary}
               </p>
             </section>
@@ -334,7 +334,7 @@ function PalaceCard({ palace }: { palace: DeepPalace }) {
       )}
 
       {palace.description && (
-        <p className="mt-[10px] text-[12px] leading-[19px] text-white/80">
+        <p className="mt-[10px] text-[12px] leading-[19px] text-white/80 text-ko">
           {palace.description}
         </p>
       )}
@@ -366,7 +366,7 @@ function SectionCard({
         {icon}
         <h4 className="text-[14px] font-bold text-white">{title}</h4>
       </div>
-      <p className="mt-[8px] whitespace-pre-line text-[13px] leading-[20px] text-white/85">
+      <p className="mt-[8px] whitespace-pre-line text-[13px] leading-[20px] text-white/85 text-ko">
         {content}
       </p>
     </div>

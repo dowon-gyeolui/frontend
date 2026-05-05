@@ -90,7 +90,7 @@ export function BioEditModal({
         </div>
 
         {/* Tip */}
-        <p className="mt-[14px] whitespace-pre-line text-center text-[10px] leading-[14px] text-[#5a3a82]">
+        <p className="mt-[14px] whitespace-pre-line text-center text-[10px] leading-[14px] text-[#5a3a82] text-ko">
           {`Tip : "당신의 별자리 기운은 솔직함에서 시작됩니다.\n꾸밈없는 자기소개는 더 정확한 운명의 상대를 불러옵니다."`}
         </p>
 

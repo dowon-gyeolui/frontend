@@ -270,7 +270,7 @@ function Section({
         {icon}
         {title}
       </h3>
-      <p className="mt-[8px] whitespace-pre-line text-[13px] leading-[22px] text-white/85">
+      <p className="mt-[8px] whitespace-pre-line text-[13px] leading-[22px] text-white/85 text-ko">
         {body}
       </p>
     </div>

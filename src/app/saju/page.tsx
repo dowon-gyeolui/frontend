@@ -115,7 +115,7 @@ export default function SajuPage() {
               <h3 className="text-[14px] font-bold text-white">
                 오행 종합 해석 ✨
               </h3>
-              <div className="mt-[8px] space-y-[6px] text-[12px] leading-[20px] text-white/80">
+              <div className="mt-[8px] space-y-[6px] text-[12px] leading-[20px] text-white/80 text-ko">
                 <DominantSummary profile={saju.element_profile} />
                 {saju.interpretation && (
                   <p className="border-t border-white/10 pt-[6px]">
@@ -269,7 +269,7 @@ function NarrativeCard({
         {icon}
         <h3 className="text-[15px] font-bold text-white">{title}</h3>
       </div>
-      <p className="mt-[8px] text-[13px] leading-[20px] text-white/85">
+      <p className="mt-[8px] text-[13px] leading-[20px] text-white/85 text-ko">
         {has ? content : (
           <span className="text-white/40">
             이 항목에 대한 원전 구절을 찾지 못했어요.

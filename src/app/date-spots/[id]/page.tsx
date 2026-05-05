@@ -172,7 +172,7 @@ function PaidView({
                 <Sparkles className="size-[14px] fill-yellow-300 stroke-yellow-300" />
                 두 분의 데이트 스타일
               </h3>
-              <p className="mt-[8px] whitespace-pre-line text-[13px] leading-[22px] text-white/85">
+              <p className="mt-[8px] whitespace-pre-line text-[13px] leading-[22px] text-white/85 text-ko">
                 {data.overview}
               </p>
             </section>
@@ -195,7 +195,7 @@ function PaidView({
                     </div>
                     <p className="text-[15px] font-semibold text-white">{s.title}</p>
                   </div>
-                  <p className="mt-[8px] text-[12px] leading-[20px] text-white/75">
+                  <p className="mt-[8px] text-[12px] leading-[20px] text-white/75 text-ko">
                     {s.description}
                   </p>
                 </div>
