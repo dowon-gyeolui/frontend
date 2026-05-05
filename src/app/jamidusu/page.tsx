@@ -148,19 +148,20 @@ function PaidView({ nickname }: { nickname: string | null }) {
         )}
       </section>
 
-      {/* Loading */}
+      {/* Loading — depth-enhanced prompt 로 응답 더 길어져 14s 정도 추정 */}
       {!data && !error && (
         <LoadingPanel
           className="mt-[24px]"
           emoji="🔮"
-          estimatedMs={10000}
+          estimatedMs={14000}
           done={!!data}
           messages={[
             { atPct: 0, text: "12궁 명반(命盤) 계산 중..." },
-            { atPct: 20, text: "사주 일간을 자미두수 별과 매칭하고 있어요" },
-            { atPct: 45, text: "자미두수전서 원전 풀이 가져오는 중..." },
-            { atPct: 70, text: "당신만의 12궁 풀이를 작성하고 있어요" },
-            { atPct: 88, text: "마지막 다듬기 중... 거의 다 왔어요!" },
+            { atPct: 18, text: "사주 일간을 자미두수 별과 매칭하고 있어요" },
+            { atPct: 35, text: "자미두수전서 원전 구절 가져오는 중..." },
+            { atPct: 55, text: "별 의미와 사주 영향을 엮어 풀어내는 중..." },
+            { atPct: 78, text: "12궁 사이의 연결을 다듬는 중..." },
+            { atPct: 90, text: "마지막 정리 중... 거의 다 왔어요!" },
           ]}
         />
       )}
