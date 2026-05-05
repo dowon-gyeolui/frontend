@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
+import { LoadingPanel } from "@/components/ui/loading-panel";
 import { apiFetch } from "@/lib/api";
 import { useOnboarding } from "@/lib/onboarding-context";
 import {
@@ -108,20 +109,39 @@ export default function OnboardingDonePage() {
             <h1 className="text-center text-[24px] font-bold tracking-tight text-white">
               {state.nickname ?? ""} 님의 정보를 저장하고 있어요...
             </h1>
-            <div className="mt-[40px] size-10 animate-spin rounded-full border-4 border-white/20 border-t-white" />
+            <div className="mt-[40px] w-full">
+              <LoadingPanel
+                estimatedMs={2000}
+                done={false}
+                messages={[
+                  { atPct: 0, text: "프로필 저장 중..." },
+                  { atPct: 50, text: "데이터 검증 중..." },
+                  { atPct: 85, text: "거의 다 됐어요" },
+                ]}
+              />
+            </div>
           </>
         )}
 
         {status.kind === "analyzing" && (
           <>
-            <div className="text-[48px]">🔮</div>
             <h1 className="mt-[14px] text-center text-[22px] font-bold text-white">
               {state.nickname ?? ""} 님의 운명을 풀어보고 있어요
             </h1>
-            <p className="mt-[10px] text-center text-[13px] leading-[20px] text-white/70">
-              사주를 분석하는 중이에요. 5~10초 정도 걸려요.
-            </p>
-            <div className="mt-[28px] size-10 animate-spin rounded-full border-4 border-white/20 border-t-white" />
+            <div className="mt-[28px] w-full">
+              <LoadingPanel
+                emoji="🔮"
+                estimatedMs={9000}
+                done={false}
+                messages={[
+                  { atPct: 0, text: "사주 4기둥 세우는 중..." },
+                  { atPct: 25, text: "오행 분포 분석 중..." },
+                  { atPct: 50, text: "원전 구절 가져오는 중..." },
+                  { atPct: 75, text: "당신만의 풀이 작성 중..." },
+                  { atPct: 90, text: "마지막 다듬기 중... 거의 다 왔어요!" },
+                ]}
+              />
+            </div>
           </>
         )}
 

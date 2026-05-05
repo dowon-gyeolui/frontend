@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { PaymentModal } from "@/components/payment/payment-modal";
+import { LoadingPanel } from "@/components/ui/loading-panel";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
@@ -163,12 +164,19 @@ function PaidView({
       </section>
 
       {!data && !error && (
-        <section className="mt-[20px] rounded-[14px] border border-white/15 bg-white/5 p-[20px] text-center">
-          <div className="mx-auto size-8 animate-spin rounded-full border-4 border-white/20 border-t-white" />
-          <p className="mt-[10px] text-[12px] text-white/60">
-            두 분 사주를 비교 분석하고 있어요... 5~10초 소요
-          </p>
-        </section>
+        <LoadingPanel
+          className="mt-[20px]"
+          emoji="💞"
+          estimatedMs={9000}
+          done={!!data}
+          messages={[
+            { atPct: 0, text: "두 분의 사주를 비교 시작..." },
+            { atPct: 25, text: "일간·일지로 케미 점수를 매기는 중..." },
+            { atPct: 50, text: "잘 맞는 점·주의할 점 찾는 중..." },
+            { atPct: 75, text: "5섹션 풀이 작성 중..." },
+            { atPct: 90, text: "거의 다 됐어요!" },
+          ]}
+        />
       )}
 
       {error && (

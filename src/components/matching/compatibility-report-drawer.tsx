@@ -3,6 +3,7 @@
 import { ArrowRight, Lock, Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { LoadingPanel } from "@/components/ui/loading-panel";
 import { apiFetch } from "@/lib/api";
 
 export type CompatibilityReport = {
@@ -109,8 +110,17 @@ export function CompatibilityReportDrawer({
         {/* Body */}
         <div className="flex-1 overflow-y-auto px-[18px] py-[18px]">
           {loading && (
-            <div className="flex justify-center pt-10">
-              <div className="size-8 animate-spin rounded-full border-4 border-white/20 border-t-white" />
+            <div className="pt-8">
+              <LoadingPanel
+                estimatedMs={6000}
+                done={!loading}
+                messages={[
+                  { atPct: 0, text: "두 분의 사주 비교하는 중..." },
+                  { atPct: 35, text: "잘 맞는 점·주의할 점 찾는 중..." },
+                  { atPct: 65, text: "리포트 정리 중..." },
+                  { atPct: 88, text: "거의 다 됐어요!" },
+                ]}
+              />
             </div>
           )}
 

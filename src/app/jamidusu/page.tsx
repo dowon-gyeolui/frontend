@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
+import { LoadingPanel } from "@/components/ui/loading-panel";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
@@ -149,14 +150,19 @@ function PaidView({ nickname }: { nickname: string | null }) {
 
       {/* Loading */}
       {!data && !error && (
-        <section className="mt-[24px] rounded-[14px] border border-white/15 bg-white/5 p-[20px] text-center">
-          <div className="mx-auto size-8 animate-spin rounded-full border-4 border-white/20 border-t-white" />
-          <p className="mt-[10px] text-[12px] text-white/60">
-            12궁 명반(命盤) 계산 + 사주 일간 교차 풀이 중...
-            <br />
-            ~10초 정도 걸려요
-          </p>
-        </section>
+        <LoadingPanel
+          className="mt-[24px]"
+          emoji="🔮"
+          estimatedMs={10000}
+          done={!!data}
+          messages={[
+            { atPct: 0, text: "12궁 명반(命盤) 계산 중..." },
+            { atPct: 20, text: "사주 일간을 자미두수 별과 매칭하고 있어요" },
+            { atPct: 45, text: "자미두수전서 원전 풀이 가져오는 중..." },
+            { atPct: 70, text: "당신만의 12궁 풀이를 작성하고 있어요" },
+            { atPct: 88, text: "마지막 다듬기 중... 거의 다 왔어요!" },
+          ]}
+        />
       )}
 
       {/* Error */}

@@ -13,6 +13,7 @@ import { type MatchCandidate } from "@/components/matching/match-card";
 import { MatchInfoModal } from "@/components/matching/match-info-modal";
 import { PaymentModal } from "@/components/payment/payment-modal";
 import { InfoBadge } from "@/components/saju/info-badge";
+import { LoadingPanel } from "@/components/ui/loading-panel";
 import { apiFetch } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
 import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
@@ -322,11 +323,16 @@ export default function HomePage() {
                 {guide.text}
               </p>
             ) : (
-              <div className="mt-[14px] flex flex-col items-center gap-[10px]">
-                <div className="size-7 animate-spin rounded-full border-[3px] border-white/20 border-t-white" />
-                <p className="text-[12px] leading-[18px] text-white/60">
-                  사주를 풀어 오늘의 행동 가이드를 찾고 있어...
-                </p>
+              <div className="mt-[14px]">
+                <LoadingPanel
+                  estimatedMs={2500}
+                  done={!!guide}
+                  messages={[
+                    { atPct: 0, text: "오늘의 사주 일진 보는 중..." },
+                    { atPct: 40, text: "어울리는 옷·태도 고르는 중..." },
+                    { atPct: 75, text: "마음가짐 메시지 다듬는 중..." },
+                  ]}
+                />
               </div>
             )}
           </section>

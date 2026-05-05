@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { ZamiVerifiedBadge } from "@/components/brand/zami-verified-badge";
 import { AppShell } from "@/components/layout/app-shell";
 import { PaymentModal } from "@/components/payment/payment-modal";
+import { LoadingPanel } from "@/components/ui/loading-panel";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
@@ -116,9 +117,15 @@ export default function ProfileDetailPage() {
         </div>
 
         {!data && !error && (
-          <div className="mt-[80px] flex flex-col items-center gap-[10px]">
-            <div className="size-8 animate-spin rounded-full border-4 border-white/20 border-t-white" />
-            <p className="text-[12px] text-white/60">상세 정보를 불러오는 중...</p>
+          <div className="mt-[60px]">
+            <LoadingPanel
+              estimatedMs={1800}
+              done={!!data}
+              messages={[
+                { atPct: 0, text: "프로필 정보 불러오는 중..." },
+                { atPct: 60, text: "사진·MBTI·궁합 정렬 중..." },
+              ]}
+            />
           </div>
         )}
 

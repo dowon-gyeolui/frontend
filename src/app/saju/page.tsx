@@ -11,6 +11,7 @@ import {
   DayPillarHeadline,
   SajuMyeongsik,
 } from "@/components/saju/saju-myeongsik";
+import { LoadingPanel } from "@/components/ui/loading-panel";
 import { getToken } from "@/lib/auth";
 import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
 import {
@@ -69,14 +70,19 @@ export default function SajuPage() {
             /saju/me/detailed is LLM-backed (~5–10s cold call), so silent
             spinning made the page look frozen. */}
         {!saju && !error && (
-          <div className="flex flex-col items-center gap-[14px] pt-[80px]">
-            <div className="text-[40px]">🔮</div>
-            <div className="size-9 animate-spin rounded-full border-[3px] border-white/20 border-t-white" />
-            <p className="text-center text-[13px] leading-[20px] text-white/70">
-              사주를 풀어보고 있어요...
-              <br />
-              5~10초 정도 걸려요. 잠시만 기다려주세요.
-            </p>
+          <div className="pt-[60px]">
+            <LoadingPanel
+              emoji="🔮"
+              estimatedMs={8000}
+              done={!!saju}
+              messages={[
+                { atPct: 0, text: "사주 4기둥을 세우는 중..." },
+                { atPct: 25, text: "오행 분포를 분석하고 있어요" },
+                { atPct: 50, text: "원전 구절을 찾아보는 중..." },
+                { atPct: 75, text: "성격·연애·재물·조언 풀이 작성 중..." },
+                { atPct: 90, text: "마무리 정리 중..." },
+              ]}
+            />
           </div>
         )}
 
