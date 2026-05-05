@@ -102,10 +102,11 @@ function LockedTeaser({
   unlockAt: string;
 }) {
   const { hh, mm, ss } = splitDuration(remainingMs);
-  // unlockAt 은 항상 KST 정오 12:00 시각이라 사용자에겐 "X일 후 정오"
-  // 형태로 보여주는 게 가장 정확. M월 D일 12:00 형식.
+  // unlockAt 의 실제 KST 시각을 읽어서 라벨 동적 생성.
+  // 백엔드 anchor 정책이 정오(12:00) → 자정(00:00) 으로 바뀌었기 때문에
+  // "정오에 열려요" 하드코딩하지 않고 실제 hour 로 분기.
   const unlockDate = new Date(unlockAt);
-  const unlockLabel = formatKstNoon(unlockDate);
+  const { dateLabel, timeLabel } = formatKstUnlock(unlockDate);
   return (
     <article className="relative aspect-[150/245] overflow-hidden rounded-[18px] border border-white/15 bg-gradient-to-br from-[#1f1235]/90 via-[#2a1648]/90 to-[#3a1c5e]/90 shadow-[0px_10px_20px_0px_rgba(0,0,0,0.35)] backdrop-blur-sm">
       <div className="flex h-full flex-col items-center justify-center gap-[10px] px-[10px] text-center">
@@ -117,25 +118,48 @@ function LockedTeaser({
           {pad2(hh)}:{pad2(mm)}:{pad2(ss)}
         </p>
         <p className="text-[10px] leading-[14px] text-white/55">
-          {unlockLabel}
+          {dateLabel}
           <br />
-          정오에 열려요
+          {timeLabel}에 열려요
         </p>
       </div>
     </article>
   );
 }
 
-/** ISO 시각을 "M월 D일" 한국어 라벨로 변환 (KST 기준). */
-function formatKstNoon(date: Date): string {
-  // KST = UTC + 9. 브라우저 Intl 로 한국 표준시 변환.
-  const kst = new Intl.DateTimeFormat("ko-KR", {
+/**
+ * unlockAt → (날짜라벨, 시각라벨) KST 기준.
+ *
+ * 시각라벨 규칙:
+ *   - 0시  → "자정"
+ *   - 12시 → "정오"
+ *   - 그 외 → "오전 X시" / "오후 X시"
+ *
+ * 백엔드의 anchor 정책 (정오/자정/임의 시각) 가 바뀌어도 항상 사용자에게
+ * 올바른 라벨을 보여주기 위해 unlockAt 자체의 hour 를 읽어서 분기.
+ */
+function formatKstUnlock(date: Date): { dateLabel: string; timeLabel: string } {
+  const dateLabel = new Intl.DateTimeFormat("ko-KR", {
     timeZone: "Asia/Seoul",
     month: "long",
     day: "numeric",
-  }).format(date);
-  // 결과: "5월 4일" 같은 형태
-  return kst;
+  }).format(date); // "5월 8일"
+
+  // KST hour 추출 — Intl 의 hour12=false 로 0~23 가져옴.
+  const hourStr = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Seoul",
+    hour: "numeric",
+    hour12: false,
+  }).format(date); // "0", "12", "23" 등
+  const hour = Number.parseInt(hourStr, 10);
+
+  let timeLabel: string;
+  if (hour === 0) timeLabel = "자정";
+  else if (hour === 12) timeLabel = "정오";
+  else if (hour < 12) timeLabel = `오전 ${hour}시`;
+  else timeLabel = `오후 ${hour - 12}시`;
+
+  return { dateLabel, timeLabel };
 }
 
 function PaywallOverlay() {
