@@ -152,7 +152,6 @@ function PaidView({ nickname }: { nickname: string | null }) {
       {!data && !error && (
         <LoadingPanel
           className="mt-[24px]"
-          emoji="🔮"
           estimatedMs={14000}
           done={!!data}
           messages={[
@@ -276,7 +275,7 @@ function PaidView({ nickname }: { nickname: string | null }) {
           {/* Sources */}
           {data.sources.length > 0 && (
             <section className="mt-[16px] rounded-[12px] border border-white/10 bg-white/5 p-[12px]">
-              <p className="text-[11px] font-semibold text-white/70">📚 참고 원전</p>
+              <p className="text-[11px] font-semibold text-white/70">참고 원전</p>
               <ul className="mt-[6px] space-y-[3px] text-[11px] text-white/50">
                 {data.sources.map((src) => (
                   <li key={src} className="leading-[16px]">

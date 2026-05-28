@@ -130,7 +130,6 @@ export default function OnboardingDonePage() {
             </h1>
             <div className="mt-[28px] w-full">
               <LoadingPanel
-                emoji="🔮"
                 estimatedMs={9000}
                 done={false}
                 messages={[
@@ -156,7 +155,6 @@ export default function OnboardingDonePage() {
 
         {status.kind === "error" && (
           <>
-            <div className="text-[48px]">⚠️</div>
             <h1 className="mt-[16px] text-center text-[20px] font-bold text-white">
               저장하지 못했어요
             </h1>
@@ -211,7 +209,6 @@ function ReadyView({
 
   return (
     <div className="flex w-full flex-col items-center">
-      <div className="text-[48px]">✨</div>
       <h1 className="mt-[12px] text-center text-[22px] font-bold tracking-tight text-white">
         {nickname} 님의 사주를 풀었어요
       </h1>

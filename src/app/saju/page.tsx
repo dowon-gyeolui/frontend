@@ -72,7 +72,6 @@ export default function SajuPage() {
         {!saju && !error && (
           <div className="pt-[60px]">
             <LoadingPanel
-              emoji="🔮"
               estimatedMs={8000}
               done={!!saju}
               messages={[
@@ -113,7 +112,7 @@ export default function SajuPage() {
             {/* 오행 종합 해석 */}
             <section className="rounded-[14px] border border-white/15 bg-white/5 p-[16px] backdrop-blur-sm">
               <h3 className="text-[14px] font-bold text-white">
-                오행 종합 해석 ✨
+                오행 종합 해석
               </h3>
               <div className="mt-[8px] space-y-[6px] text-[12px] leading-[20px] text-white/80 text-ko">
                 <DominantSummary profile={saju.element_profile} />
@@ -230,7 +229,7 @@ function NarrativeSections({ data }: { data: DetailedSajuResponse }) {
       />
       {hasSources && showSources && (
         <div className="rounded-[12px] border border-white/15 bg-white/5 p-[12px]">
-          <p className="text-[11px] font-semibold text-white/70">📚 참고 원전</p>
+          <p className="text-[11px] font-semibold text-white/70">참고 원전</p>
           <ul className="mt-[6px] space-y-[3px] text-[11px] text-white/50">
             {data.interpretation_sources.map((src) => (
               <li key={src} className="leading-[16px]">{src}</li>

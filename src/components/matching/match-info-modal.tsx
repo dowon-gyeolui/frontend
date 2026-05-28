@@ -84,7 +84,7 @@ export function MatchInfoModal({
           {candidate.is_blinded && (
             <div className="pointer-events-none absolute inset-x-0 top-1/2 grid -translate-y-1/2 place-items-center">
               <div className="flex items-center gap-[6px] rounded-full bg-black/60 px-[12px] py-[5px] text-[12px] font-medium text-white/95 backdrop-blur-sm">
-                🔒 결제 후 사진 공개
+                결제 후 사진 공개
               </div>
             </div>
           )}

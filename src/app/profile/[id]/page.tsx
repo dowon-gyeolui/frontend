@@ -257,7 +257,7 @@ export default function ProfileDetailPage() {
                     "linear-gradient(99deg, rgb(124, 58, 237) 0%, rgb(168, 85, 247) 100%)",
                 }}
               >
-                {me?.is_paid ? "채팅 시작하기" : "🔒 결제 후 채팅하기"}
+                {me?.is_paid ? "채팅 시작하기" : "결제 후 채팅하기"}
               </button>
             </div>
           </>

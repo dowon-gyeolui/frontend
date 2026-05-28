@@ -101,7 +101,7 @@ export function SajuGlossary() {
         className="flex w-full items-center justify-between gap-2 px-[14px] py-[12px] text-left"
       >
         <span className="text-[14px] font-bold text-white">
-          📖 사주 용어 한눈에 보기
+          사주 용어 한눈에 보기
         </span>
         {open ? (
           <ChevronUp className="size-[16px] stroke-white/60" />

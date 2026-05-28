@@ -166,7 +166,6 @@ function PaidView({
       {!data && !error && (
         <LoadingPanel
           className="mt-[20px]"
-          emoji="💞"
           estimatedMs={9000}
           done={!!data}
           messages={[

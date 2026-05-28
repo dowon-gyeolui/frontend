@@ -168,7 +168,7 @@ export function PhotoUploadModal({ currentPhoto, onClose, onSave }: Props) {
         </div>
 
         <p className="mt-[6px] text-center text-[12px] text-[#1b1029]/60">
-          최대 {MAX_PHOTOS}장까지 등록 · ★ 표시한 사진이 매칭에서 보여요
+          최대 {MAX_PHOTOS}장까지 등록 · 메인으로 표시한 사진이 매칭에서 보여요
         </p>
 
         {/* Gallery grid */}

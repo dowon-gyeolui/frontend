@@ -19,7 +19,7 @@ export function InfoBadge({
   variant = "default",
   showInfoIcon = true,
 }: {
-  /** Visible label on the pill (e.g. "도화 발동", "★★★★★ 정재"). */
+  /** Visible label on the pill (e.g. "도화 발동", "정재"). */
   label: string;
   /** The glossary entry to show in the popup. */
   entry: GlossaryEntry;

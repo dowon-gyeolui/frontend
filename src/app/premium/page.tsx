@@ -115,7 +115,7 @@ function PremiumContent() {
             disabled
             className="mt-[18px] h-[52px] w-full rounded-[12px] bg-gradient-to-r from-yellow-300 to-pink-400 text-[16px] font-bold text-[#1b1029] opacity-60 disabled:cursor-not-allowed"
           >
-            🚧 결제 시스템 준비 중
+            결제 시스템 준비 중
           </button>
           <p className="mt-[10px] text-[11px] text-white/50">
             카카오페이 / 토스 / 카드결제 연동 작업 중입니다.
@@ -127,7 +127,7 @@ function PremiumContent() {
         {/* Demo bypass — present only because we're in pre-launch demo mode */}
         <section className="mt-[16px] rounded-[14px] border border-white/15 bg-white/5 p-[12px]">
           <p className="text-center text-[11px] text-white/60">
-            💡 데모 기간에는 모든 사용자가 자동으로 프리미엄 권한을 받습니다.
+            데모 기간에는 모든 사용자가 자동으로 프리미엄 권한을 받습니다.
             <br />
             이 화면이 보이면 결제 시스템 연동 미완료 상태입니다.
           </p>

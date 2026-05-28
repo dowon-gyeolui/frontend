@@ -182,7 +182,6 @@ function MatchingPageContent() {
           )}
           {threads !== null && threads.length === 0 && (
             <div className="mt-12 flex flex-col items-center gap-3 text-center">
-              <div className="text-[40px]">💌</div>
               <p className="text-[16px] font-semibold text-white">
                 아직 진행 중인 대화가 없어요
               </p>
