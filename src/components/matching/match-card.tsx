@@ -1,7 +1,6 @@
 "use client";
 
 import { ZamiVerifiedBadge } from "@/components/brand/zami-verified-badge";
-import { matchCardComment } from "@/lib/match-keywords";
 
 /**
  * Match candidate shape returned by `GET /compatibility/matches`. Mirrors the
@@ -105,13 +104,6 @@ export function MatchCard({ data }: { data: MatchCandidate }) {
           <span className="truncate font-medium">{elementLabel}</span>
         </div>
       </div>
-
-      {/* Comment — Figma inset-[86.12% 16% 4.08% 16.67%].
-          Per-user tagline is seeded by user_id so each card shows a
-          different short caption instead of the same 5 strings. */}
-      <p className="absolute inset-x-[10%] bottom-[5%] line-clamp-2 text-center text-[10px] leading-[14px] text-white/75">
-        {matchCardComment(data)}
-      </p>
     </article>
   );
 }

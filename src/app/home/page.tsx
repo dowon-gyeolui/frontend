@@ -30,12 +30,6 @@ type TodayFortune = {
   relation: string;
   element_today: string;
   score: number;
-  headline: string;
-  person_type: string;
-  timing: string;
-  place: string;
-  caution: string;
-  lucky_color: string;
   badges: string[];
 };
 

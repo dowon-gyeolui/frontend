@@ -4,7 +4,6 @@ import { X } from "lucide-react";
 import { useEffect } from "react";
 
 import type { MatchCandidate } from "@/components/matching/match-card";
-import { deriveMatchKeywords, matchModalTip } from "@/lib/match-keywords";
 
 const PLACEHOLDER_PHOTO =
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop";
@@ -40,8 +39,6 @@ export function MatchInfoModal({
   const name = candidate.nickname ?? "익명";
   const ageLabel = candidate.age !== null ? `${candidate.age}세` : "—";
   const mbtiLabel = candidate.mbti ?? "—";
-  const keywords = deriveMatchKeywords(candidate);
-  const tip = matchModalTip(candidate);
 
   return (
     <div
@@ -89,29 +86,11 @@ export function MatchInfoModal({
           )}
         </div>
 
-        {/* Hashtags */}
-        <div className="mt-[14px] flex flex-wrap items-center justify-center gap-x-[10px] gap-y-[4px]">
-          {keywords.map((k) => (
-            <span
-              key={k}
-              className="text-[16px] font-semibold tracking-[-0.3px] text-[#1b1029]"
-            >
-              {k}
-            </span>
-          ))}
-        </div>
-
         {/* Age + MBTI */}
         <div className="mt-[10px] space-y-[2px] pl-[16px] text-[18px] font-medium leading-[28px] text-[#1b1029]">
           <p>나이 : {ageLabel}</p>
           <p>MBTI : {mbtiLabel}</p>
         </div>
-
-        {/* Tip — bumped +2pt vs the prior 13px so the personalised
-            sentence is more legible and feels like the focal copy. */}
-        <p className="mt-[12px] text-center text-[15px] leading-[22px] text-[#1b1029]">
-          {tip}
-        </p>
 
         {/* CTAs */}
         <div className="mt-[14px] grid grid-cols-2 gap-[10px]">
