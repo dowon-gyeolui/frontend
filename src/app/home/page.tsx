@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
 import { MatchInfoModal } from "@/components/matching/match-info-modal";
-import { InfoBadge } from "@/components/saju/info-badge";
 import { LoadingPanel } from "@/components/ui/loading-panel";
 import { ApiError, apiFetch } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
@@ -16,12 +15,6 @@ import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
 import { EXTRA_DAILY_LIMIT, getTodayCard, unlockExtraCard } from "@/lib/matches";
 import { notifyStarsChanged } from "@/lib/stars";
 import { profileCompletionPct } from "@/lib/profile-completion";
-import {
-  BADGE_GLOSSARY,
-  ELEMENT_GLOSSARY,
-  TEN_GOD_GLOSSARY,
-  TODAY_PILLAR_GLOSSARY,
-} from "@/lib/saju-glossary-data";
 
 type TodayFortune = {
   fortune_text: string;
@@ -189,7 +182,7 @@ export default function HomePage() {
             />
           </div>
           <p className="mt-[8px] text-[12px] text-[#d8c8f2]">
-            Tip : 프로필을 완성할수록 운명의 상대를 만날 확률이 올라요!
+            Tip : 프로필을 완성해볼까요?
           </p>
         </div>
 
@@ -201,65 +194,18 @@ export default function HomePage() {
             <h2 className="text-center text-[20px] font-bold text-white">
               오늘의 인연운
             </h2>
-            {fortune && (
-              <InfoBadge
-                label={`오늘 일주 ${fortune.today_pillar}`}
-                entry={
-                  ELEMENT_GLOSSARY[fortune.element_today] ?? TODAY_PILLAR_GLOSSARY
-                }
-                variant="yellow"
-              />
-            )}
           </div>
           <p className="mt-[12px] whitespace-pre-line text-center text-[14px] leading-[22px] text-[#d8c8f2] text-ko">
             {fortune
               ? fortune.fortune_text
               : !me?.birth_date
-                ? `"${nickname}님, 생년월일을 입력하면 매일 오늘의 인연운을 받을 수 있어요!"`
+                ? `"${nickname}님, 생년월일을 입력해주세요!"`
                 : fortuneFailed
                   // API 실패 시: 옛 정적 문구로 fallback. 사용자에겐 빈
                   // 화면보다 자연스러움. 백엔드 복구되면 자동 dynamic 으로.
-                  ? `"${nickname}님은 오늘 운명의 상대를 만날 확률이 높아요!\n맘에 두고 있는 사람이 있다면 표현해볼까요?"`
+                  ? `"${nickname}님은 오늘 운명의 상대를 만날 확률이 높아요!"`
                   : `"${nickname}님의 오늘 인연운을 풀고 있어요..."`}
           </p>
-          {fortune && (
-            <>
-              <div className="mt-[8px] flex items-center justify-center gap-[6px] text-[11px] text-white/55">
-                <span>
-                  {"★".repeat(fortune.score)}
-                  {"☆".repeat(5 - fortune.score)}
-                </span>
-                {TEN_GOD_GLOSSARY[fortune.relation] && (
-                  <InfoBadge
-                    label={fortune.relation}
-                    entry={TEN_GOD_GLOSSARY[fortune.relation]}
-                    variant="muted"
-                  />
-                )}
-              </div>
-              {fortune.badges.length > 0 && (
-                <div className="mt-[8px] flex flex-wrap justify-center gap-[6px]">
-                  {fortune.badges.map((b) =>
-                    BADGE_GLOSSARY[b] ? (
-                      <InfoBadge
-                        key={b}
-                        label={b}
-                        entry={BADGE_GLOSSARY[b]}
-                        variant="yellow"
-                      />
-                    ) : (
-                      <span
-                        key={b}
-                        className="rounded-full bg-[#fde047]/15 px-[8px] py-[2px] text-[10px] font-semibold text-[#fde047]"
-                      >
-                        {b}
-                      </span>
-                    ),
-                  )}
-                </div>
-              )}
-            </>
-          )}
         </section>
 
         {/* 얼굴 사진 미등록 시 게이트 배너 — 매칭 카드 자체를 가리고
