@@ -357,14 +357,6 @@ export default function ChatRoomPage() {
         peerId={peerId}
         open={reportOpen}
         onClose={() => setReportOpen(false)}
-        onOpenSaju={() => {
-          setReportOpen(false);
-          router.push(`/destiny/${peerId}`);
-        }}
-        onOpenDateSpots={() => {
-          setReportOpen(false);
-          router.push(`/date-spots/${peerId}`);
-        }}
         onLeaveRoom={() => router.push("/matching?tab=chat")}
         onReport={() => {
           setReportOpen(false);

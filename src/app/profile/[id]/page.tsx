@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Lock, Sparkles } from "lucide-react";
+import { ArrowLeft, Lock } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -231,14 +231,6 @@ export default function ProfileDetailPage() {
 
             {/* CTAs */}
             <div className="mt-[24px] flex flex-col gap-[10px]">
-              <button
-                type="button"
-                onClick={() => router.push(`/destiny/${data.id}`)}
-                className="flex h-[48px] w-full items-center justify-center gap-[8px] rounded-[12px] border border-yellow-300/40 bg-gradient-to-r from-yellow-300/15 to-pink-400/15 text-[15px] font-semibold text-white hover:from-yellow-300/25 hover:to-pink-400/25"
-              >
-                <Sparkles className="size-[16px] stroke-yellow-300" />
-                운명의 실타래 풀이 보기
-              </button>
               <button
                 type="button"
                 onClick={startChat}

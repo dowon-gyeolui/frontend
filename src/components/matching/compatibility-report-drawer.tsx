@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Lock, Sparkles, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { LoadingPanel } from "@/components/ui/loading-panel";
@@ -27,18 +27,12 @@ export function CompatibilityReportDrawer({
   peerId,
   open,
   onClose,
-  onOpenSaju,
-  onOpenDateSpots,
   onLeaveRoom,
   onReport,
 }: {
   peerId: number;
   open: boolean;
   onClose: () => void;
-  /** "운명의 실타래" 버튼 — 자미두수 페이지로. */
-  onOpenSaju: () => void;
-  /** "두 분만을 위한 최적의 데이트 코스" 버튼 — 데이트 추천 페이지로. */
-  onOpenDateSpots: () => void;
   onLeaveRoom: () => void;
   onReport: () => void;
 }) {
@@ -162,20 +156,6 @@ export function CompatibilityReportDrawer({
                   </span>
                 ))}
               </div>
-
-              {/* CTA cards — each opens its own 풀이 page (무료 제공) */}
-              <div className="mt-[18px] space-y-[10px]">
-                <CtaCard
-                  title="운명의 실타래 더 깊이 알아보기"
-                  height={84}
-                  onClick={onOpenSaju}
-                />
-                <CtaCard
-                  title="두 분만을 위한 최적의 데이트 코스"
-                  height={104}
-                  onClick={onOpenDateSpots}
-                />
-              </div>
             </>
           )}
         </div>
@@ -199,38 +179,5 @@ export function CompatibilityReportDrawer({
         </div>
       </aside>
     </>
-  );
-}
-
-function CtaCard({
-  title,
-  height,
-  onClick,
-}: {
-  title: string;
-  height: number;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        height,
-        backgroundImage:
-          "linear-gradient(93deg, rgb(124, 58, 237) 0%, rgb(168, 85, 247) 100%)",
-      }}
-      className="relative w-full rounded-[18px] border-[1.5px] border-white/10 px-[16px] text-left text-white shadow-[0_0_10px_3px_rgba(90,58,130,0.6)] hover:opacity-95"
-    >
-      <Lock className="absolute left-[14px] top-[12px] size-[14px] fill-white/80 stroke-white/80" />
-      <div className="flex h-full flex-col items-center justify-center gap-[6px]">
-        <span className="text-center text-[14px] font-bold leading-[20px]">{title}</span>
-        <span className="flex items-center gap-[4px] text-[11px] text-white/85">
-          <Sparkles className="size-[12px] fill-yellow-300 stroke-yellow-300" />
-          프리미엄 가입 후 열람
-          <ArrowRight className="size-[12px] stroke-white/85 stroke-[2]" />
-        </span>
-      </div>
-    </button>
   );
 }
