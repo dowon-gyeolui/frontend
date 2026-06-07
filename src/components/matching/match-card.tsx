@@ -69,7 +69,7 @@ export function MatchCard({ data }: { data: MatchCandidate }) {
         {data.is_blinded && (
           <div className="pointer-events-none absolute inset-0 grid place-items-center">
             <span className="rounded-full bg-black/55 px-[8px] py-[2px] text-[9px] font-medium text-white/85 backdrop-blur-sm">
-              결제 후 공개
+              열람 후 공개
             </span>
           </div>
         )}

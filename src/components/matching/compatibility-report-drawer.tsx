@@ -163,7 +163,7 @@ export function CompatibilityReportDrawer({
                 ))}
               </div>
 
-              {/* CTA cards — both premium gated, but each opens its own page */}
+              {/* CTA cards — each opens its own 풀이 page (무료 제공) */}
               <div className="mt-[18px] space-y-[10px]">
                 <CtaCard
                   title="운명의 실타래 더 깊이 알아보기"

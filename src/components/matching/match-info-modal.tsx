@@ -62,10 +62,9 @@ export function MatchInfoModal({
           <X className="size-[20px] stroke-[#1b1029] stroke-[2]" />
         </button>
 
-        {/* Hero photo with name overlay. Free-tier users see a blurred
-            teaser + lock pill; paying for chat (via the 채팅 CTA) returns
-            them with is_paid=true, which makes is_blinded false on the
-            next /compatibility/matches call and reveals the photo. */}
+        {/* Hero photo with name overlay. 카드를 아직 열람하지 않아 블라인드
+            상태(is_blinded=true)면 블러 + 안내 pill 을 보여준다. 인연 카드를
+            열람하면(별 10개) is_blinded=false 로 내려와 사진이 공개된다. */}
         <div className="relative mt-[20px] aspect-[279/320] w-full overflow-hidden rounded-[14px]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -84,7 +83,7 @@ export function MatchInfoModal({
           {candidate.is_blinded && (
             <div className="pointer-events-none absolute inset-x-0 top-1/2 grid -translate-y-1/2 place-items-center">
               <div className="flex items-center gap-[6px] rounded-full bg-black/60 px-[12px] py-[5px] text-[12px] font-medium text-white/95 backdrop-blur-sm">
-                결제 후 사진 공개
+                카드 열람 후 사진 공개
               </div>
             </div>
           )}

@@ -4,8 +4,6 @@ import {
   AlertTriangle,
   ArrowLeft,
   Heart,
-  HeartHandshake,
-  Lock,
   Sparkles,
   TrendingUp,
   User as UserIcon,
@@ -14,7 +12,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
-import { PaymentModal } from "@/components/payment/payment-modal";
 import { LoadingPanel } from "@/components/ui/loading-panel";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
@@ -34,7 +31,7 @@ type DestinyAnalysis = {
   interpretation_status: "pending" | "ready";
 };
 
-type Me = { id: number; is_paid: boolean; nickname: string | null };
+type Me = { id: number; nickname: string | null };
 type PeerProfile = { id: number; nickname: string | null };
 
 /**
@@ -52,7 +49,6 @@ export default function DestinyPage() {
   const [peer, setPeer] = useState<PeerProfile | null>(null);
   const [data, setData] = useState<DestinyAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [paymentOpen, setPaymentOpen] = useState(false);
 
   useEffect(() => {
     if (!getToken()) {
@@ -73,7 +69,7 @@ export default function DestinyPage() {
   }, [peerId]);
 
   useEffect(() => {
-    if (!me || !me.is_paid) return;
+    if (!Number.isFinite(peerId)) return;
     // LLM 호출이라 5–10초 걸림. 사용자가 같은 쌍의 풀이를 여러 번 보러
     // 와도 매번 기다리지 않게 stale-while-revalidate 캐시 사용.
     fetchWithCache<DestinyAnalysis>(
@@ -82,7 +78,7 @@ export default function DestinyPage() {
       setData,
       { onError: (e: Error) => setError(e.message) },
     );
-  }, [me, peerId]);
+  }, [peerId]);
 
   return (
     <AppShell>
@@ -102,28 +98,13 @@ export default function DestinyPage() {
           <div className="mt-[10px] h-px bg-white/30" />
         </div>
 
-        {!me?.is_paid ? (
-          <Paywall onUpgrade={() => setPaymentOpen(true)} />
-        ) : (
-          <PaidView
-            data={data}
-            error={error}
-            myNickname={me?.nickname ?? null}
-            peer={peer}
-          />
-        )}
-      </div>
-
-      {paymentOpen && (
-        <PaymentModal
-          reason="general"
-          onClose={() => setPaymentOpen(false)}
-          onPaid={() => {
-            setMe((prev) => (prev ? { ...prev, is_paid: true } : prev));
-            setPaymentOpen(false);
-          }}
+        <PaidView
+          data={data}
+          error={error}
+          myNickname={me?.nickname ?? null}
+          peer={peer}
         />
-      )}
+      </div>
     </AppShell>
   );
 }
@@ -273,80 +254,5 @@ function Section({
         {body}
       </p>
     </div>
-  );
-}
-
-function Paywall({ onUpgrade }: { onUpgrade: () => void }) {
-  return (
-    <>
-      <section className="mt-[24px] rounded-[18px] border border-purple-300/30 bg-gradient-to-br from-purple-900/40 via-purple-700/30 to-pink-700/30 p-[20px] text-center backdrop-blur-sm">
-        <div className="flex justify-center">
-          <div className="grid size-[64px] place-items-center rounded-full bg-gradient-to-br from-yellow-300 to-pink-400 shadow-[0_0_25px_-5px_rgba(253,224,71,0.6)]">
-            <HeartHandshake className="size-[32px] fill-white stroke-white" />
-          </div>
-        </div>
-        <h2 className="mt-[14px] text-[20px] font-bold text-white">
-          운명의 실타래 더 깊이 알아보기
-        </h2>
-        <p className="mt-[10px] text-[13px] leading-[20px] text-white/80">
-          두 분의 사주를 직접 비교해
-          <br />
-          첫인상·성격·연애 스타일·갈등 포인트·장기 전망을
-          <br />
-          섹션별로 풀어드려요.
-        </p>
-      </section>
-
-      <section className="mt-[24px]">
-        <h3 className="text-[16px] font-bold text-white">이런 게 보여요</h3>
-        <ul className="mt-[12px] space-y-[10px] text-[14px] text-white/85">
-          <li className="flex gap-[10px]">
-            <span className="text-[#fde047]">✦</span>
-            <span>
-              <span className="font-semibold">첫인상</span> — 두 분 사주의 전체 인상
-            </span>
-          </li>
-          <li className="flex gap-[10px]">
-            <span className="text-[#fde047]">✦</span>
-            <span>
-              <span className="font-semibold">성격 궁합</span> — 일주(日柱) 비교 풀이
-            </span>
-          </li>
-          <li className="flex gap-[10px]">
-            <span className="text-[#fde047]">✦</span>
-            <span>
-              <span className="font-semibold">연애 스타일</span> — 표현 방식과 케미
-            </span>
-          </li>
-          <li className="flex gap-[10px]">
-            <span className="text-[#fde047]">✦</span>
-            <span>
-              <span className="font-semibold">주의 포인트 + 장기 전망</span>
-            </span>
-          </li>
-        </ul>
-      </section>
-
-      <section className="mt-[28px] rounded-[18px] border-2 border-yellow-300/50 bg-gradient-to-br from-yellow-300/10 to-pink-400/10 p-[20px] text-center">
-        <p className="text-[12px] font-medium uppercase tracking-wider text-[#fde047]">
-          premium
-        </p>
-        <p className="mt-[6px] text-[28px] font-bold text-white">9,900원</p>
-        <p className="mt-[4px] text-[12px] text-white/60">월간 구독 · 언제든 해지</p>
-
-        <button
-          type="button"
-          onClick={onUpgrade}
-          className="mt-[18px] flex h-[52px] w-full items-center justify-center gap-[8px] rounded-[12px] bg-gradient-to-r from-yellow-300 to-pink-400 text-[16px] font-bold text-[#1b1029] shadow-[0_0_15px_-3px_rgba(253,224,71,0.6)] hover:opacity-90"
-        >
-          <Lock className="size-[16px]" />
-          프리미엄 가입하고 풀이 받기 →
-        </button>
-      </section>
-
-      <p className="mt-[20px] text-center text-[10px] text-white/40">
-        ※ 결제 시스템 정식 출시 전 데모 모드 — 결제하기 누르면 바로 활성화됩니다.
-      </p>
-    </>
   );
 }

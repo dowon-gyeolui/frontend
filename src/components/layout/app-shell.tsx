@@ -6,6 +6,7 @@ import { Home, MessageCircle, Sparkles, User } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
 import { ZamiLogo } from "@/components/brand/zami-logo";
+import { StarBalancePill } from "@/components/payment/star-balance";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
@@ -90,6 +91,7 @@ export function AppShell({ children, topChip }: AppShellProps) {
           </Link>
           <div className="flex items-center gap-[10px]">
             {topChip}
+            <StarBalancePill />
             <Link
               href="/mypage"
               aria-label="마이페이지"

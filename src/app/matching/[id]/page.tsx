@@ -27,7 +27,7 @@ const POLL_INTERVAL_MS = 2500;
 const PLACEHOLDER_PHOTO =
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop";
 
-type Me = { id: number; is_paid: boolean };
+type Me = { id: number };
 
 export default function ChatRoomPage() {
   const router = useRouter();
@@ -67,21 +67,16 @@ export default function ChatRoomPage() {
     };
   }, []);
 
-  // Auth + load self. Free-tier users get bounced to the premium upsell —
-  // chatting is a paid feature in the dating-app norm we follow.
+  // Auth + load self. 채팅 권한은 "카드를 열람한 상대" 인지로 백엔드가
+  // 게이팅한다(PRD 6.2) — 미열람 상대에게 전송하면 send 가 403 을 반환하고
+  // 그 detail("카드를 열람한 상대와만 채팅할 수 있어요") 이 하단에 노출된다.
   useEffect(() => {
     if (!getToken()) {
       router.replace("/");
       return;
     }
     apiFetch<Me>("/users/me")
-      .then((m) => {
-        if (!m.is_paid) {
-          router.replace(`/premium?from=chat&peer_id=${peerId}`);
-          return;
-        }
-        setMe(m);
-      })
+      .then(setMe)
       .catch((e: Error) => setError(e.message));
   }, [router, peerId]);
 

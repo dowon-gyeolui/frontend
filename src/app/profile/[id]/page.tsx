@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 
 import { ZamiVerifiedBadge } from "@/components/brand/zami-verified-badge";
 import { AppShell } from "@/components/layout/app-shell";
-import { PaymentModal } from "@/components/payment/payment-modal";
 import { LoadingPanel } from "@/components/ui/loading-panel";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
@@ -35,8 +34,6 @@ type PublicProfile = {
   is_face_verified: boolean;
 };
 
-type Me = { id: number; is_paid: boolean };
-
 const ELEMENT_HANJA: Record<string, string> = {
   목: "木",
   화: "火",
@@ -57,30 +54,24 @@ export default function ProfileDetailPage() {
   const params = useParams<{ id: string }>();
   const peerId = Number(params.id);
 
-  const [me, setMe] = useState<Me | null>(null);
   const [data, setData] = useState<PublicProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [paymentOpen, setPaymentOpen] = useState(false);
 
   useEffect(() => {
     if (!getToken()) {
       router.replace("/");
       return;
     }
-    apiFetch<Me>("/users/me")
-      .then(setMe)
-      .catch(() => {});
     apiFetch<PublicProfile>(`/users/${peerId}/public-profile`)
       .then(setData)
       .catch((e: Error) => setError(e.message));
   }, [router, peerId]);
 
+  // 채팅 권한은 백엔드가 "카드 열람 여부"로 게이팅한다(PRD 6.2). 이 화면은
+  // 열람한 카드의 상세에서 도달하므로 바로 채팅 진입한다. 미열람 상태라면
+  // 채팅방에서 첫 전송 시 403 안내가 노출된다.
   const startChat = () => {
     if (!data) return;
-    if (!me?.is_paid) {
-      setPaymentOpen(true);
-      return;
-    }
     sessionStorage.setItem(
       "activeChat",
       JSON.stringify({
@@ -172,7 +163,7 @@ export default function ProfileDetailPage() {
                 <div className="pointer-events-none absolute inset-x-0 top-1/2 grid -translate-y-1/2 place-items-center">
                   <div className="flex items-center gap-[6px] rounded-full bg-black/60 px-[14px] py-[6px] text-[13px] font-medium text-white/95 backdrop-blur-sm">
                     <Lock className="size-[14px]" />
-                    결제 후 사진 공개
+                    카드 열람 후 사진 공개
                   </div>
                 </div>
               )}
@@ -257,42 +248,12 @@ export default function ProfileDetailPage() {
                     "linear-gradient(99deg, rgb(124, 58, 237) 0%, rgb(168, 85, 247) 100%)",
                 }}
               >
-                {me?.is_paid ? "채팅 시작하기" : "결제 후 채팅하기"}
+                채팅 시작하기
               </button>
             </div>
           </>
         )}
       </div>
-
-      {paymentOpen && (
-        <PaymentModal
-          reason="chat"
-          onClose={() => setPaymentOpen(false)}
-          onPaid={() => {
-            setMe((prev) => (prev ? { ...prev, is_paid: true } : prev));
-            setPaymentOpen(false);
-            // After payment, kick straight into the chat room.
-            if (data) {
-              sessionStorage.setItem(
-                "activeChat",
-                JSON.stringify({
-                  user_id: data.id,
-                  nickname: data.nickname,
-                  photo_url: data.photo_url,
-                  score: data.compatibility_score ?? 0,
-                  age: data.age,
-                  gender: data.gender,
-                  is_blinded: false,
-                  birth_year: null,
-                  dominant_element: data.dominant_element,
-                  mbti: data.mbti,
-                }),
-              );
-              router.push(`/matching/${data.id}`);
-            }
-          }}
-        />
-      )}
     </AppShell>
   );
 }

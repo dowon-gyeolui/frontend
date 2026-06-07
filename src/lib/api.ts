@@ -2,8 +2,25 @@ import { API_URL } from "@/lib/config";
 import { getToken } from "@/lib/auth";
 
 /**
+ * Error thrown by {@link apiFetch} on a non-2xx response. Carries the HTTP
+ * `status` so callers can branch on it — e.g. 402(스타 부족) → /store 유도,
+ * 403(채팅 권한 없음), 404(후보 없음). `message` is the backend's Korean
+ * `detail` when present, so it can be rendered directly in toast / error UI.
+ */
+export class ApiError extends Error {
+  readonly status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
+/**
  * Thin fetch wrapper that prepends the API base URL and attaches the JWT
- * to every request. Throws on non-2xx so callers can rely on a parsed body.
+ * to every request. Throws {@link ApiError} on non-2xx so callers can rely
+ * on a parsed body and branch on the status code.
  */
 export async function apiFetch<T = unknown>(
   path: string,
@@ -31,7 +48,7 @@ export async function apiFetch<T = unknown>(
     } catch {
       /* not JSON — fall through */
     }
-    throw new Error(message ?? `API ${resp.status}: ${body}`);
+    throw new ApiError(resp.status, message ?? `API ${resp.status}: ${body}`);
   }
   if (resp.status === 204) return undefined as T;
   return resp.json() as Promise<T>;

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, HeartHandshake, Lock, Sparkles, Star as StarIcon, User as UserIcon, Wallet } from "lucide-react";
+import { ArrowLeft, HeartHandshake, Sparkles, Star as StarIcon, User as UserIcon, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -13,15 +13,13 @@ import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
 type Me = {
   id: number;
   nickname: string | null;
-  is_paid: boolean;
 };
 
 /**
- * 자미두수 (Jami-dusu / Zǐwēi Dòushù) — premium feature paywall.
+ * 자미두수 (Jami-dusu / Zǐwēi Dòushù) 사주 deep 풀이.
  *
- * Real payment integration (PortOne / Toss) is a Phase 2 task; for now this
- * page renders a polished "결제 후 이용 가능" CTA so the demo flow is intact.
- * Once the payment SDK lands, the same button will trigger the PG modal.
+ * 백엔드 /saju/me/jamidusu-deep 는 무료로 제공되므로(수익모델은 인연 카드
+ * 열람 — PRD 5번), 별도 결제 게이트 없이 바로 풀이를 노출한다.
  */
 export default function JamidusuPage() {
   const router = useRouter();
@@ -56,7 +54,7 @@ export default function JamidusuPage() {
           <div className="mt-[10px] h-px bg-white/30" />
         </div>
 
-        {me?.is_paid ? <PaidView nickname={me.nickname} /> : <Paywall onUpgrade={() => router.push("/premium?from=jamidusu")} />}
+        <PaidView nickname={me?.nickname ?? null} />
       </div>
     </AppShell>
   );
@@ -369,87 +367,5 @@ function SectionCard({
         {content}
       </p>
     </div>
-  );
-}
-
-/* ── Paywall — locked teaser + 결제 CTA ── */
-function Paywall({ onUpgrade }: { onUpgrade: () => void }) {
-  return (
-    <>
-      <section className="mt-[24px] rounded-[18px] border border-purple-300/30 bg-gradient-to-br from-purple-900/40 via-purple-700/30 to-pink-700/30 p-[20px] backdrop-blur-sm">
-        <div className="flex items-center justify-center">
-          <div className="grid size-[64px] place-items-center rounded-full bg-gradient-to-br from-yellow-300 to-pink-400 shadow-[0_0_25px_-5px_rgba(253,224,71,0.6)]">
-            <Sparkles className="size-[32px] fill-white stroke-white" />
-          </div>
-        </div>
-        <h2 className="mt-[14px] text-center text-[22px] font-bold text-white">
-          나의 사주 × 자미두수
-        </h2>
-        <p className="mt-[10px] text-center text-[13px] leading-[20px] text-white/80">
-          1000년 전통 자미두수 명반(命盤)을
-          <br />
-          정확하게 계산하고, 사주 일간과 교차한
-          <br />
-          연애 관점 풀이를 받아보세요.
-        </p>
-      </section>
-
-      <section className="mt-[24px]">
-        <h3 className="text-[16px] font-bold text-white">사주 × 자미두수로 알 수 있는 것</h3>
-        <ul className="mt-[12px] space-y-[10px] text-[14px] text-white/85">
-          <li className="flex gap-[10px]">
-            <span className="text-[#fde047]">✦</span>
-            <span>
-              <span className="font-semibold">12궁 × 14주성</span> — 명궁부터 부모궁까지,
-              실제 별 배치까지 결정론적으로 계산
-            </span>
-          </li>
-          <li className="flex gap-[10px]">
-            <span className="text-[#fde047]">✦</span>
-            <span>
-              <span className="font-semibold">사주 × 자미두수 교차</span> — 일간이 별·궁의
-              성향에 어떻게 영향을 주는지
-            </span>
-          </li>
-          <li className="flex gap-[10px]">
-            <span className="text-[#fde047]">✦</span>
-            <span>
-              <span className="font-semibold">사화(四化)·부성</span> — 化祿/化權/化科/化忌 +
-              좌보/우필 등 28개 별 모두 적용
-            </span>
-          </li>
-          <li className="flex gap-[10px]">
-            <span className="text-[#fde047]">✦</span>
-            <span>
-              <span className="font-semibold">연애 4섹션</span> — 매력·이상형·자금감각·제안
-            </span>
-          </li>
-        </ul>
-      </section>
-
-      <section className="mt-[28px] rounded-[18px] border-2 border-yellow-300/50 bg-gradient-to-br from-yellow-300/10 to-pink-400/10 p-[20px] text-center">
-        <p className="text-[12px] font-medium uppercase tracking-wider text-[#fde047]">
-          premium
-        </p>
-        <p className="mt-[6px] text-[28px] font-bold text-white">9,900원</p>
-        <p className="mt-[4px] text-[12px] text-white/60">1회 결제 · 평생 열람</p>
-
-        <button
-          type="button"
-          onClick={onUpgrade}
-          className="mt-[18px] flex h-[52px] w-full items-center justify-center gap-[8px] rounded-[12px] bg-gradient-to-r from-yellow-300 to-pink-400 text-[16px] font-bold text-[#1b1029] hover:opacity-90"
-        >
-          <Lock className="size-[16px]" />
-          프리미엄 가입하고 풀이 받기 →
-        </button>
-        <p className="mt-[10px] text-[11px] text-white/50">
-          ZAMI 프리미엄 9,900원 / 월
-        </p>
-      </section>
-
-      <p className="mt-[20px] text-center text-[10px] text-white/40">
-        ※ 자미두수 명반은 표준 안성술로 정확 계산. 풀이는 LLM 보조 결과예요.
-      </p>
-    </>
   );
 }

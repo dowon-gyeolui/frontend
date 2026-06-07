@@ -5,6 +5,7 @@ import {
   Camera,
   Pencil,
   Search,
+  Star,
   UserX,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -45,6 +46,7 @@ type Me = {
   smoking: string | null;
   drinking: string | null;
   religion: string | null;
+  star_balance: number;
 };
 
 // Profile completion is now derived in lib/profile-completion.ts so home
@@ -270,6 +272,29 @@ function MypageContent() {
             {me?.bio ?? "탭해서 한 줄 자기소개를 적어보세요"}
           </p>
         </button>
+
+        {/* 보유 스타 — 충전(/store) 으로 연결 */}
+        <section className="mt-[16px] flex items-center justify-between rounded-[18px] border border-yellow-300/40 bg-gradient-to-br from-[#fde047]/15 to-[#a78bfa]/10 p-[16px] backdrop-blur-sm">
+          <div className="flex items-center gap-[10px]">
+            <Star className="size-[26px] fill-[#fde047] stroke-[#fde047]" />
+            <div>
+              <p className="text-[11px] text-white/60">보유 스타</p>
+              <p className="text-[22px] font-bold text-white">
+                {me ? me.star_balance.toLocaleString("ko-KR") : "—"}
+                <span className="ml-[3px] text-[13px] font-medium text-white/60">
+                  개
+                </span>
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => router.push("/store")}
+            className="rounded-full bg-[#fde047] px-[16px] py-[8px] text-[13px] font-bold text-[#1b1029]"
+          >
+            충전하기
+          </button>
+        </section>
 
         {/* 기본 정보 */}
         <section className="mt-[20px]">
