@@ -181,7 +181,7 @@ export default function HomePage() {
         {/* Top: 인연 탐색기 가동률 */}
         <div className="mt-[14px]">
           <p className="text-center text-[12px] text-[#d8c8f2]">
-            현재 <span className="font-medium">{nickname}</span>님의 인연 탐색기 가동률{" "}
+            현재 <span className="font-medium">{nickname}</span>님의 프로필 진행률{" "}
             <span className="font-semibold text-[#fde047]">{completion}%</span>
           </p>
           <div className="mt-[10px] h-[12px] w-full overflow-hidden rounded-full bg-[#3a245c]">
@@ -370,11 +370,6 @@ export default function HomePage() {
                   </>
                 )}
               </button>
-              <p className="mt-[8px] text-center text-[11px] text-white/55">
-                {extraUsed !== null
-                  ? `오늘 추가 열람 ${extraUsed}/${EXTRA_DAILY_LIMIT}장`
-                  : `별 10개로 인연 카드 1장 · 하루 최대 ${EXTRA_DAILY_LIMIT}장`}
-              </p>
             </div>
           )}
         </section>

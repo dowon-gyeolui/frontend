@@ -110,11 +110,6 @@ export default function StorePage() {
           <p className="mt-[16px] text-center text-[12px] text-red-300">{error}</p>
         )}
 
-        <p className="mt-[20px] text-center text-[10px] leading-[16px] text-white/40">
-          미사용 스타는 환불 가능, 사용한 스타는 환불되지 않습니다. (PRD 6.4)
-          <br />
-          결제는 토스페이먼츠를 통해 안전하게 처리됩니다.
-        </p>
       </div>
     </AppShell>
   );

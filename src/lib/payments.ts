@@ -27,23 +27,14 @@ export type StarProduct = {
 };
 
 export const STAR_PRODUCTS: StarProduct[] = [
-  { product_id: "STAR-001", price: 1100, stars: 10, cards: 1, note: "첫 결제용" },
-  { product_id: "STAR-002", price: 5500, stars: 50, cards: 5, note: "기본 상품" },
-  {
-    product_id: "STAR-003",
-    price: 9900,
-    stars: 100,
-    cards: 10,
-    note: "주력 상품",
-    featured: true,
-  },
-  { product_id: "STAR-004", price: 19900, stars: 220, cards: 22, note: "헤비 유저용" },
+  { product_id: "STAR-001", price: 1100, stars: 10, cards: 1, note: "" },
+  { product_id: "STAR-002", price: 5500, stars: 50, cards: 5, note: "" },
+  { product_id: "STAR-003",price: 9900, stars: 100, cards: 10, note: "", featured: true,},
+  { product_id: "STAR-004", price: 19900, stars: 220, cards: 22, note: "" },
 ];
 
-/** 별 10개 = 인연 카드 1장 (PRD 6.4). */
 export const STAR_COST_PER_CARD = 10;
 
-/** POST /payments/orders 응답. */
 export type OrderResponse = {
   order_id: string;
   product_id: string;
