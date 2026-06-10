@@ -3,7 +3,7 @@
 import { Sparkles, Star } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
@@ -64,13 +64,6 @@ export default function HomePage() {
   const [fortuneFailed, setFortuneFailed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeMatch, setActiveMatch] = useState<MatchCandidate | null>(null);
-  // 스택 덱에서 맨 앞에 보이는 카드 인덱스. 뒤 카드 탭하면 앞으로 옴.
-  const [activeIdx, setActiveIdx] = useState(0);
-  // 스와이프 상태 — pointerDown 시점의 X 좌표 저장. pointerUp 에서 델타로
-  // 좌/우 판정. justSwiped 는 드래그 끝난 직후의 click 이벤트가 카드 탭
-  // 로직을 잘못 트리거하지 않도록 한 박자 막아주는 플래그.
-  const swipeStartX = useRef<number | null>(null);
-  const justSwiped = useRef(false);
   // 가벼운 토스트 — 추가 열람 한도 초과(403)·후보 없음(404) 안내용.
   // 몇 초 후 자동 사라짐.
   const [toast, setToast] = useState<string | null>(null);
@@ -272,81 +265,32 @@ export default function HomePage() {
             </p>
           ) : (
             (() => {
-              // 덱: today.card + extras 를 한 배열로 합쳐서 stack 렌더.
+              // 덱: today.card + extras 를 한 배열로 합쳐서 가로 스크롤 렌더.
               const deck = [
                 ...(today.card ? [today.card] : []),
                 ...extras,
               ];
-              // 좌우 스와이프 — 50px 이상 드래그하면 카드 전환. 왼쪽으로
-              // 끌면 다음 카드(앞으로 +1), 오른쪽이면 이전 카드. 모듈러로
-              // 순환하므로 마지막에서 다음 누르면 처음으로 돌아옴.
-              const SWIPE_THRESHOLD = 50;
-              const onSwipeStart = (e: React.PointerEvent) => {
-                swipeStartX.current = e.clientX;
-                justSwiped.current = false;
-              };
-              const onSwipeEnd = (e: React.PointerEvent) => {
-                if (swipeStartX.current === null || deck.length === 0) return;
-                const delta = e.clientX - swipeStartX.current;
-                swipeStartX.current = null;
-                if (Math.abs(delta) < SWIPE_THRESHOLD) return;
-                justSwiped.current = true;
-                setActiveIdx((prev) => {
-                  const next = delta < 0 ? prev + 1 : prev - 1;
-                  return ((next % deck.length) + deck.length) % deck.length;
-                });
-              };
               return (
-                <div
-                  className="relative mx-auto mt-[24px] w-[62%] touch-pan-y"
-                  style={{ aspectRatio: "150 / 245" }}
-                  onPointerDown={onSwipeStart}
-                  onPointerUp={onSwipeEnd}
-                  onPointerCancel={() => {
-                    swipeStartX.current = null;
-                  }}
-                >
-                  {deck.map((c, i) => {
-                    // depth = 활성 카드 기준 뒤로 밀린 정도 (0=맨 앞).
-                    // 모듈러로 순환 → 마지막까지 보고 다시 처음으로 돌아옴.
-                    const depth = (i - activeIdx + deck.length) % deck.length;
-                    // 뒤 3장만 보임 (앞 1 + 뒤로 살짝 보이는 2장).
-                    if (depth > 2) return null;
-                    const isTop = depth === 0;
-                    return (
-                      <button
+                // 부모의 24px 패딩을 -mx-[24px] 로 끄고 자체 px-[24px] 로
+                // 다시 padding 줘서 스크롤 영역만 화면 가장자리까지 확장.
+                // snap-x snap-mandatory 로 한 카드씩 정중앙에 끊김.
+                <div className="-mx-[24px] mt-[18px] overflow-x-auto px-[24px] pb-[8px] snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  <div className="flex justify-center gap-[12px]">
+                    {deck.map((c) => (
+                      <div
                         key={c.user_id}
-                        type="button"
-                        onClick={() => {
-                          // 스와이프 직후 click 은 무시 — 카드 넘긴 동작이
-                          // 자세히 보기/앞으로 가져오기로 잘못 이어지지
-                          // 않게 한 박자 막음.
-                          if (justSwiped.current) {
-                            justSwiped.current = false;
-                            return;
-                          }
-                          if (isTop) setActiveMatch(c);
-                          else setActiveIdx(i);
-                        }}
-                        className="absolute inset-0 block w-full text-left transition-all duration-300 ease-out active:scale-[0.98]"
-                        style={{
-                          transform: `translateY(${depth * 12}px) scale(${
-                            1 - depth * 0.05
-                          })`,
-                          zIndex: deck.length - depth,
-                          // 뒤 카드는 살짝 흐리게 — 깊이감 보강.
-                          filter: isTop
-                            ? "none"
-                            : `brightness(${1 - depth * 0.15})`,
-                        }}
-                        aria-label={
-                          isTop ? "이 인연 자세히 보기" : "이 인연 앞으로"
-                        }
+                        className="shrink-0 basis-[70%] snap-center"
                       >
-                        <MatchCard data={c} />
-                      </button>
-                    );
-                  })}
+                        <button
+                          type="button"
+                          onClick={() => setActiveMatch(c)}
+                          className="relative block w-full text-left transition active:scale-[0.98]"
+                        >
+                          <MatchCard data={c} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               );
             })()
