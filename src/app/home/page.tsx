@@ -3,7 +3,7 @@
 import { Sparkles, Star } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
@@ -66,6 +66,11 @@ export default function HomePage() {
   const [activeMatch, setActiveMatch] = useState<MatchCandidate | null>(null);
   // 스택 덱에서 맨 앞에 보이는 카드 인덱스. 뒤 카드 탭하면 앞으로 옴.
   const [activeIdx, setActiveIdx] = useState(0);
+  // 스와이프 상태 — pointerDown 시점의 X 좌표 저장. pointerUp 에서 델타로
+  // 좌/우 판정. justSwiped 는 드래그 끝난 직후의 click 이벤트가 카드 탭
+  // 로직을 잘못 트리거하지 않도록 한 박자 막아주는 플래그.
+  const swipeStartX = useRef<number | null>(null);
+  const justSwiped = useRef(false);
   // 가벼운 토스트 — 추가 열람 한도 초과(403)·후보 없음(404) 안내용.
   // 몇 초 후 자동 사라짐.
   const [toast, setToast] = useState<string | null>(null);
@@ -272,10 +277,34 @@ export default function HomePage() {
                 ...(today.card ? [today.card] : []),
                 ...extras,
               ];
+              // 좌우 스와이프 — 50px 이상 드래그하면 카드 전환. 왼쪽으로
+              // 끌면 다음 카드(앞으로 +1), 오른쪽이면 이전 카드. 모듈러로
+              // 순환하므로 마지막에서 다음 누르면 처음으로 돌아옴.
+              const SWIPE_THRESHOLD = 50;
+              const onSwipeStart = (e: React.PointerEvent) => {
+                swipeStartX.current = e.clientX;
+                justSwiped.current = false;
+              };
+              const onSwipeEnd = (e: React.PointerEvent) => {
+                if (swipeStartX.current === null || deck.length === 0) return;
+                const delta = e.clientX - swipeStartX.current;
+                swipeStartX.current = null;
+                if (Math.abs(delta) < SWIPE_THRESHOLD) return;
+                justSwiped.current = true;
+                setActiveIdx((prev) => {
+                  const next = delta < 0 ? prev + 1 : prev - 1;
+                  return ((next % deck.length) + deck.length) % deck.length;
+                });
+              };
               return (
                 <div
-                  className="relative mx-auto mt-[24px] w-[62%]"
+                  className="relative mx-auto mt-[24px] w-[62%] touch-pan-y"
                   style={{ aspectRatio: "150 / 245" }}
+                  onPointerDown={onSwipeStart}
+                  onPointerUp={onSwipeEnd}
+                  onPointerCancel={() => {
+                    swipeStartX.current = null;
+                  }}
                 >
                   {deck.map((c, i) => {
                     // depth = 활성 카드 기준 뒤로 밀린 정도 (0=맨 앞).
@@ -288,9 +317,17 @@ export default function HomePage() {
                       <button
                         key={c.user_id}
                         type="button"
-                        onClick={() =>
-                          isTop ? setActiveMatch(c) : setActiveIdx(i)
-                        }
+                        onClick={() => {
+                          // 스와이프 직후 click 은 무시 — 카드 넘긴 동작이
+                          // 자세히 보기/앞으로 가져오기로 잘못 이어지지
+                          // 않게 한 박자 막음.
+                          if (justSwiped.current) {
+                            justSwiped.current = false;
+                            return;
+                          }
+                          if (isTop) setActiveMatch(c);
+                          else setActiveIdx(i);
+                        }}
                         className="absolute inset-0 block w-full text-left transition-all duration-300 ease-out active:scale-[0.98]"
                         style={{
                           transform: `translateY(${depth * 12}px) scale(${
