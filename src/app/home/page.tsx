@@ -414,7 +414,7 @@ function CardTile({
     <button
       type="button"
       onClick={onOpen}
-      className="relative text-left transition active:scale-[0.98]"
+      className="relative block w-full text-left transition active:scale-[0.98]"
     >
       <div className="absolute -top-[6px] left-[6px] z-10 flex items-center gap-[4px] rounded-full bg-[#211432] px-[8px] py-[2px] text-[10px] font-semibold text-white shadow-[0_2px_6px_rgba(0,0,0,0.35)]">
         <Star className="size-[10px] fill-[#fde047] stroke-[#fde047]" />
