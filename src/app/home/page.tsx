@@ -186,9 +186,10 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* 오늘의 인연운 — 백엔드 /saju/me/today-fortune 응답.
-            KST 일진(日辰)이 매일 바뀌므로 결과 문구도 매일 갱신됨.
-            응답 도착 전엔 프로필 미완성 사용자엔 기본 문구. */}
+        {/* 오늘의 인연운 — 홈에서 잠시 숨김. 백엔드 /saju/me/today-fortune
+            과 fortune state/fetch 는 보존되어 있어 위 useEffect 의 호출이
+            계속 캐시를 채움. 복원하려면 아래 블록의 주석을 제거하면 됨. */}
+        {/*
         <section className="mt-[20px] rounded-[18px] border border-white/20 bg-white/10 p-[16px] backdrop-blur-sm">
           <div className="flex items-center justify-center gap-[8px]">
             <h2 className="text-center text-[20px] font-bold text-white">
@@ -201,12 +202,11 @@ export default function HomePage() {
               : !me?.birth_date
                 ? `"${nickname}님, 생년월일을 입력해주세요!"`
                 : fortuneFailed
-                  // API 실패 시: 옛 정적 문구로 fallback. 사용자에겐 빈
-                  // 화면보다 자연스러움. 백엔드 복구되면 자동 dynamic 으로.
                   ? `"${nickname}님은 오늘 운명의 상대를 만날 확률이 높아요!"`
                   : `"${nickname}님의 오늘 인연운을 풀고 있어요..."`}
           </p>
         </section>
+        */}
 
         {/* 얼굴 사진 미등록 시 게이트 배너 — 매칭 카드 자체를 가리고
             대신 안내 + CTA 노출. 백엔드도 photo_url IS NULL 인 사용자
@@ -233,7 +233,9 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* 오늘의 인연 (무료 1장) + 추가 인연 유료 열람 (별 10개 / 하루 10장). */}
+        {/* 오늘의 인연 (무료 1장) + 추가 인연 유료 열람 (별 10개 / 하루 10장).
+            좌우 스크롤: 한 카드 78% 폭, 옆 카드가 살짝 peek. -mx-[24px] +
+            px-[24px] 로 부모 패딩 무시하고 화면 가장자리까지 스크롤. */}
         <section className="mt-[36px]">
           <h2 className="text-center text-[20px] font-bold text-white">
             오늘의 인연
@@ -248,22 +250,32 @@ export default function HomePage() {
               아직 매칭 가능한 상대가 없어요
             </p>
           ) : (
-            <div className="mt-[18px] grid grid-cols-2 gap-x-[16px] gap-y-[26px]">
-              {today.card && (
-                <CardTile
-                  candidate={today.card}
-                  label="오늘의 인연"
-                  onOpen={() => setActiveMatch(today.card)}
-                />
-              )}
-              {extras.map((c) => (
-                <CardTile
-                  key={c.user_id}
-                  candidate={c}
-                  label="추가 인연"
-                  onOpen={() => setActiveMatch(c)}
-                />
-              ))}
+            <div
+              className="-mx-[24px] mt-[18px] overflow-x-auto px-[24px] pb-[8px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              <div className="flex snap-x snap-mandatory gap-[16px]">
+                {today.card && (
+                  <div className="shrink-0 basis-[78%] snap-start">
+                    <CardTile
+                      candidate={today.card}
+                      label="오늘의 인연"
+                      onOpen={() => setActiveMatch(today.card)}
+                    />
+                  </div>
+                )}
+                {extras.map((c) => (
+                  <div
+                    key={c.user_id}
+                    className="shrink-0 basis-[78%] snap-start"
+                  >
+                    <CardTile
+                      candidate={c}
+                      label="추가 인연"
+                      onOpen={() => setActiveMatch(c)}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -314,8 +326,9 @@ export default function HomePage() {
           )}
         </section>
 
-        {/* 행동 가이드 — 백엔드 /saju/me/action-guide 응답.
-            사용자 사주(일주 + 오행) + 오늘 일진을 종합해 항목별 추천. */}
+        {/* 행동 가이드 — 홈에서 잠시 숨김. 백엔드 /saju/me/action-guide
+            와 guide state/fetch 는 보존. 복원하려면 아래 주석을 풀면 됨. */}
+        {/*
         {me?.birth_date && (
           <section className="mt-[40px]">
             <h2 className="text-center text-[20px] font-bold text-white">
@@ -340,6 +353,7 @@ export default function HomePage() {
             )}
           </section>
         )}
+        */}
 
         {error && (
           <p className="mt-[20px] text-center text-xs text-red-300">
