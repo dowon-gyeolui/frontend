@@ -116,6 +116,20 @@ export default function HomePage() {
     );
   }, [me]);
 
+  // TEST ONLY — 가로 스크롤 동작 확인용. today.card 가 도착하면 같은
+  // 카드를 user_id 만 바꿔 5번 복제해 extras 에 채움. 실제 배포 전엔
+  // 이 useEffect 통째로 제거할 것.
+  useEffect(() => {
+    if (today?.card && extras.length === 0) {
+      const base = today.card;
+      const fakes = Array.from({ length: 5 }, (_, i) => ({
+        ...base,
+        user_id: base.user_id + 1000 + i,
+      }));
+      setExtras(fakes);
+    }
+  }, [today, extras.length]);
+
   // 행동 가이드는 백엔드 /saju/me/action-guide 응답을 그대로 사용.
   // 이전 tipsForElement(...) 정적 룩업은 더 이상 필요 없음.
 
@@ -258,7 +272,6 @@ export default function HomePage() {
                   <div className="shrink-0 basis-[62%] snap-center">
                     <CardTile
                       candidate={today.card}
-                      label="오늘의 인연"
                       onOpen={() => setActiveMatch(today.card)}
                     />
                   </div>
@@ -268,11 +281,7 @@ export default function HomePage() {
                     key={c.user_id}
                     className="shrink-0 basis-[62%] snap-center"
                   >
-                    <CardTile
-                      candidate={c}
-                      label="추가 인연"
-                      onOpen={() => setActiveMatch(c)}
-                    />
+                    <CardTile candidate={c} onOpen={() => setActiveMatch(c)} />
                   </div>
                 ))}
               </div>
@@ -400,14 +409,12 @@ export default function HomePage() {
   );
 }
 
-/** 카드 한 장 + 상단 라벨 배지(오늘의 인연 / 추가 인연). 탭하면 onOpen. */
+/** 카드 한 장. 탭하면 onOpen. */
 function CardTile({
   candidate,
-  label,
   onOpen,
 }: {
   candidate: MatchCandidate;
-  label: string;
   onOpen: () => void;
 }) {
   return (
@@ -416,10 +423,6 @@ function CardTile({
       onClick={onOpen}
       className="relative block w-full text-left transition active:scale-[0.98]"
     >
-      <div className="absolute -top-[6px] left-[6px] z-10 flex items-center gap-[4px] rounded-full bg-[#211432] px-[8px] py-[2px] text-[10px] font-semibold text-white shadow-[0_2px_6px_rgba(0,0,0,0.35)]">
-        <Star className="size-[10px] fill-[#fde047] stroke-[#fde047]" />
-        <span className="text-[#fde047]">{label}</span>
-      </div>
       <MatchCard data={candidate} />
     </button>
   );
