@@ -64,6 +64,8 @@ export default function HomePage() {
   const [fortuneFailed, setFortuneFailed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeMatch, setActiveMatch] = useState<MatchCandidate | null>(null);
+  // 스택 덱에서 맨 앞에 보이는 카드 인덱스. 뒤 카드 탭하면 앞으로 옴.
+  const [activeIdx, setActiveIdx] = useState(0);
   // 가벼운 토스트 — 추가 열람 한도 초과(403)·후보 없음(404) 안내용.
   // 몇 초 후 자동 사라짐.
   const [toast, setToast] = useState<string | null>(null);
@@ -264,28 +266,53 @@ export default function HomePage() {
               아직 매칭 가능한 상대가 없어요
             </p>
           ) : (
-            <div
-              className="-mx-[24px] mt-[18px] overflow-x-auto px-[24px] pb-[8px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            >
-              <div className="flex snap-x snap-mandatory justify-center gap-[16px]">
-                {today.card && (
-                  <div className="shrink-0 basis-[62%] snap-center">
-                    <CardTile
-                      candidate={today.card}
-                      onOpen={() => setActiveMatch(today.card)}
-                    />
-                  </div>
-                )}
-                {extras.map((c) => (
-                  <div
-                    key={c.user_id}
-                    className="shrink-0 basis-[62%] snap-center"
-                  >
-                    <CardTile candidate={c} onOpen={() => setActiveMatch(c)} />
-                  </div>
-                ))}
-              </div>
-            </div>
+            (() => {
+              // 덱: today.card + extras 를 한 배열로 합쳐서 stack 렌더.
+              const deck = [
+                ...(today.card ? [today.card] : []),
+                ...extras,
+              ];
+              return (
+                <div
+                  className="relative mx-auto mt-[24px] w-[62%]"
+                  style={{ aspectRatio: "150 / 245" }}
+                >
+                  {deck.map((c, i) => {
+                    // depth = 활성 카드 기준 뒤로 밀린 정도 (0=맨 앞).
+                    // 모듈러로 순환 → 마지막까지 보고 다시 처음으로 돌아옴.
+                    const depth = (i - activeIdx + deck.length) % deck.length;
+                    // 뒤 3장만 보임 (앞 1 + 뒤로 살짝 보이는 2장).
+                    if (depth > 2) return null;
+                    const isTop = depth === 0;
+                    return (
+                      <button
+                        key={c.user_id}
+                        type="button"
+                        onClick={() =>
+                          isTop ? setActiveMatch(c) : setActiveIdx(i)
+                        }
+                        className="absolute inset-0 block w-full text-left transition-all duration-300 ease-out active:scale-[0.98]"
+                        style={{
+                          transform: `translateY(${depth * 12}px) scale(${
+                            1 - depth * 0.05
+                          })`,
+                          zIndex: deck.length - depth,
+                          // 뒤 카드는 살짝 흐리게 — 깊이감 보강.
+                          filter: isTop
+                            ? "none"
+                            : `brightness(${1 - depth * 0.15})`,
+                        }}
+                        aria-label={
+                          isTop ? "이 인연 자세히 보기" : "이 인연 앞으로"
+                        }
+                      >
+                        <MatchCard data={c} />
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })()
           )}
 
           {/* 스타 부족 안내 → 충전 유도 */}
