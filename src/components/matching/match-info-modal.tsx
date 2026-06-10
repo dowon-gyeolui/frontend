@@ -38,7 +38,6 @@ export function MatchInfoModal({
   const photo = candidate.photo_url ?? PLACEHOLDER_PHOTO;
   const name = candidate.nickname ?? "익명";
   const ageLabel = candidate.age !== null ? `${candidate.age}세` : "—";
-  const mbtiLabel = candidate.mbti ?? "—";
 
   return (
     <div
@@ -86,10 +85,9 @@ export function MatchInfoModal({
           )}
         </div>
 
-        {/* Age + MBTI */}
+        {/* Age */}
         <div className="mt-[10px] space-y-[2px] pl-[16px] text-[18px] font-medium leading-[28px] text-[#1b1029]">
           <p>나이 : {ageLabel}</p>
-          <p>MBTI : {mbtiLabel}</p>
         </div>
 
         {/* CTAs */}

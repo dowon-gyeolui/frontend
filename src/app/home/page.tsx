@@ -253,9 +253,9 @@ export default function HomePage() {
             <div
               className="-mx-[24px] mt-[18px] overflow-x-auto px-[24px] pb-[8px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
-              <div className="flex snap-x snap-mandatory gap-[16px]">
+              <div className="flex snap-x snap-mandatory justify-center gap-[16px]">
                 {today.card && (
-                  <div className="shrink-0 basis-[78%] snap-start">
+                  <div className="shrink-0 basis-[62%] snap-center">
                     <CardTile
                       candidate={today.card}
                       label="오늘의 인연"
@@ -266,7 +266,7 @@ export default function HomePage() {
                 {extras.map((c) => (
                   <div
                     key={c.user_id}
-                    className="shrink-0 basis-[78%] snap-start"
+                    className="shrink-0 basis-[62%] snap-center"
                   >
                     <CardTile
                       candidate={c}

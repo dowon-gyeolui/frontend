@@ -213,7 +213,6 @@ export default function ProfileDetailPage() {
                           ? "여자"
                           : "—",
                     ],
-                    ["MBTI", data.mbti ?? "—"],
                     ["직업", data.job ?? "—"],
                     ["거주지", data.region ?? "—"],
                   ]}
