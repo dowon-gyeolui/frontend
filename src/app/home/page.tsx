@@ -265,21 +265,23 @@ export default function HomePage() {
             </p>
           ) : (
             (() => {
-              // 덱: today.card + extras 를 한 배열로 합쳐서 가로 스크롤 렌더.
+              // 덱: today.card + extras. 데이팅 앱 UX — 카드 한 명씩 풀로
+              // 차지하고, 모바일 스와이프(또는 데스크탑 가로 스크롤)로
+              // 다음 사람으로 넘어감. 옆 카드는 peek 되지 않음.
               const deck = [
                 ...(today.card ? [today.card] : []),
                 ...extras,
               ];
               return (
-                // 부모의 24px 패딩을 -mx-[24px] 로 끄고 자체 px-[24px] 로
-                // 다시 padding 줘서 스크롤 영역만 화면 가장자리까지 확장.
-                // snap-x snap-mandatory 로 한 카드씩 정중앙에 끊김.
-                <div className="-mx-[24px] mt-[18px] overflow-x-auto px-[24px] pb-[8px] snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  <div className="flex justify-center gap-[12px]">
+                <div className="-mx-[24px] mt-[18px] overflow-x-auto pb-[8px] snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  <div className="flex">
                     {deck.map((c) => (
+                      // basis-full = 한 카드가 화면 폭 전체. snap-center 로
+                      // 자연스럽게 정중앙. 양옆 px-[24px] 는 사진/정보가
+                      // 화면 끝에 붙지 않도록 안쪽 여백.
                       <div
                         key={c.user_id}
-                        className="shrink-0 basis-[70%] snap-center"
+                        className="shrink-0 basis-full snap-center px-[24px]"
                       >
                         <button
                           type="button"
