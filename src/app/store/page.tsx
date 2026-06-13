@@ -8,6 +8,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { isTossConfigured } from "@/lib/config";
+import { notifyStarsChanged } from "@/lib/stars";
 import {
   STAR_PRODUCTS,
   customerKeyFor,
@@ -29,6 +30,8 @@ export default function StorePage() {
   const [me, setMe] = useState<Me | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // TEST ONLY — 토스 연결 전 임시 충전 진행 상태. 토스 연결되면 삭제.
+  const [testing, setTesting] = useState(false);
 
   useEffect(() => {
     if (!getToken()) {
@@ -57,6 +60,27 @@ export default function StorePage() {
       // 사용자가 결제창을 닫거나 주문 생성이 실패한 경우.
       setError(e instanceof Error ? e.message : "결제를 시작하지 못했어요.");
       setPendingId(null);
+    }
+  };
+
+  // TEST ONLY — 토스 연결 전, 결제 없이 스타만 적립해 카드 열람/스와이프
+  // 흐름을 테스트한다. 토스 키가 설정되면 버튼 자체가 사라지고 백엔드도
+  // 404 를 돌려준다. 토스 연결 후 이 함수와 아래 버튼을 삭제할 것.
+  const testTopup = async () => {
+    if (testing) return;
+    setError(null);
+    setTesting(true);
+    try {
+      const res = await apiFetch<{ star_balance: number }>(
+        "/payments/test-topup",
+        { method: "POST" },
+      );
+      setMe((prev) => (prev ? { ...prev, star_balance: res.star_balance } : prev));
+      notifyStarsChanged(res.star_balance);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "테스트 충전에 실패했어요.");
+    } finally {
+      setTesting(false);
     }
   };
 
@@ -108,6 +132,29 @@ export default function StorePage() {
 
         {error && (
           <p className="mt-[16px] text-center text-[12px] text-red-300">{error}</p>
+        )}
+
+        {/* TEST ONLY — 토스페이먼츠 연결 전 임시 충전. 결제 없이 스타만 +100.
+            토스 클라이언트 키가 설정되면 이 블록은 자동으로 사라진다.
+            토스 연결 후 이 블록과 testTopup 함수를 삭제할 것. */}
+        {!isTossConfigured() && (
+          <section className="mt-[24px] rounded-[18px] border border-dashed border-white/30 bg-white/5 p-[16px] text-center">
+            <p className="text-[12px] font-semibold text-white/80">
+              🧪 테스트 모드
+            </p>
+            <p className="mt-[4px] text-[11px] text-white/55">
+              토스페이먼츠 연결 전, 결제 없이 스타를 충전해 카드 열람·스와이프를
+              테스트할 수 있어요. (연결되면 자동으로 사라져요)
+            </p>
+            <button
+              type="button"
+              onClick={testTopup}
+              disabled={testing}
+              className="mx-auto mt-[12px] block w-fit rounded-full bg-white/15 px-[18px] py-[8px] text-[13px] font-bold text-white disabled:opacity-50"
+            >
+              {testing ? "충전 중..." : "테스트 충전 +100 ⭐"}
+            </button>
+          </section>
         )}
 
       </div>
