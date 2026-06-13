@@ -117,20 +117,6 @@ export default function HomePage() {
     );
   }, [me]);
 
-  // TEST ONLY — 가로 스크롤 동작 확인용. today.card 가 도착하면 같은
-  // 카드를 user_id 만 바꿔 5번 복제해 extras 에 채움. 실제 배포 전엔
-  // 이 useEffect 통째로 제거할 것.
-  useEffect(() => {
-    if (today?.card && extras.length === 0) {
-      const base = today.card;
-      const fakes = Array.from({ length: 5 }, (_, i) => ({
-        ...base,
-        user_id: base.user_id + 1000 + i,
-      }));
-      setExtras(fakes);
-    }
-  }, [today, extras.length]);
-
   // 행동 가이드는 백엔드 /saju/me/action-guide 응답을 그대로 사용.
   // 이전 tipsForElement(...) 정적 룩업은 더 이상 필요 없음.
 
