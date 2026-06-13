@@ -30,6 +30,11 @@ export type OnboardingState = {
   is_leap_month?: boolean;
   birth_time?: string; // HH:MM (24h)
   birth_place?: string; // 출생지 — 시·도 단위
+  // 이상형(필수) — 오늘의 인연 후보 필터링용
+  pref_age_min?: number;
+  pref_age_max?: number;
+  pref_region?: string; // 선호 지역 — 시·도 단위
+  pref_height_min?: number;
 };
 
 type OnboardingCtx = {

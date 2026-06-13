@@ -22,7 +22,7 @@ export default function OnboardingBirthTimePage() {
   const onNext = () => {
     if (!canContinue) return;
     update({ birth_time: unknown ? undefined : birthTime });
-    router.push("/onboarding/done");
+    router.push("/onboarding/ideal-type");
   };
 
   return (

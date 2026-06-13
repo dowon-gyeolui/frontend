@@ -11,11 +11,11 @@ import { ZamiLogo } from "@/components/brand/zami-logo";
  * the segment that should appear filled.
  */
 export type OnboardingShellProps = {
-  step: 1 | 2 | 3;
+  step: 1 | 2 | 3 | 4;
   children: ReactNode;
 };
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 4;
 
 export function OnboardingShell({ step, children }: OnboardingShellProps) {
   return (
@@ -44,7 +44,7 @@ export function OnboardingShell({ step, children }: OnboardingShellProps) {
           {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
             <div
               key={i}
-              className={`h-px w-[120px] ${
+              className={`h-px max-w-[120px] flex-1 ${
                 i + 1 <= step ? "bg-white" : "bg-white/30"
               }`}
             />

@@ -54,10 +54,16 @@ export default function OnboardingDonePage() {
       const nickname = state.nickname;
 
       try {
-        // 1) Nickname → PATCH /users/me/profile
+        // 1) Nickname + 이상형(필수) → PATCH /users/me/profile
         await apiFetch("/users/me/profile", {
           method: "PATCH",
-          body: JSON.stringify({ nickname }),
+          body: JSON.stringify({
+            nickname,
+            pref_age_min: state.pref_age_min,
+            pref_age_max: state.pref_age_max,
+            pref_region: state.pref_region,
+            pref_height_min: state.pref_height_min,
+          }),
         });
 
         // 2) Birth data → POST /users/me/birth-data

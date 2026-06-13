@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { apiFetch } from "@/lib/api";
+import { BIRTH_PLACE_OPTIONS } from "@/lib/birth-place";
 
 const SMOKING_OPTIONS = ["X", "O"] as const;
 const DRINKING_OPTIONS = ["X", "1주에 1번", "1달에 1번", "자주 마심"] as const;
@@ -228,13 +229,19 @@ export function BasicInfoEditModal({
           </PillRow>
 
           <PillRow>
-            <PillInput
-              label="거주지"
+            <span className="text-[16px] font-medium text-black shrink-0">거주지 :</span>
+            <select
               value={region}
-              onChange={setRegion}
-              placeholder="거주지를 입력해주세요(시/군)"
-              maxLength={50}
-            />
+              onChange={(e) => setRegion(e.target.value)}
+              className="flex-1 bg-transparent text-[16px] font-medium text-black focus:outline-none"
+            >
+              <option value="">거주지를 선택해주세요</option>
+              {BIRTH_PLACE_OPTIONS.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
           </PillRow>
 
           <PillRow>
