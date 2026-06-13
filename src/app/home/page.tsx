@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
+import { StatBillboard } from "@/components/home/stat-billboard";
 import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
 import { MatchInfoModal } from "@/components/matching/match-info-modal";
 import { LoadingPanel } from "@/components/ui/loading-panel";
@@ -346,6 +347,9 @@ export default function HomePage() {
             </div>
           )}
         </section>
+
+        {/* 전광판 — 가입자/성비/활성/오늘 매칭/개인화 사주 통계 회전 티커 */}
+        <StatBillboard />
 
         {/* 행동 가이드 — 홈에서 잠시 숨김. 백엔드 /saju/me/action-guide
             와 guide state/fetch 는 보존. 복원하려면 아래 주석을 풀면 됨. */}
