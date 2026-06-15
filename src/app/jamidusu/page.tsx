@@ -1,8 +1,8 @@
 "use client";
 
-import { ArrowLeft, HeartHandshake, Sparkles, Star as StarIcon, User as UserIcon, Wallet } from "lucide-react";
+import { ArrowLeft, Sparkles, Star as StarIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { LoadingPanel } from "@/components/ui/loading-panel";
@@ -337,7 +337,7 @@ function SectionCard({
   content,
   highlight,
 }: {
-  icon: React.ReactNode;
+  icon?: ReactNode;
   title: string;
   content: string;
   highlight?: boolean;
