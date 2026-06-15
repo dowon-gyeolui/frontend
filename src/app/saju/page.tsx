@@ -1,8 +1,8 @@
 "use client";
 
-import { HeartHandshake, Info, Lock, Sparkles, User as UserIcon, Wallet } from "lucide-react";
+import { Info, Lock, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { ElementPentagon } from "@/components/saju/element-pentagon";
@@ -234,7 +234,7 @@ function NarrativeCard({
   content,
   highlight,
 }: {
-  icon: React.ReactNode;
+  icon?: ReactNode;
   title: string;
   content: string;
   highlight?: boolean;
