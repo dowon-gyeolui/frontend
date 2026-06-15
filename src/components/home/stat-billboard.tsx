@@ -40,11 +40,11 @@ const MESSAGES: ((s: HomeStats) => string | null)[] = [
     const total = s.gender.male + s.gender.female;
     if (total <= 0) return null;
     const mp = Math.round((s.gender.male / total) * 100);
-    return `현재 회원 성비 — 남 ${mp}% · 여 ${100 - mp}%`;
+    return `현재 회원 성비 : 남 ${mp}% · 여 ${100 - mp}%`;
   },
   (s) =>
     s.same_day_stem && s.same_day_stem.count > 0
-      ? `나와 같은 일간(${s.same_day_stem.stem})을 가진 회원이 ${s.same_day_stem.count}명 있어요`
+      ? `나와 같은 사주인 ${s.same_day_stem.stem}을 가진 회원이 ${s.same_day_stem.count}명 있어요`
       : null,
   (s) =>
     s.same_element && s.same_element.count > 0

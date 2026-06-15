@@ -27,6 +27,9 @@ export type UnlockResponse = {
 /** 일일 추가 열람 한도 (PRD 6.3). */
 export const EXTRA_DAILY_LIMIT = 10;
 
+/** 인연 카드 1장 열람 비용(스타). 백엔드 STAR_COST_PER_CARD 와 동일. */
+export const STAR_COST_PER_CARD = 10;
+
 /** 오늘의 인연 1장(무료). 후보 풀이 없으면 card=null. */
 export async function getTodayCard(): Promise<TodayCardResponse> {
   return apiFetch<TodayCardResponse>("/matches/today");

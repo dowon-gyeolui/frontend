@@ -30,6 +30,17 @@ const PLACEHOLDER_PHOTO =
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&blur=20";
 
 /**
+ * 궁합 점수를 구간 라벨로 변환. 정확한 숫자 대신 "N점 이상"만 노출한다.
+ * 70점 미만은 배지를 달지 않는다(null).
+ */
+export function scoreTierLabel(score: number): string | null {
+  if (score >= 90) return "90점 이상";
+  if (score >= 80) return "80점 이상";
+  if (score >= 70) return "70점 이상";
+  return null;
+}
+
+/**
  * 오늘의 인연 카드 — 큰 사진(세로 4:5) 위에 이름을 얹고, 아래 정보 영역에
  * 나이·MBTI·한줄소개를 노출한다. 궁합 점수는 노출하지 않는다. 카드 폭은
  * 부모 컨테이너가 결정(홈에서는 화면 폭 전체)하고, 내부 요소는 그 폭에
@@ -37,10 +48,18 @@ const PLACEHOLDER_PHOTO =
  *
  * 무료/블라인드 정책: free 사용자는 블라인드 사진(블러 + "열람 후 공개").
  */
-export function MatchCard({ data }: { data: MatchCandidate }) {
+export function MatchCard({
+  data,
+  showScoreTier = false,
+}: {
+  data: MatchCandidate;
+  /** "너와의 인연"(유료 열람) 카드에만 궁합 점수 구간 배지를 노출 */
+  showScoreTier?: boolean;
+}) {
   const photo = data.photo_url ?? PLACEHOLDER_PHOTO;
   const name = data.nickname ?? "익명";
   const ageLabel = data.age !== null ? `${data.age}세` : "—";
+  const tier = showScoreTier ? scoreTierLabel(data.score) : null;
 
   return (
     <article className="overflow-hidden rounded-[22px] border border-white/15 bg-white/10 shadow-[0px_10px_24px_0px_rgba(0,0,0,0.3),0px_0px_36px_0px_rgba(168,85,247,0.18)] backdrop-blur-sm">
@@ -59,6 +78,13 @@ export function MatchCard({ data }: { data: MatchCandidate }) {
         {data.is_face_verified && !data.is_blinded && (
           <div className="absolute right-[12px] top-[12px]">
             <ZamiVerifiedBadge size="sm" />
+          </div>
+        )}
+
+        {/* 궁합 점수 구간 배지 — "너와의 인연" 카드 전용 */}
+        {tier && (
+          <div className="absolute left-[12px] top-[12px] rounded-full bg-purple-500/95 px-[10px] py-[3px] text-[12px] font-bold text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.8)]">
+            궁합 {tier}
           </div>
         )}
 

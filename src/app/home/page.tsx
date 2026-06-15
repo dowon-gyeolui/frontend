@@ -9,11 +9,17 @@ import { AppShell } from "@/components/layout/app-shell";
 import { StatBillboard } from "@/components/home/stat-billboard";
 import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
 import { MatchInfoModal } from "@/components/matching/match-info-modal";
+import { UnlockModal } from "@/components/matching/unlock-modal";
 import { LoadingPanel } from "@/components/ui/loading-panel";
 import { ApiError, apiFetch } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
 import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
-import { EXTRA_DAILY_LIMIT, getTodayCard, unlockExtraCard } from "@/lib/matches";
+import {
+  EXTRA_DAILY_LIMIT,
+  STAR_COST_PER_CARD,
+  getTodayCard,
+  unlockExtraCard,
+} from "@/lib/matches";
 import { notifyStarsChanged } from "@/lib/stars";
 import { profileCompletionPct } from "@/lib/profile-completion";
 
@@ -41,6 +47,7 @@ type Me = {
   mbti: string | null;
   job: string | null;
   region: string | null;
+  star_balance: number;
 };
 
 export default function HomePage() {
@@ -65,6 +72,10 @@ export default function HomePage() {
   const [fortuneFailed, setFortuneFailed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeMatch, setActiveMatch] = useState<MatchCandidate | null>(null);
+  // 모달이 "너와의 인연"(유료) 카드에서 열렸는지 — 점수 티어 노출 여부.
+  const [activeIsPaid, setActiveIsPaid] = useState(false);
+  // 추가 열람 수량 선택 팝업 표시 여부.
+  const [unlockOpen, setUnlockOpen] = useState(false);
   // 가벼운 토스트 — 추가 열람 한도 초과(403)·후보 없음(404) 안내용.
   // 몇 초 후 자동 사라짐.
   const [toast, setToast] = useState<string | null>(null);
@@ -124,33 +135,79 @@ export default function HomePage() {
 
   const nickname = me?.nickname ?? "OOO";
 
-  // 추가 인연 열람 — 별 10개 차감 후 다음 후보 공개.
-  const handleUnlockExtra = async () => {
+  const balance = me?.star_balance ?? 0;
+  // const 로 뽑아 narrowing 이 onClick 클로저까지 유지되도록 한다.
+  const todayCard = today?.card ?? null;
+  const limitReached = extraUsed !== null && extraUsed >= EXTRA_DAILY_LIMIT;
+
+  // 한 번에 열람 가능한 최대 장수 = min(보유 스타로 살 수 있는 장수,
+  // 남은 일일 한도). extraUsed 가 아직 null 이면 0 으로 가정(낙관적) —
+  // 실제 한도 초과 시 백엔드 403 으로 루프가 멈추고 안내한다.
+  const maxUnlock = Math.max(
+    0,
+    Math.min(
+      Math.floor(balance / STAR_COST_PER_CARD),
+      EXTRA_DAILY_LIMIT - (extraUsed ?? 0),
+    ),
+  );
+
+  // 버튼 클릭 — 스타 부족이면 충전 유도, 충분하면 수량 선택 팝업.
+  const openUnlock = () => {
+    setNeedStars(false);
+    if (balance < STAR_COST_PER_CARD) {
+      setNeedStars(true);
+      return;
+    }
+    setUnlockOpen(true);
+  };
+
+  // 선택한 N장을 순차 열람. 도중 후보 소진(404)/한도(403)/스타부족(402)
+  // 이면 멈추고 열린 만큼만 반영 + 안내.
+  const handleUnlockN = async (count: number) => {
     if (unlocking) return;
     setUnlocking(true);
-    setNeedStars(false);
+    let opened = 0;
+    let stopReason: "none" | "pool" | "limit" | "stars" | "error" = "none";
     try {
-      const res = await unlockExtraCard();
-      setExtras((prev) => [...prev, res.card]);
-      setExtraUsed(res.extra_unlocked_today);
-      notifyStarsChanged(res.star_balance);
-    } catch (e) {
-      if (e instanceof ApiError && e.status === 402) {
-        // 스타 부족 → 충전 유도.
-        setNeedStars(true);
-      } else if (e instanceof ApiError && e.status === 403) {
-        setToast("오늘 추가 열람 한도(10장)를 모두 사용했어요.");
-      } else if (e instanceof ApiError && e.status === 404) {
-        setToast("오늘은 더 이상 추천할 인연이 없어요.");
-      } else {
-        setToast(e instanceof Error ? e.message : "인연을 열지 못했어요.");
+      for (let i = 0; i < count; i++) {
+        try {
+          const res = await unlockExtraCard();
+          setExtras((prev) => [...prev, res.card]);
+          setExtraUsed(res.extra_unlocked_today);
+          setMe((prev) =>
+            prev ? { ...prev, star_balance: res.star_balance } : prev,
+          );
+          notifyStarsChanged(res.star_balance);
+          opened += 1;
+        } catch (e) {
+          if (e instanceof ApiError && e.status === 402) stopReason = "stars";
+          else if (e instanceof ApiError && e.status === 403) stopReason = "limit";
+          else if (e instanceof ApiError && e.status === 404) stopReason = "pool";
+          else stopReason = "error";
+          break;
+        }
       }
     } finally {
       setUnlocking(false);
+      setUnlockOpen(false);
+    }
+
+    if (stopReason === "none") {
+      setToast(`인연 카드 ${opened}장을 열었어요.`);
+    } else if (stopReason === "pool") {
+      setToast(
+        opened > 0
+          ? `${count}장 중 ${opened}장만 열었어요. 더 이상 추천할 인연이 없어요.`
+          : "오늘은 더 이상 추천할 인연이 없어요.",
+      );
+    } else if (stopReason === "limit") {
+      setToast(`오늘 추가 열람 한도(${EXTRA_DAILY_LIMIT}장)에 도달했어요.`);
+    } else if (stopReason === "stars") {
+      setNeedStars(true);
+    } else {
+      setToast("일부 인연을 열지 못했어요. 잠시 후 다시 시도해주세요.");
     }
   };
-
-  const limitReached = extraUsed !== null && extraUsed >= EXTRA_DAILY_LIMIT;
 
   return (
     <AppShell
@@ -236,9 +293,8 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* 오늘의 인연 (무료 1장) + 추가 인연 유료 열람 (별 10개 / 하루 10장).
-            좌우 스크롤: 한 카드 78% 폭, 옆 카드가 살짝 peek. -mx-[24px] +
-            px-[24px] 로 부모 패딩 무시하고 화면 가장자리까지 스크롤. */}
+        {/* 오늘의 인연 (무료 1장). 유료 추가 열람분은 아래 "너와의 인연"
+            섹션으로 분리된다. */}
         <section className="mt-[36px]">
           <h2 className="text-center text-[20px] font-bold text-white">
             오늘의 인연
@@ -248,43 +304,24 @@ export default function HomePage() {
             <p className="mt-[18px] text-center text-[12px] text-white/50">
               오늘의 인연을 찾는 중...
             </p>
-          ) : today.card === null && extras.length === 0 ? (
+          ) : todayCard === null ? (
             <p className="mt-[18px] text-center text-[12px] text-white/50">
               아직 매칭 가능한 상대가 없어요
             </p>
           ) : (
-            (() => {
-              // 덱: today.card + extras. 데이팅 앱 UX — 카드 한 명씩 풀로
-              // 차지하고, 모바일 스와이프(또는 데스크탑 가로 스크롤)로
-              // 다음 사람으로 넘어감. 옆 카드는 peek 되지 않음.
-              const deck = [
-                ...(today.card ? [today.card] : []),
-                ...extras,
-              ];
-              return (
-                <div className="-mx-[24px] mt-[18px] overflow-x-auto pb-[8px] snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  <div className="flex">
-                    {deck.map((c) => (
-                      // basis-full = 한 카드가 화면 폭 전체. snap-center 로
-                      // 자연스럽게 정중앙. 양옆 px-[24px] 는 사진/정보가
-                      // 화면 끝에 붙지 않도록 안쪽 여백.
-                      <div
-                        key={c.user_id}
-                        className="shrink-0 basis-full snap-center px-[24px]"
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setActiveMatch(c)}
-                          className="relative block w-full text-left transition active:scale-[0.98]"
-                        >
-                          <MatchCard data={c} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()
+            <div className="mt-[18px]">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveIsPaid(false);
+                  setActiveMatch(todayCard);
+                }}
+                className="relative block w-full text-left transition active:scale-[0.98]"
+              >
+                {/* 오늘의 인연(무료) 카드 — 점수 미노출 */}
+                <MatchCard data={todayCard} />
+              </button>
+            </div>
           )}
 
           {/* 스타 부족 안내 → 충전 유도 */}
@@ -306,12 +343,12 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* 추가 인연 열람 버튼 (별 10개) */}
-          {today !== null && (today.card !== null || extras.length > 0) && (
+          {/* 추가 인연 열람 버튼 — 클릭 시 수량 선택 팝업 */}
+          {today !== null && today.card !== null && (
             <div className="mt-[18px]">
               <button
                 type="button"
-                onClick={limitReached ? undefined : handleUnlockExtra}
+                onClick={limitReached ? undefined : openUnlock}
                 disabled={unlocking || limitReached}
                 className="flex h-[50px] w-full items-center justify-center gap-[8px] rounded-[14px] border border-[#fde047]/50 bg-gradient-to-r from-yellow-300/15 to-pink-400/15 text-[15px] font-bold text-white disabled:opacity-50"
               >
@@ -333,6 +370,37 @@ export default function HomePage() {
             </div>
           )}
         </section>
+
+        {/* 너와의 인연 — 유료로 열람한 카드들. 궁합 점수 구간(70/80/90 이상)
+            배지를 노출한다. 가로 스와이프로 한 명씩 넘겨본다. */}
+        {extras.length > 0 && (
+          <section className="mt-[36px]">
+            <h2 className="text-center text-[20px] font-bold text-white">
+              너와의 인연
+            </h2>
+            <div className="-mx-[24px] mt-[18px] overflow-x-auto pb-[8px] snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex">
+                {extras.map((c) => (
+                  <div
+                    key={c.user_id}
+                    className="shrink-0 basis-full snap-center px-[24px]"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveIsPaid(true);
+                        setActiveMatch(c);
+                      }}
+                      className="relative block w-full text-left transition active:scale-[0.98]"
+                    >
+                      <MatchCard data={c} showScoreTier />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* 전광판 — 가입자/성비/활성/오늘 매칭/개인화 사주 통계 회전 티커 */}
         <StatBillboard />
@@ -388,6 +456,7 @@ export default function HomePage() {
       {activeMatch && (
         <MatchInfoModal
           candidate={activeMatch}
+          showScoreTier={activeIsPaid}
           onClose={() => setActiveMatch(null)}
           onOpenDetail={() => {
             router.push(`/profile/${activeMatch.user_id}`);
@@ -398,6 +467,17 @@ export default function HomePage() {
             sessionStorage.setItem("activeChat", JSON.stringify(activeMatch));
             router.push(`/matching/${activeMatch.user_id}`);
           }}
+        />
+      )}
+
+      {/* 추가 인연 열람 수량 선택 팝업 */}
+      {unlockOpen && (
+        <UnlockModal
+          balance={balance}
+          maxCount={maxUnlock}
+          busy={unlocking}
+          onConfirm={(count) => handleUnlockN(count)}
+          onClose={() => setUnlockOpen(false)}
         />
       )}
 

@@ -3,7 +3,7 @@
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import type { MatchCandidate } from "@/components/matching/match-card";
+import { scoreTierLabel, type MatchCandidate } from "@/components/matching/match-card";
 
 const PLACEHOLDER_PHOTO =
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop";
@@ -21,11 +21,14 @@ export function MatchInfoModal({
   onClose,
   onOpenDetail,
   onStartChat,
+  showScoreTier = false,
 }: {
   candidate: MatchCandidate;
   onClose: () => void;
   onOpenDetail: () => void;
   onStartChat: () => void;
+  /** "너와의 인연"(유료 열람) 카드에만 궁합 점수 구간 배지를 노출 */
+  showScoreTier?: boolean;
 }) {
   const photos =
     candidate.photos && candidate.photos.length > 0
@@ -52,6 +55,7 @@ export function MatchInfoModal({
 
   const name = candidate.nickname ?? "익명";
   const ageLabel = candidate.age !== null ? `${candidate.age}세` : "—";
+  const tier = showScoreTier ? scoreTierLabel(candidate.score) : null;
 
   return (
     <div
@@ -126,6 +130,11 @@ export function MatchInfoModal({
 
         {/* 나이 · MBTI · 한줄소개 */}
         <div className="mt-[12px] space-y-[6px] pl-[16px] pr-[8px] text-[#1b1029]">
+          {tier && (
+            <span className="inline-block rounded-full bg-purple-500/15 px-[10px] py-[3px] text-[13px] font-bold text-purple-700">
+              궁합 {tier}
+            </span>
+          )}
           <div className="flex items-center gap-[8px] text-[18px] font-medium leading-[26px]">
             <span>나이 : {ageLabel}</span>
             {candidate.mbti && (
