@@ -121,7 +121,7 @@ export default function OnboardingDonePage() {
                 done={false}
                 messages={[
                   { atPct: 0, text: "프로필 저장 중..." },
-                  { atPct: 50, text: "데이터 검증 중..." },
+                  { atPct: 50, text: "데이터 저장 중..." },
                   { atPct: 85, text: "거의 다 됐어요" },
                 ]}
               />
@@ -139,11 +139,11 @@ export default function OnboardingDonePage() {
                 estimatedMs={9000}
                 done={false}
                 messages={[
-                  { atPct: 0, text: "사주 4기둥 세우는 중..." },
-                  { atPct: 25, text: "오행 분포 분석 중..." },
-                  { atPct: 50, text: "원전 구절 가져오는 중..." },
-                  { atPct: 75, text: "당신만의 풀이 작성 중..." },
-                  { atPct: 90, text: "마지막 다듬기 중... 거의 다 왔어요!" },
+                  { atPct: 0, text: "사주 분석하는 중..." },
+                  { atPct: 25, text: "오행 분석 중..." },
+                  { atPct: 50, text: "해석하는 중..." },
+                  { atPct: 70, text: "사주풀이 작성 중..." },
+                  { atPct: 90, text: "거의 다 왔어요!" },
                 ]}
               />
             </div>
@@ -232,16 +232,16 @@ function ReadyView({
           </div>
 
           {saju.personality && (
-            <NarrativeCard title="✦ 성격" body={saju.personality} />
+            <NarrativeCard title="성격" body={saju.personality} />
           )}
-          {saju.advice && <NarrativeCard title="✦ 조언" body={saju.advice} />}
+          {saju.advice && <NarrativeCard title="조언" body={saju.advice} />}
         </div>
       )}
 
       {/* When LLM failed — friendly fallback */}
       {!saju && (
         <p className="mt-[16px] max-w-[300px] text-center text-[13px] leading-[20px] text-white/70">
-          LLM 분석이 일시적으로 지연됐어요. 자세한 풀이는{" "}
+          일시적으로 오류가 발생했어요. 자세한 풀이는{" "}
           <span className="text-purple-300">사주 페이지</span> 에서 확인할 수 있어요.
         </p>
       )}
@@ -257,7 +257,7 @@ function ReadyView({
               "linear-gradient(99deg, rgb(124, 58, 237) 0%, rgb(168, 85, 247) 100%)",
           }}
         >
-          내 사주 자세히 보기
+          내 사주 보러가기
         </button>
         <button
           type="button"

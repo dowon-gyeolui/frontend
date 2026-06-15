@@ -79,7 +79,7 @@ export function CompatibilityReportDrawer({
       {/* Drawer panel */}
       <aside
         role="dialog"
-        aria-label="운명 분석 리포트"
+        aria-label="운명 분석 결과"
         aria-hidden={!open}
         className={`fixed bottom-0 right-0 top-0 z-50 flex w-[300px] max-w-[85vw] flex-col rounded-l-[10px] bg-[#352052] shadow-[0_0_20px_rgba(0,0,0,0.5)] transition-transform ${
           open ? "translate-x-0" : "translate-x-full"
@@ -96,7 +96,7 @@ export function CompatibilityReportDrawer({
             <X className="size-[22px] stroke-white stroke-[2]" />
           </button>
           <h2 className="text-center text-[18px] font-bold text-white">
-            운명 분석 리포트
+            운명 분석 결과
           </h2>
           <div className="mt-[14px] h-px bg-white/40" />
         </div>
@@ -109,9 +109,9 @@ export function CompatibilityReportDrawer({
                 estimatedMs={6000}
                 done={!loading}
                 messages={[
-                  { atPct: 0, text: "두 분의 사주 비교하는 중..." },
-                  { atPct: 35, text: "잘 맞는 점·주의할 점 찾는 중..." },
-                  { atPct: 65, text: "리포트 정리 중..." },
+                  { atPct: 0, text: "사주 비교 중..." },
+                  { atPct: 35, text: "잘 맞는 점 찾는 중..." },
+                  { atPct: 65, text: "분석 정리 중..." },
                   { atPct: 88, text: "거의 다 됐어요!" },
                 ]}
               />
@@ -120,7 +120,7 @@ export function CompatibilityReportDrawer({
 
           {error && !loading && (
             <p className="rounded-[10px] border border-red-400/40 bg-red-500/10 p-[12px] text-[12px] text-red-200">
-              리포트를 불러오지 못했어요. {error}
+              결과를 불러오지 못했어요. {error}
             </p>
           )}
 
@@ -128,7 +128,7 @@ export function CompatibilityReportDrawer({
             <>
               {/* Summary section */}
               <h3 className="text-center text-[15px] font-semibold text-white">
-                상대방과의 궁합 간단 요약
+                상대방과의 궁합 요약
               </h3>
               <ul className="mt-[14px] space-y-[14px]">
                 {report.summary_lines.map((line, i) => (
@@ -147,7 +147,7 @@ export function CompatibilityReportDrawer({
 
               {/* Keywords */}
               <h3 className="mt-[20px] text-center text-[15px] font-semibold text-white">
-                인연 키워드
+                주요 키워드
               </h3>
               <div className="mt-[10px] flex flex-wrap justify-center gap-[6px] rounded-[14px] border border-white/15 bg-white/10 px-[12px] py-[10px] backdrop-blur-sm">
                 {report.keywords.map((kw) => (

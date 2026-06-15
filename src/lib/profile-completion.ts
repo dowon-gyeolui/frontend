@@ -41,8 +41,8 @@ export function completionRows(me: CompletionInput | null): CompletionRow[] {
   const hasBasicInfo =
     has(me?.height_cm) || has(me?.mbti) || has(me?.job) || has(me?.region);
   return [
-    { label: "기본 필수 정보 입력", pct: 30, earned: required },
-    { label: "시간 (출생 시간)", pct: 10, earned: has(me?.birth_time) },
+    { label: "필수 정보 입력", pct: 30, earned: required },
+    { label: "시간", pct: 10, earned: has(me?.birth_time) },
     { label: "프로필 사진 추가", pct: 20, earned: has(me?.photo_url) },
     { label: "한 줄 자기소개 추가", pct: 20, earned: has(me?.bio) },
     { label: "기본 정보 입력", pct: 20, earned: hasBasicInfo },

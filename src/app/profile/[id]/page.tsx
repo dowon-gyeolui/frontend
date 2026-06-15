@@ -35,11 +35,11 @@ type PublicProfile = {
 };
 
 const ELEMENT_HANJA: Record<string, string> = {
-  목: "木",
-  화: "火",
-  토: "土",
-  금: "金",
-  수: "水",
+  목: "나무",
+  화: "불",
+  토: "흙",
+  금: "금",
+  수: "물",
 };
 
 /**
@@ -114,7 +114,7 @@ export default function ProfileDetailPage() {
               done={!!data}
               messages={[
                 { atPct: 0, text: "프로필 정보 불러오는 중..." },
-                { atPct: 60, text: "사진·MBTI·궁합 정렬 중..." },
+                { atPct: 60, text: "정보 정리 중..." },
               ]}
             />
           </div>

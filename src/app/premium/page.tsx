@@ -26,12 +26,12 @@ function PremiumContent() {
   const heroTitle =
     from === "chat"
       ? "마음에 드는 인연과 대화를 시작해보세요"
-      : "스타로 더 많은 인연을 만나보세요";
+      : "별로 더 많은 인연을 만나보세요";
 
   const heroSubtitle =
     from === "chat"
       ? "인연 카드를 열람하면 그 상대와 바로 채팅할 수 있어요."
-      : "오늘의 인연은 매일 무료 1장. 더 만나고 싶다면 스타로 추가 인연 카드를 열어보세요.";
+      : "오늘의 인연은 매일 무료 1장. 더 만나고 싶다면 별로 추가 인연 카드를 열어보세요.";
 
   return (
     <AppShell>
@@ -47,7 +47,7 @@ function PremiumContent() {
             <ArrowLeft className="size-[24px] stroke-white stroke-[2]" />
           </button>
           <h1 className="text-center text-[20px] font-bold text-white">
-            ZAMI 스타
+            ZAMI 별
           </h1>
           <div className="mt-[10px] h-px bg-white/30" />
         </div>
@@ -67,7 +67,7 @@ function PremiumContent() {
 
         {/* 스타 사용처 */}
         <section className="mt-[24px]">
-          <h3 className="text-[16px] font-bold text-white">스타로 할 수 있는 것</h3>
+          <h3 className="text-[16px] font-bold text-white">별로 할 수 있는 것</h3>
           <ul className="mt-[12px] space-y-[12px] text-[14px] text-white/85">
             <FeatureRow
               icon={<Star className="size-[18px] fill-yellow-300 stroke-yellow-300" />}
@@ -96,7 +96,7 @@ function PremiumContent() {
             별 10개 = 인연 카드 1장
           </p>
           <p className="mt-[4px] text-[12px] text-white/60">
-            1,100원부터 · 미사용 스타는 환불 가능
+            1,100원부터
           </p>
 
           <button
@@ -105,7 +105,7 @@ function PremiumContent() {
             className="mt-[18px] flex h-[52px] w-full items-center justify-center gap-[8px] rounded-[12px] bg-gradient-to-r from-yellow-300 to-pink-400 text-[16px] font-bold text-[#1b1029] shadow-[0_0_15px_-3px_rgba(253,224,71,0.6)] hover:opacity-90"
           >
             <Star className="size-[16px] fill-[#1b1029]" />
-            스타 충전하러 가기 →
+            별 충전하러 가기
           </button>
         </section>
       </div>

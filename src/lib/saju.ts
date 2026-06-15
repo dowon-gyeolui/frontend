@@ -93,21 +93,21 @@ export const ELEMENT_DISPLAY: Record<
   { ko: string; hanja: string; en: string; color: string; bgGlow: string }
 > = {
   wood: {
-    ko: "목",
+    ko: "나무",
     hanja: "木",
     en: "WOOD",
     color: "#22c55e",
     bgGlow: "rgba(34, 197, 94, 0.3)",
   },
   fire: {
-    ko: "화",
+    ko: "불",
     hanja: "火",
     en: "FIRE",
     color: "#ef4444",
     bgGlow: "rgba(239, 68, 68, 0.3)",
   },
   earth: {
-    ko: "토",
+    ko: "흙",
     hanja: "土",
     en: "EARTH",
     color: "#eab308",
@@ -121,7 +121,7 @@ export const ELEMENT_DISPLAY: Record<
     bgGlow: "rgba(203, 213, 225, 0.3)",
   },
   water: {
-    ko: "수",
+    ko: "물",
     hanja: "水",
     en: "WATER",
     color: "#3b82f6",

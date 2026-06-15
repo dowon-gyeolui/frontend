@@ -92,22 +92,21 @@ export default function StorePage() {
           <button
             type="button"
             onClick={() => router.back()}
-            aria-label="뒤로"
+            aria-label="뒤로 가기"
             className="absolute left-0 top-[14px]"
           >
             <ArrowLeft className="size-[24px] stroke-white stroke-[2]" />
           </button>
           <h1 className="text-center text-[20px] font-bold text-white">
-            스타 충전
+            별 충전
           </h1>
           <div className="mt-[10px] h-px bg-white/30" />
         </div>
 
         {/* 현재 보유 스타 */}
         <section className="mt-[20px] rounded-[18px] border border-yellow-300/40 bg-gradient-to-br from-[#fde047]/15 to-[#a78bfa]/10 p-[18px] text-center backdrop-blur-sm">
-          <p className="text-[12px] text-white/70">현재 보유 스타</p>
+          <p className="text-[12px] text-white/70">현재 보유 별</p>
           <div className="mt-[6px] flex items-center justify-center gap-[8px]">
-            <Star className="size-[26px] fill-[#fde047] stroke-[#fde047]" />
             <span className="text-[32px] font-bold text-white">
               {me ? me.star_balance.toLocaleString("ko-KR") : "—"}
             </span>
@@ -191,7 +190,7 @@ function PackageCard({
         <div>
           <div className="flex items-center gap-[6px]">
             <p className="text-[17px] font-bold text-white">
-              스타 {product.stars.toLocaleString("ko-KR")}개
+              별 {product.stars.toLocaleString("ko-KR")}개
             </p>
             {product.featured && (
               <span className="rounded-full bg-[#fde047] px-[7px] py-[1px] text-[10px] font-bold text-[#1b1029]">
@@ -200,7 +199,7 @@ function PackageCard({
             )}
           </div>
           <p className="mt-[2px] text-[11px] text-white/60">
-            인연 카드 {product.cards}장 · {product.note}
+            인연 카드 {product.cards}장 {product.note}
           </p>
         </div>
       </div>

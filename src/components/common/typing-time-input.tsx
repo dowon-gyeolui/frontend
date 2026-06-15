@@ -110,7 +110,7 @@ export function TypingTimeInput({
       <div
         onClick={openPicker}
         role="button"
-        aria-label="다이얼로 시간 선택"
+        aria-label="시간 선택"
         className={`absolute right-[6px] top-1/2 grid size-[40px] -translate-y-1/2 cursor-pointer place-items-center rounded-[6px] ${disabled ? "pointer-events-none opacity-40" : ""}`}
       >
         <Clock className={`size-[20px] ${iconCls}`} />
@@ -121,7 +121,7 @@ export function TypingTimeInput({
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
           className="absolute inset-0 size-full cursor-pointer opacity-0 [color-scheme:dark]"
-          aria-label="출생 시간 (다이얼)"
+          aria-label="출생 시간 선택"
         />
       </div>
     </div>

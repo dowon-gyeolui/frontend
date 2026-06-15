@@ -192,7 +192,7 @@ export function BasicInfoEditModal({
           기본 정보 수정
         </h2>
         <p className="mt-[6px] text-center text-[11px] text-[#5a3a82]">
-          궁합 분석에 활용되는 추가 정보를 입력해주세요.
+          추가 정보를 입력해주세요.
         </p>
 
         <div className="mt-[20px] space-y-[9px]">

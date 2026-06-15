@@ -75,11 +75,11 @@ export default function SajuPage() {
               estimatedMs={8000}
               done={!!saju}
               messages={[
-                { atPct: 0, text: "사주 4기둥을 세우는 중..." },
-                { atPct: 25, text: "오행 분포를 분석하고 있어요" },
-                { atPct: 50, text: "원전 구절을 찾아보는 중..." },
-                { atPct: 75, text: "성격·연애·재물·조언 풀이 작성 중..." },
-                { atPct: 90, text: "마무리 정리 중..." },
+                { atPct: 0, text: "사주 보는 중..." },
+                { atPct: 25, text: "사주 분석 중..." },
+                { atPct: 50, text: "책 구절을 찾아보는 중..." },
+                { atPct: 75, text: "풀이 작성 중..." },
+                { atPct: 90, text: "거의 다 했어요!" },
               ]}
             />
           </div>
@@ -96,13 +96,6 @@ export default function SajuPage() {
                 <h2 className="text-[16px] font-bold text-white">
                   나의 오행 밸런스 <span className="text-white/40">ⓘ</span>
                 </h2>
-                <button
-                  type="button"
-                  onClick={() => router.push("/jamidusu")}
-                  className="rounded-full bg-white/10 px-[10px] py-[4px] text-[10px] text-white/70 hover:bg-white/20"
-                >
-                  자미두수 보러가기
-                </button>
               </div>
               <div className="mt-[8px] flex justify-center">
                 <ElementPentagon profile={saju.element_profile} size={280} />
@@ -112,18 +105,13 @@ export default function SajuPage() {
             {/* 오행 종합 해석 */}
             <section className="rounded-[14px] border border-white/15 bg-white/5 p-[16px] backdrop-blur-sm">
               <h3 className="text-[14px] font-bold text-white">
-                오행 종합 해석
+                종합 해석
               </h3>
               <div className="mt-[8px] space-y-[6px] text-[12px] leading-[20px] text-white/80 text-ko">
                 <DominantSummary profile={saju.element_profile} />
                 {saju.interpretation && (
                   <p className="border-t border-white/10 pt-[6px]">
                     {saju.interpretation}
-                  </p>
-                )}
-                {saju.interpretation_status === "pending" && (
-                  <p className="border-t border-white/10 pt-[6px] text-white/40">
-                    원전 데이터 ingest 후 LLM 해석이 표시됩니다.
                   </p>
                 )}
               </div>
@@ -179,7 +167,7 @@ function NarrativeSections({ data }: { data: DetailedSajuResponse }) {
     return (
       <section className="rounded-[14px] border border-yellow-400/30 bg-yellow-500/5 p-[14px] text-center">
         <p className="text-[13px] leading-[20px] text-yellow-100/80">
-          원전 데이터가 사주와 매칭되지 않아 심층 해석을 생성하지 못했어요.
+          심층 해석에 어려움을 겪고 있어요.
           <br />
           생년월일/시간을 더 정확히 입력하면 풀이가 향상됩니다.
         </p>
@@ -207,22 +195,18 @@ function NarrativeSections({ data }: { data: DetailedSajuResponse }) {
         )}
       </h2>
       <NarrativeCard
-        icon={<UserIcon className="size-[18px] stroke-purple-300" />}
         title="성격"
         content={data.personality}
       />
       <NarrativeCard
-        icon={<HeartHandshake className="size-[18px] stroke-pink-300" />}
         title="대인관계 · 연애운"
         content={data.love}
       />
       <NarrativeCard
-        icon={<Wallet className="size-[18px] stroke-yellow-300" />}
         title="재물운"
         content={data.wealth}
       />
       <NarrativeCard
-        icon={<Sparkles className="size-[18px] stroke-emerald-300" />}
         title="조언"
         content={data.advice}
         highlight
@@ -236,7 +220,7 @@ function NarrativeSections({ data }: { data: DetailedSajuResponse }) {
             ))}
           </ul>
           <p className="mt-[8px] text-[10px] leading-[15px] text-white/40">
-            위 풀이는 이 원전 구절들을 기반으로 LLM 이 작성했어요.
+            사주 구절들을 기반으로 저희가 만들어봤어요.
           </p>
         </div>
       )}
@@ -271,7 +255,7 @@ function NarrativeCard({
       <p className="mt-[8px] text-[13px] leading-[20px] text-white/85 text-ko">
         {has ? content : (
           <span className="text-white/40">
-            이 항목에 대한 원전 구절을 찾지 못했어요.
+            이 항목에 대해서 찾지 못했어요.
           </span>
         )}
       </p>
@@ -297,9 +281,9 @@ function JamidusuCta({ onOpen }: { onOpen: () => void }) {
       </div>
 
       <div className="relative mt-[12px] space-y-[6px] text-[12px] text-white/40">
-        <p>命宮(명궁): ████ ███ ████ ███████</p>
-        <p>財帛宮(재백궁): ███ ████████ ██ ███</p>
-        <p>夫妻宮(부처궁): ██████ ███ ███ █████</p>
+        <p>명궁: ████ ███ ████ ███████</p>
+        <p>재백궁: ███ ████████ ██ ███</p>
+        <p>부처궁: ██████ ███ ███ █████</p>
       </div>
 
       <div className="mt-[14px] flex items-center justify-center gap-[6px] text-white/80">

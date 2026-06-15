@@ -149,11 +149,6 @@ export default function ChatRoomPage() {
       try {
         const newer = await fetchMessagesWith(peerId, lastIdRef.current || undefined);
         if (cancelled || newer.length === 0) return;
-        // Dedup against current state — when send() and a poll fire close
-        // together, the just-sent message could land in `prev` from send's
-        // optimistic add AND in this poll's `newer`. Without this filter
-        // the first message would render twice on the sender's screen
-        // (visible in dev where StrictMode double-runs effects).
         let appendedFromPeer = false;
         setMessages((prev) => {
           const seen = new Set(prev.map((m) => m.id));
@@ -163,11 +158,8 @@ export default function ChatRoomPage() {
           return [...prev, ...fresh];
         });
         lastIdRef.current = newer[newer.length - 1].id;
-        // Only call mark-read when the peer actually said something new.
-        // Skipping for our own echoes saves a no-op POST every tick.
         if (appendedFromPeer) markThreadRead(peerId).catch(() => {});
       } catch {
-        // soft-fail polls; user can retry by interacting
       }
     };
     const handle = window.setInterval(tick, POLL_INTERVAL_MS);
@@ -177,7 +169,6 @@ export default function ChatRoomPage() {
     };
   }, [me, peerId]);
 
-  // Auto-scroll to bottom when messages change.
   useEffect(() => {
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
@@ -193,7 +184,6 @@ export default function ChatRoomPage() {
     try {
       const msg = await sendMessageTo(peerId, text);
       setMessages((prev) => {
-        // Skip if polling already grabbed it (defensive against duplicates).
         if (prev.some((m) => m.id === msg.id)) return prev;
         return [...prev, msg];
       });
@@ -206,7 +196,6 @@ export default function ChatRoomPage() {
     }
   }, [input, peerId, sending]);
 
-  // 미디어 업로드 (사진/카메라/음성). + 버튼 메뉴에서 호출.
   const sendMedia = useCallback(
     async (file: Blob, kind: "image" | "audio") => {
       if (attachmentUploading) return;
@@ -252,7 +241,7 @@ export default function ChatRoomPage() {
           <button
             type="button"
             onClick={() => setReportOpen(true)}
-            aria-label="운명 분석 리포트"
+            aria-label="분석 리포트"
             className="grid size-[28px] place-items-center"
           >
             <Menu className="size-[22px] stroke-white stroke-[2]" />
@@ -289,7 +278,6 @@ export default function ChatRoomPage() {
             </>
           )}
           .
-          <br />첫 질문으로 취미에 대해 물어보는 것은 어떨까요?
         </p>
       )}
 
@@ -298,11 +286,6 @@ export default function ChatRoomPage() {
         ref={scrollRef}
         className="flex-1 space-y-[12px] overflow-y-auto px-[16px] pb-[24px]"
       >
-        {messages.length === 0 && (
-          <p className="mt-12 text-center text-[12px] text-white/40">
-            첫 메시지를 보내보세요!
-          </p>
-        )}
         {messages.map((m) =>
           m.sender_id === me?.id ? (
             <MeBubble key={m.id} message={m} />
@@ -330,7 +313,7 @@ export default function ChatRoomPage() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
             disabled={sending}
-            placeholder="채팅을 입력하세요."
+            placeholder="채팅을 보내볼까요?."
             className="size-full bg-transparent pr-[40px] text-[16px] font-light text-[#212265] placeholder:text-[#212265]/63 focus:outline-none"
           />
           <button
@@ -370,7 +353,7 @@ export default function ChatRoomPage() {
           onClose={() => setReportModalOpen(false)}
           onSubmitted={() => {
             setReportModalOpen(false);
-            alert("신고가 접수되었습니다. 운영팀이 대화 기록과 함께 검토할게요.");
+            alert("신고가 접수되었습니다. 빠른 시일 내 답변 드리겠습니다.");
           }}
         />
       )}
@@ -386,7 +369,7 @@ export default function ChatRoomPage() {
 
       {attachmentUploading && (
         <div className="fixed bottom-[90px] left-1/2 z-40 -translate-x-1/2 rounded-full bg-black/65 px-[14px] py-[6px] text-[12px] text-white">
-          전송 중...
+          전송 중
         </div>
       )}
     </div>

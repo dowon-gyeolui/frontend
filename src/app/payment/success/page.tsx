@@ -66,7 +66,7 @@ function SuccessContent() {
               <Star className="size-[32px] fill-white stroke-white" />
             </div>
             <p className="mt-[18px] text-[15px] text-white/85">
-              결제를 확인하고 스타를 적립하는 중...
+              별 적립중...
             </p>
           </>
         )}
@@ -78,12 +78,12 @@ function SuccessContent() {
             </div>
             <h1 className="mt-[18px] text-[22px] font-bold text-white">
               {starAmount !== null
-                ? `스타 ${starAmount.toLocaleString("ko-KR")}개 충전 완료!`
-                : "스타 충전 완료!"}
+                ? `별 ${starAmount.toLocaleString("ko-KR")}개 충전 완료!`
+                : "별 충전 완료!"}
             </h1>
             {balance !== null && (
               <p className="mt-[10px] text-[14px] text-white/80">
-                현재 보유 스타{" "}
+                현재 보유 별{" "}
                 <span className="font-bold text-[#fde047]">
                   {balance.toLocaleString("ko-KR")}개
                 </span>
@@ -99,7 +99,7 @@ function SuccessContent() {
                 onClick={() => router.replace("/home")}
                 className="h-[50px] w-full rounded-[12px] bg-gradient-to-r from-yellow-300 to-pink-400 text-[16px] font-bold text-[#1b1029]"
               >
-                인연 카드 보러가기 →
+                인연 카드 보러가기
               </button>
               <button
                 type="button"
@@ -121,8 +121,7 @@ function SuccessContent() {
               {error}
             </p>
             <p className="mt-[6px] text-[11px] text-white/50">
-              스타가 적립되지 않았다면 다시 시도해주세요. 이미 적립됐다면 중복
-              결제되지 않습니다.
+              별이 적립되지 않았다면 다시 시도해주세요.
             </p>
             <div className="mt-[24px] flex w-full max-w-[320px] flex-col gap-[10px]">
               <button
@@ -130,14 +129,14 @@ function SuccessContent() {
                 onClick={() => router.replace("/store")}
                 className="h-[50px] w-full rounded-[12px] bg-gradient-to-r from-yellow-300 to-pink-400 text-[16px] font-bold text-[#1b1029]"
               >
-                스타 충전으로 돌아가기
+                별 충전으로 돌아가기
               </button>
               <button
                 type="button"
                 onClick={() => router.replace("/home")}
                 className="h-[44px] w-full rounded-[12px] border border-white/15 bg-white/5 text-[14px] text-white/75 hover:bg-white/10"
               >
-                홈으로
+                홈으로 가기
               </button>
             </div>
           </>

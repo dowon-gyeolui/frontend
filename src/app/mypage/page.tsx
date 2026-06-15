@@ -276,7 +276,6 @@ function MypageContent() {
         {/* 보유 스타 — 충전(/store) 으로 연결 */}
         <section className="mt-[16px] flex items-center justify-between rounded-[18px] border border-yellow-300/40 bg-gradient-to-br from-[#fde047]/15 to-[#a78bfa]/10 p-[16px] backdrop-blur-sm">
           <div className="flex items-center gap-[10px]">
-            <Star className="size-[26px] fill-[#fde047] stroke-[#fde047]" />
             <div>
               <p className="text-[11px] text-white/60">보유 스타</p>
               <p className="text-[22px] font-bold text-white">
@@ -338,7 +337,7 @@ function MypageContent() {
               "linear-gradient(99deg, rgb(124, 58, 237) 0%, rgb(168, 85, 247) 100%)",
           }}
         >
-          운명의 지도 펼쳐보기
+          내 사주 보러가기
         </button>
 
         {/* Dev: logout */}
@@ -498,9 +497,9 @@ function LeaveConfirmModal({
       >
         <h3 className="text-center text-[16px] font-bold text-white">정말 탈퇴하시겠어요?</h3>
         <p className="mt-[10px] text-center text-[12px] leading-[18px] text-white/70">
-          탈퇴 시 프로필·채팅 기록이 모두 삭제됩니다.
+          탈퇴 시 기록이 모두 삭제됩니다.
           <br />
-          삭제 후 같은 카카오 계정으로 다시 가입할 수 있어요.
+          탈퇴 후 같은 카카오 계정으로 다시 가입할 수 있어요.
         </p>
         {error && (
           <p className="mt-[10px] text-center text-[11px] text-red-300">{error}</p>

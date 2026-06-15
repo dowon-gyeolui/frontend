@@ -131,7 +131,7 @@ function PaidView({ nickname }: { nickname: string | null }) {
           </div>
         </div>
         <h2 className="mt-[14px] text-center text-[22px] font-bold text-white">
-          {nickname ?? "나"}님의 사주 × 자미두수
+          {nickname ?? "나"}님의 자미두수 풀이중...
         </h2>
         {data && data.bureau_name && (
           <p className="mt-[8px] text-center text-[12px] text-white/65">
@@ -141,7 +141,7 @@ function PaidView({ nickname }: { nickname: string | null }) {
         )}
         {data?.hour_assumed && (
           <p className="mt-[6px] text-center text-[10px] text-yellow-200/80">
-            ※ 출생 시간 미입력 — 자시(子時) 가정. 시간 입력하시면 더 정확해져요.
+            출생 시간 입력하시면 더 정확해져요.
           </p>
         )}
       </section>
@@ -153,12 +153,12 @@ function PaidView({ nickname }: { nickname: string | null }) {
           estimatedMs={14000}
           done={!!data}
           messages={[
-            { atPct: 0, text: "12궁 명반(命盤) 계산 중..." },
-            { atPct: 18, text: "사주 일간을 자미두수 별과 매칭하고 있어요" },
-            { atPct: 35, text: "자미두수전서 원전 구절 가져오는 중..." },
-            { atPct: 55, text: "별 의미와 사주 영향을 엮어 풀어내는 중..." },
-            { atPct: 78, text: "12궁 사이의 연결을 다듬는 중..." },
-            { atPct: 90, text: "마지막 정리 중... 거의 다 왔어요!" },
+            { atPct: 0, text: "별자리 불러오는중..." },
+            { atPct: 20, text: "자미두수를 게산하는 중..." },
+            { atPct: 40, text: "원전 구절 가져오는 중..." },
+            { atPct: 60, text: "자미두수 풀어내는 중..." },
+            { atPct: 80, text: "내용 다듬는 중..." },
+            { atPct: 90, text: "확인해보실까요?" },
           ]}
         />
       )}
@@ -166,7 +166,7 @@ function PaidView({ nickname }: { nickname: string | null }) {
       {/* Error */}
       {error && (
         <section className="mt-[24px] rounded-[14px] border border-red-400/40 bg-red-500/10 p-[16px] text-center text-[12px] text-red-200">
-          풀이를 불러오지 못했어요. {error}
+          일시적으로 불러오지 못했어요. {error}
         </section>
       )}
 
@@ -204,28 +204,24 @@ function PaidView({ nickname }: { nickname: string | null }) {
               <h3 className="text-[14px] font-bold text-white">연애 관점 풀이</h3>
               {data.sections.personality && (
                 <SectionCard
-                  icon={<UserIcon className="size-[18px] stroke-purple-300" />}
-                  title="연애 스타일 · 매력"
+                  title="연애 스타일"
                   content={data.sections.personality}
                 />
               )}
               {data.sections.love && (
                 <SectionCard
-                  icon={<HeartHandshake className="size-[18px] stroke-pink-300" />}
-                  title="이상형 · 끌리는 인연"
+                  title="인연"
                   content={data.sections.love}
                 />
               )}
               {data.sections.wealth && (
                 <SectionCard
-                  icon={<Wallet className="size-[18px] stroke-yellow-300" />}
-                  title="데이트 자금 · 안정감"
+                  title="데이트 자금"
                   content={data.sections.wealth}
                 />
               )}
               {data.sections.advice && (
                 <SectionCard
-                  icon={<Sparkles className="size-[18px] stroke-emerald-300" />}
                   title="좋은 인연을 위한 제안"
                   content={data.sections.advice}
                   highlight
@@ -238,7 +234,7 @@ function PaidView({ nickname }: { nickname: string | null }) {
           {data.palaces.length > 0 && (
             <section className="mt-[16px] space-y-[10px]">
               <h3 className="text-[14px] font-bold text-white">
-                12궁 명반(命盤)
+                12궁
               </h3>
               {data.palaces.map((p) => (
                 <PalaceCard key={p.name} palace={p} />
@@ -263,7 +259,7 @@ function PaidView({ nickname }: { nickname: string | null }) {
           {data.interpretation_status === "partial" && (
             <section className="mt-[16px] rounded-[14px] border border-yellow-400/30 bg-yellow-500/5 p-[14px] text-center">
               <p className="text-[12px] leading-[20px] text-yellow-100/80">
-                12궁 명반은 정상 계산됐지만 LLM 풀이를 일시적으로 가져오지 못했어요.
+                일시적으로 불러오지 못했어요.
                 <br />
                 잠시 후 새로고침 해주세요.
               </p>
@@ -294,11 +290,6 @@ function PaidView({ nickname }: { nickname: string | null }) {
           </p>
         </section>
       )}
-
-      <p className="mt-[20px] text-center text-[10px] text-white/40">
-        ※ 12궁×별 배치는 표준 안성술(安星術) 로 결정론적 계산. 풀이는 LLM 보조 결과로
-        가벼운 참고용으로 활용해주세요.
-      </p>
     </>
   );
 }

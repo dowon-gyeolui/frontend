@@ -26,7 +26,7 @@ const REASONS: { id: Reason; title: string; desc: string }[] = [
   {
     id: "other",
     title: "기타",
-    desc: "직접 입력 — 구체적인 상황을 알려주세요",
+    desc: "직접 입력",
   },
 ];
 
@@ -103,7 +103,7 @@ export function ReportModal({
           신고하기
         </h2>
         <p className="mt-[6px] text-center text-[12px] leading-[18px] text-white/60">
-          신고 내용은 운영팀이 대화 기록과 함께 검토합니다.
+          신고 내용 확인했어요.
           <br />
           허위 신고 시 이용에 제한이 있을 수 있어요.
         </p>

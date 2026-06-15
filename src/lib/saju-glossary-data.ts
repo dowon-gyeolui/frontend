@@ -79,27 +79,27 @@ export const TEN_GOD_GLOSSARY: Record<string, GlossaryEntry> = {
  */
 export const BADGE_GLOSSARY: Record<string, GlossaryEntry> = {
   "도화 발동": {
-    title: "도화살(桃花殺) 발동",
+    title: "도화살 발동",
     body:
       "‘인기·매력의 별’이 활성화된 날이에요. 평소보다 사람들 시선이 잘 닿고, 호감을 받기 쉬운 흐름입니다.",
   },
   "천을귀인 길일": {
-    title: "천을귀인(天乙貴人) 길일",
+    title: "천을귀인 길일",
     body:
       "사주에서 가장 길한 ‘귀인’ 기운이 닿은 날. 어려운 일도 도와줄 사람을 만나기 쉬운 행운의 날이에요.",
   },
   "삼합 길일": {
-    title: "삼합(三合) 길일",
+    title: "삼합 길일",
     body:
       "내 사주의 일지(태어난 날 아래 글자)와 오늘의 글자가 ‘세 가지 조합’으로 어우러지는 좋은 날이에요. 인연 흐름이 부드럽게 풀리기 쉬워요.",
   },
   "육합 길일": {
-    title: "육합(六合) 길일",
+    title: "육합 길일",
     body:
       "내 사주의 일지와 오늘 글자가 ‘짝꿍’처럼 짝지어지는 길한 날. 작은 만남이 의미 있는 관계로 이어지기 쉬운 흐름이에요.",
   },
   "육충 주의": {
-    title: "육충(六沖) 주의",
+    title: "육충 주의",
     body:
       "내 사주의 일지와 오늘 글자가 부딪히는 날. 직설적인 표현보다 부드러운 말투가 좋아요.",
   },
@@ -113,36 +113,36 @@ export const BADGE_GLOSSARY: Record<string, GlossaryEntry> = {
  */
 export const ELEMENT_GLOSSARY: Record<string, GlossaryEntry> = {
   목: {
-    title: "오늘의 기운 — 목(木)",
+    title: "오늘의 기운 — 나무",
     body:
       "나무처럼 위로 뻗는 성장·시작의 에너지. 새로운 시도와 만남에 어울리는 활기찬 하루입니다.",
   },
   화: {
-    title: "오늘의 기운 — 화(火)",
+    title: "오늘의 기운 — 불",
     body:
       "불처럼 밝게 빛나는 표현·열정의 에너지. 사람을 끌어당기고 분위기를 띄우기 좋은 날이에요.",
   },
   토: {
-    title: "오늘의 기운 — 토(土)",
+    title: "오늘의 기운 — 흙",
     body:
       "땅처럼 든든하고 안정된 기운. 차분하게 마음을 나누거나 깊은 대화를 나누기 좋은 하루예요.",
   },
   금: {
-    title: "오늘의 기운 — 금(金)",
+    title: "오늘의 기운 — 금",
     body:
       "쇠처럼 단단하고 정돈된 기운. 깔끔한 첫인상이 통하고 신뢰감 있는 만남에 유리한 날이에요.",
   },
   수: {
-    title: "오늘의 기운 — 수(水)",
+    title: "오늘의 기운 — 물",
     body:
       "물처럼 깊고 잔잔한 지혜의 기운. 차분하고 깊이 있는 대화가 빛나는 하루입니다.",
   },
 };
 
 export const TODAY_PILLAR_GLOSSARY: GlossaryEntry = {
-  title: "오늘 일주(日柱)란?",
+  title: "오늘 일주란?",
   body:
-    "그날을 상징하는 두 글자(천간+지지) 조합이에요. 60갑자 주기로 매일 바뀌고, 이 글자가 내 사주의 ‘나’ 글자와 만나면서 그날의 인연 흐름이 결정돼요.",
+    "그날을 상징하는 두 글자 조합이에요. 이 글자가 내 사주와 만나면서 그날의 인연 흐름이 결정돼요.",
 };
 
 /** Lookup helper — falls back to a generic info card if term is unknown. */

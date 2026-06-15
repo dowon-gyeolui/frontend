@@ -16,7 +16,7 @@ export function StarBalancePill() {
   return (
     <Link
       href="/store"
-      aria-label={`보유 스타 ${balance}개 · 충전하기`}
+      aria-label={`보유 별 ${balance}개 · 충전하기`}
       className="flex items-center gap-[4px] rounded-full border border-[#fde047]/40 bg-[#fde047]/10 px-[10px] py-[3px] text-[12px] font-bold text-[#fde047]"
     >
       <Star className="size-[13px] fill-[#fde047] stroke-[#fde047]" />
