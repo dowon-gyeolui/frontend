@@ -1,16 +1,11 @@
 "use client";
 
-import { Info, Lock, Sparkles } from "lucide-react";
+import { Info } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { ElementPentagon } from "@/components/saju/element-pentagon";
-import { SajuGlossary } from "@/components/saju/saju-glossary";
-import {
-  DayPillarHeadline,
-  SajuMyeongsik,
-} from "@/components/saju/saju-myeongsik";
 import { LoadingPanel } from "@/components/ui/loading-panel";
 import { getToken } from "@/lib/auth";
 import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
@@ -94,7 +89,7 @@ export default function SajuPage() {
             <section className="relative rounded-[18px] border border-white/15 bg-white/5 p-[16px] backdrop-blur-sm">
               <div className="flex items-center justify-between">
                 <h2 className="text-[16px] font-bold text-white">
-                  나의 오행 밸런스 <span className="text-white/40">ⓘ</span>
+                  나의 오행 밸런스
                 </h2>
               </div>
               <div className="mt-[8px] flex justify-center">
@@ -117,20 +112,8 @@ export default function SajuPage() {
               </div>
             </section>
 
-            {/* 사주 명식 — 4-기둥 카드 + 4-스탯 카드 (Figma-style) */}
-            <section className="space-y-[12px]">
-              <DayPillarHeadline pillar={saju.pillars[2]} />
-              <SajuMyeongsik
-                pillars={saju.pillars}
-                profile={saju.element_profile}
-              />
-            </section>
-
-            {/* 자미두수 풀이 — 카드 자체는 CTA. 본문은 /jamidusu 안에서 결제 후에만 노출 */}
+            {/* 자미두수 풀이 — 버튼만. 본문은 /jamidusu 안에서 결제 후에만 노출 */}
             <JamidusuCta onOpen={() => router.push("/jamidusu")} />
-
-            {/* Plain-Korean glossary so the user can decode every term above */}
-            <SajuGlossary />
           </div>
         )}
       </div>
@@ -229,12 +212,10 @@ function NarrativeSections({ data }: { data: DetailedSajuResponse }) {
 }
 
 function NarrativeCard({
-  icon,
   title,
   content,
   highlight,
 }: {
-  icon?: ReactNode;
   title: string;
   content: string;
   highlight?: boolean;
@@ -248,10 +229,7 @@ function NarrativeCard({
           : "border-white/15 bg-white/5"
       }`}
     >
-      <div className="flex items-center gap-[8px]">
-        {icon}
-        <h3 className="text-[15px] font-bold text-white">{title}</h3>
-      </div>
+      <h3 className="text-[15px] font-bold text-white">{title}</h3>
       <p className="mt-[8px] text-[13px] leading-[20px] text-white/85 text-ko">
         {has ? content : (
           <span className="text-white/40">
@@ -264,41 +242,17 @@ function NarrativeCard({
 }
 
 /* ── 자미두수 풀이 CTA ──
- * Compact card with a Lock + 잠긴 미리보기 + CTA button. Tapping the
- * button takes the user to /jamidusu where they either see the actual
- * 풀이 (if paid) or the paywall (if not).
+ * 버튼만 노출. 탭하면 /jamidusu 로 이동해 결제 후 본문을 본다.
  */
 
 function JamidusuCta({ onOpen }: { onOpen: () => void }) {
   return (
-    <section className="relative overflow-hidden rounded-[18px] border border-yellow-300/40 bg-gradient-to-br from-purple-900/40 via-purple-700/30 to-pink-700/30 p-[18px]">
-      <div className="flex items-center gap-[8px]">
-        <Sparkles className="size-[18px] fill-yellow-300 stroke-yellow-300" />
-        <h2 className="text-[16px] font-bold text-white">자미두수 풀이</h2>
-        <span className="ml-auto rounded-full bg-yellow-300/20 px-[8px] py-[2px] text-[10px] font-semibold text-yellow-200">
-          PREMIUM
-        </span>
-      </div>
-
-      <div className="relative mt-[12px] space-y-[6px] text-[12px] text-white/40">
-        <p>명궁: ████ ███ ████ ███████</p>
-        <p>재백궁: ███ ████████ ██ ███</p>
-        <p>부처궁: ██████ ███ ███ █████</p>
-      </div>
-
-      <div className="mt-[14px] flex items-center justify-center gap-[6px] text-white/80">
-        <Lock className="size-[14px]" />
-        <span className="text-[12px]">프리미엄 결제 후 열람 가능</span>
-      </div>
-
-      <button
-        type="button"
-        onClick={onOpen}
-        className="mt-[12px] flex h-[46px] w-full items-center justify-center gap-[6px] rounded-[10px] bg-gradient-to-r from-yellow-300 to-pink-400 text-[14px] font-bold text-[#1b1029] shadow-[0_0_15px_-2px_rgba(253,224,71,0.5)] hover:opacity-90"
-      >
-        <Sparkles className="size-[16px] fill-[#1b1029] stroke-[#1b1029]" />
-        자미두수 풀이 보러가기
-      </button>
-    </section>
+    <button
+      type="button"
+      onClick={onOpen}
+      className="flex h-[46px] w-full items-center justify-center rounded-[10px] bg-gradient-to-r from-yellow-300 to-pink-400 text-[14px] font-bold text-[#1b1029] shadow-[0_0_15px_-2px_rgba(253,224,71,0.5)] hover:opacity-90"
+    >
+      자미두수 풀이 보러가기
+    </button>
   );
 }

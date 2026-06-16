@@ -1,6 +1,5 @@
 "use client";
 
-import { Radio } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
@@ -96,7 +95,6 @@ export function StatBillboard() {
 
   return (
     <div className="mt-[20px] flex items-center gap-[10px] overflow-hidden rounded-[14px] border border-[#fde047]/30 bg-gradient-to-r from-[#2a1a4a]/80 to-[#3a245c]/80 px-[14px] py-[11px] backdrop-blur-sm">
-      <Radio className="size-[16px] shrink-0 animate-pulse stroke-[#fde047]" />
       <p
         className={`flex-1 truncate text-[13px] font-medium text-white/90 transition-opacity duration-300 ${
           visible ? "opacity-100" : "opacity-0"

@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles, Star } from "lucide-react";
+import { Star } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -95,31 +95,21 @@ export default function HomePage() {
       .catch((e: Error) => setError(e.message));
   }, [router]);
 
-  // Fetch today's 인연 카드 + 오늘의 인연운/행동 가이드 once birth_date is
-  // known — backend rejects these endpoints before onboarding is complete.
-  // 운세/가이드는 fetchWithCache 로 stale-while-revalidate.
   useEffect(() => {
     if (!me || !me.birth_date) return;
-    // 오늘의 인연 1장(무료, PRD 6.1). 후보 풀이 없으면 card=null.
     getTodayCard()
       .then(setToday)
       .catch(() => setToday({ card: null }));
-    // 오늘의 인연운 — KST 일진 기반. 매일 자정에 결과가 바뀌므로
-    // 짧은 캐시 (5분 정도면 같은 세션 안에선 안정적이고, 자정 넘기면
-    // 자연스럽게 새 값으로 갱신됨).
     fetchWithCache<TodayFortune>(
       "/saju/me/today-fortune",
       CACHE_TTL.short,
       setFortune,
       {
         onError: () => {
-          // 백엔드 미배포 / 일시 장애 시 placeholder 가 영원히 노출
-          // 되지 않도록 실패 플래그 세팅 → 정적 fallback 문구 표시.
           setFortuneFailed(true);
         },
       },
     );
-    // 행동 가이드 — 사주 기반 동적 추천 (색상/시간대/장소/의상 등).
     fetchWithCache<ActionGuide>(
       "/saju/me/action-guide",
       CACHE_TTL.short,
@@ -128,21 +118,14 @@ export default function HomePage() {
     );
   }, [me]);
 
-  // 행동 가이드는 백엔드 /saju/me/action-guide 응답을 그대로 사용.
-  // 이전 tipsForElement(...) 정적 룩업은 더 이상 필요 없음.
-
   const completion = profileCompletionPct(me);
 
   const nickname = me?.nickname ?? "OOO";
 
   const balance = me?.star_balance ?? 0;
-  // const 로 뽑아 narrowing 이 onClick 클로저까지 유지되도록 한다.
   const todayCard = today?.card ?? null;
   const limitReached = extraUsed !== null && extraUsed >= EXTRA_DAILY_LIMIT;
 
-  // 한 번에 열람 가능한 최대 장수 = min(보유 스타로 살 수 있는 장수,
-  // 남은 일일 한도). extraUsed 가 아직 null 이면 0 으로 가정(낙관적) —
-  // 실제 한도 초과 시 백엔드 403 으로 루프가 멈추고 안내한다.
   const maxUnlock = Math.max(
     0,
     Math.min(
@@ -151,7 +134,6 @@ export default function HomePage() {
     ),
   );
 
-  // 버튼 클릭 — 스타 부족이면 충전 유도, 충분하면 수량 선택 팝업.
   const openUnlock = () => {
     setNeedStars(false);
     if (balance < STAR_COST_PER_CARD) {
@@ -161,8 +143,6 @@ export default function HomePage() {
     setUnlockOpen(true);
   };
 
-  // 선택한 N장을 순차 열람. 도중 후보 소진(404)/한도(403)/스타부족(402)
-  // 이면 멈추고 열린 만큼만 반영 + 안내.
   const handleUnlockN = async (count: number) => {
     if (unlocking) return;
     setUnlocking(true);
@@ -358,7 +338,6 @@ export default function HomePage() {
                   <>인연 카드 여는 중...</>
                 ) : (
                   <>
-                    <Sparkles className="size-[16px] stroke-[#fde047]" />
                     추가 인연 열람하기
                     <span className="flex items-center gap-[3px] text-[#fde047]">
                       <Star className="size-[14px] fill-[#fde047] stroke-[#fde047]" />

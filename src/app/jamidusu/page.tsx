@@ -1,8 +1,8 @@
 "use client";
 
-import { ArrowLeft, Sparkles, Star as StarIcon } from "lucide-react";
+import { ArrowLeft, Star as StarIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { LoadingPanel } from "@/components/ui/loading-panel";
@@ -125,12 +125,7 @@ function PaidView({ nickname }: { nickname: string | null }) {
     <>
       {/* Hero */}
       <section className="mt-[24px] rounded-[18px] border border-purple-300/30 bg-gradient-to-br from-purple-900/40 via-purple-700/30 to-pink-700/30 p-[20px] backdrop-blur-sm">
-        <div className="flex items-center justify-center">
-          <div className="grid size-[64px] place-items-center rounded-full bg-gradient-to-br from-yellow-300 to-pink-400 shadow-[0_0_25px_-5px_rgba(253,224,71,0.6)]">
-            <Sparkles className="size-[32px] fill-white stroke-white" />
-          </div>
-        </div>
-        <h2 className="mt-[14px] text-center text-[22px] font-bold text-white">
+        <h2 className="text-center text-[22px] font-bold text-white">
           {nickname ?? "나"}님의 자미두수 풀이중...
         </h2>
         {data && data.bureau_name && (
@@ -185,8 +180,7 @@ function PaidView({ nickname }: { nickname: string | null }) {
           {/* Overview */}
           {data.overview && (
             <section className="mt-[14px] rounded-[14px] border border-white/15 bg-white/5 p-[16px]">
-              <h3 className="flex items-center gap-[6px] text-[14px] font-bold text-white">
-                <Sparkles className="size-[14px] fill-yellow-300 stroke-yellow-300" />
+              <h3 className="text-[14px] font-bold text-white">
                 종합 풀이
               </h3>
               <p className="mt-[8px] whitespace-pre-line text-[13px] leading-[22px] text-white/85 text-ko">
@@ -332,12 +326,10 @@ function PalaceCard({ palace }: { palace: DeepPalace }) {
 
 /* ── 4 섹션 카드 ── */
 function SectionCard({
-  icon,
   title,
   content,
   highlight,
 }: {
-  icon?: ReactNode;
   title: string;
   content: string;
   highlight?: boolean;
@@ -350,10 +342,7 @@ function SectionCard({
           : "border-white/15 bg-white/5"
       }`}
     >
-      <div className="flex items-center gap-[8px]">
-        {icon}
-        <h4 className="text-[14px] font-bold text-white">{title}</h4>
-      </div>
+      <h4 className="text-[14px] font-bold text-white">{title}</h4>
       <p className="mt-[8px] whitespace-pre-line text-[13px] leading-[20px] text-white/85 text-ko">
         {content}
       </p>
