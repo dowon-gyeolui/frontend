@@ -17,6 +17,57 @@ export type CompatibilityReport = {
 };
 
 /**
+ * 사주 궁합 점수(0~100) 를 1~6 등급 + 한 줄 설명으로 환산.
+ * min 내림차순으로 정렬되어 있어 위에서부터 처음 충족하는 구간이 등급.
+ */
+const GRADE_TABLE: { min: number; grade: number; line: string }[] = [
+  {
+    min: 90,
+    grade: 1,
+    line: "하늘의 별들이 증명하는 운명, 이 정도면 우주가 밀어주는 만남이에요!",
+  },
+  {
+    min: 80,
+    grade: 2,
+    line: "서로에게 부족한 오행을 채워주는 사이, 대화할수록 싱크로율이 폭발할 거예요.",
+  },
+  {
+    min: 70,
+    grade: 3,
+    line: "시간이 흐를수록 빛을 발하는 만남! 알아갈수록 서로의 매력에 감겨들 궁합이에요.",
+  },
+  {
+    min: 60,
+    grade: 4,
+    line: "나에게 부족한 2%를 채워줄 사람! 서로 달라서 더 짜릿하고 매력적인 궁합이에요.",
+  },
+  {
+    min: 50,
+    grade: 5,
+    line: "첫 만남엔 물음표(?)가 떠도, 사주 속에 숨겨진 케미가 곧 느낌표(!)를 만들어줄 거예요.",
+  },
+  {
+    min: 0,
+    grade: 6,
+    line: "완전 반대의 기운을 가진 두 사람! 뻔하지 않아서 더 짜릿한 '클리셰 파괴' 로맨스가 기다릴지도?",
+  },
+];
+
+function ScoreGrade({ score }: { score: number }) {
+  const g =
+    GRADE_TABLE.find((x) => score >= x.min) ??
+    GRADE_TABLE[GRADE_TABLE.length - 1];
+  return (
+    <div className="mt-[16px] rounded-[12px] border border-[#fde047]/30 bg-[#fde047]/10 px-[14px] py-[12px] text-center">
+      <p className="text-[14px] font-bold text-[#fde047]">
+        사주 궁합 {g.grade}등급
+      </p>
+      <p className="mt-[6px] text-[12px] leading-[19px] text-white">{g.line}</p>
+    </div>
+  );
+}
+
+/**
  * 운명 분석 리포트 드로우 — 채팅 헤더의 햄버거 아이콘을 누르면 우측에서 슬라이드인.
  *
  * Figma node 37:1657. 본문은 백엔드 GET /compatibility/report/{peer_id} 가
@@ -139,11 +190,8 @@ export function CompatibilityReportDrawer({
                 ))}
               </ul>
 
-              {/* Score chip */}
-              <div className="mt-[16px] flex items-center justify-center gap-[6px] rounded-full border border-white/15 bg-white/10 px-[12px] py-[6px] text-[12px]">
-                <span className="text-white/70">사주 궁합 점수</span>
-                <span className="font-semibold text-[#fde047]">{report.score}%</span>
-              </div>
+              {/* Score grade — 1~6등급 + 한 줄 설명 */}
+              <ScoreGrade score={report.score} />
 
               {/* Keywords */}
               <h3 className="mt-[20px] text-center text-[15px] font-semibold text-white">
