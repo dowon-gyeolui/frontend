@@ -128,7 +128,7 @@ export function CompatibilityReportDrawer({
             <>
               {/* Summary section */}
               <h3 className="text-center text-[15px] font-semibold text-white">
-                상대방과의 궁합 요약
+                {report.nickname_a ?? "나"}님과 {report.nickname_b ?? "상대"}님의 궁합 요약
               </h3>
               <ul className="mt-[14px] space-y-[14px]">
                 {report.summary_lines.map((line, i) => (
