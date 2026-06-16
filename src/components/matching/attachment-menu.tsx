@@ -1,12 +1,12 @@
 "use client";
 
-import { Camera, Image as ImageIcon, Mic, Square } from "lucide-react";
+import { Mic, Square } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 /**
- * 채팅 + 버튼 메뉴 — 사진 / 카메라 / 음성 메시지.
+ * 채팅 + 버튼 메뉴 — 음성 메시지.
  *
- * 부모(ChatRoomPage)는 file 만 받아 sendMediaMessageTo 로 업로드한다.
+ * 부모(ChatRoomPage)는 Blob 만 받아 sendMediaMessageTo 로 업로드한다.
  * 음성은 MediaRecorder API 로 녹음 후 Blob 으로 emit. 녹음 UI 는 메뉴
  * 안에서 자체 처리(시작/정지 버튼).
  */
@@ -19,9 +19,6 @@ export function AttachmentMenu({
   onClose: () => void;
   onPickFile: (file: Blob, kind: "image" | "audio") => void;
 }) {
-  const photoRef = useRef<HTMLInputElement>(null);
-  const cameraRef = useRef<HTMLInputElement>(null);
-
   const [recording, setRecording] = useState(false);
   const [recordSeconds, setRecordSeconds] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -99,33 +96,8 @@ export function AttachmentMenu({
     if (recorder.state !== "inactive") recorder.stop();
   };
 
-  const handlePicked = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    onPickFile(f, "image");
-    onClose();
-    // reset so picking the same file twice still fires onChange
-    e.target.value = "";
-  };
-
   return (
     <>
-      <input
-        ref={photoRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={handlePicked}
-      />
-      <input
-        ref={cameraRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={handlePicked}
-      />
-
       {/* Backdrop + sheet */}
       {open && (
         <div
@@ -164,16 +136,6 @@ export function AttachmentMenu({
             ) : (
               <>
                 <div className="grid grid-cols-3 gap-[10px]">
-                  <Tile
-                    icon={<ImageIcon className="size-[26px] stroke-purple-300" />}
-                    label="사진"
-                    onClick={() => photoRef.current?.click()}
-                  />
-                  <Tile
-                    icon={<Camera className="size-[26px] stroke-pink-300" />}
-                    label="카메라"
-                    onClick={() => cameraRef.current?.click()}
-                  />
                   <Tile
                     icon={<Mic className="size-[26px] stroke-emerald-300" />}
                     label="음성 메시지"
