@@ -62,8 +62,6 @@ export default function HomePage() {
   // 오늘 추가 열람한 장수(첫 열람 전엔 null=아직 모름). 한도 10장.
   const [extraUsed, setExtraUsed] = useState<number | null>(null);
   const [unlocking, setUnlocking] = useState(false);
-  // 스타 부족(402) 시 충전 유도 인라인 노출.
-  const [needStars, setNeedStars] = useState(false);
   const [fortune, setFortune] = useState<TodayFortune | null>(null);
   const [guide, setGuide] = useState<ActionGuide | null>(null);
   // fortune fetch 가 실패한 적 있는지 — null 만으론 "로딩 중" 과
@@ -135,11 +133,8 @@ export default function HomePage() {
   );
 
   const openUnlock = () => {
-    setNeedStars(false);
-    if (balance < STAR_COST_PER_CARD) {
-      setNeedStars(true);
-      return;
-    }
+    // 별이 부족하면 버튼 자체가 노출되지 않지만, 안전장치로 한 번 더 확인.
+    if (balance < STAR_COST_PER_CARD) return;
     setUnlockOpen(true);
   };
 
@@ -183,7 +178,13 @@ export default function HomePage() {
     } else if (stopReason === "limit") {
       setToast(`오늘 추가 열람 한도(${EXTRA_DAILY_LIMIT}장)에 도달했어요.`);
     } else if (stopReason === "stars") {
-      setNeedStars(true);
+      // 배치 도중 별이 떨어진 경우 — 잔액이 갱신되면 아래 영역이 자동으로
+      // "별이 부족해요" 안내로 바뀐다. 토스트로 부분 열람 결과만 알림.
+      setToast(
+        opened > 0
+          ? `인연 카드 ${opened}장을 열었어요. 별이 부족해 더 열지 못했어요.`
+          : "별이 부족해요.",
+      );
     } else {
       setToast("일부 인연을 열지 못했어요. 잠시 후 다시 시도해주세요.");
     }
@@ -273,7 +274,7 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* 오늘의 인연 (무료 1장). 유료 추가 열람분은 아래 "너와의 인연"
+        {/* 오늘의 인연 (무료 1장). 유료 추가 열람분은 아래 "더 많은 인연"
             섹션으로 분리된다. */}
         <section className="mt-[36px]">
           <h2 className="text-center text-[20px] font-bold text-white">
@@ -304,58 +305,66 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* 스타 부족 안내 → 충전 유도 */}
-          {needStars && (
-            <div className="mt-[16px] rounded-[14px] border border-[#fde047]/40 bg-[#fde047]/10 p-[14px] text-center">
-              <p className="text-[13px] font-semibold text-white">
-                스타가 부족해요
-              </p>
-              <p className="mt-[4px] text-[11px] text-white/70">
-                인연 카드 1장을 열려면 별 10개가 필요해요.
-              </p>
-              <button
-                type="button"
-                onClick={() => router.push("/store")}
-                className="mx-auto mt-[12px] block w-fit rounded-full bg-[#fde047] px-[16px] py-[6px] text-[13px] font-bold text-[#1b1029]"
-              >
-                스타 충전하러 가기 →
-              </button>
-            </div>
-          )}
-
-          {/* 추가 인연 열람 버튼 — 클릭 시 수량 선택 팝업 */}
+          {/* 추가 인연 열람 영역.
+              - 일일 한도 소진 → 비활성 안내 버튼
+              - 별 부족(< 10) → 버튼 대신 부족 안내 + 충전 CTA 를 바로 노출
+              - 그 외 → 열람 버튼(클릭 시 수량 선택 팝업) */}
           {today !== null && today.card !== null && (
             <div className="mt-[18px]">
-              <button
-                type="button"
-                onClick={limitReached ? undefined : openUnlock}
-                disabled={unlocking || limitReached}
-                className="flex h-[50px] w-full items-center justify-center gap-[8px] rounded-[14px] border border-[#fde047]/50 bg-gradient-to-r from-yellow-300/15 to-pink-400/15 text-[15px] font-bold text-white disabled:opacity-50"
-              >
-                {limitReached ? (
-                  <>오늘의 추가 열람을 모두 사용했어요</>
-                ) : unlocking ? (
-                  <>인연 카드 여는 중...</>
-                ) : (
-                  <>
-                    추가 인연 열람하기
-                    <span className="flex items-center gap-[3px] text-[#fde047]">
-                      <Star className="size-[14px] fill-[#fde047] stroke-[#fde047]" />
-                      10
-                    </span>
-                  </>
-                )}
-              </button>
+              {limitReached ? (
+                <button
+                  type="button"
+                  disabled
+                  className="flex h-[50px] w-full items-center justify-center rounded-[14px] border border-[#fde047]/50 bg-gradient-to-r from-yellow-300/15 to-pink-400/15 text-[15px] font-bold text-white disabled:opacity-50"
+                >
+                  오늘의 추가 열람을 모두 사용했어요
+                </button>
+              ) : balance < STAR_COST_PER_CARD ? (
+                <div className="rounded-[14px] border border-[#fde047]/40 bg-[#fde047]/10 p-[14px] text-center">
+                  <p className="text-[13px] font-semibold text-white">
+                    별이 부족해요
+                  </p>
+                  <p className="mt-[4px] text-[11px] text-white/70">
+                    인연 카드 1장을 받으려면 별 10개가 필요해요.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => router.push("/store")}
+                    className="mx-auto mt-[12px] block w-fit rounded-full bg-[#fde047] px-[16px] py-[6px] text-[13px] font-bold text-[#1b1029]"
+                  >
+                    별 충전하러 가기 →
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={openUnlock}
+                  disabled={unlocking}
+                  className="flex h-[50px] w-full items-center justify-center gap-[8px] rounded-[14px] border border-[#fde047]/50 bg-gradient-to-r from-yellow-300/15 to-pink-400/15 text-[15px] font-bold text-white disabled:opacity-50"
+                >
+                  {unlocking ? (
+                    <>인연 카드 여는 중...</>
+                  ) : (
+                    <>
+                      추가 인연 열람하기
+                      <span className="flex items-center gap-[3px] text-[#fde047]">
+                        <Star className="size-[14px] fill-[#fde047] stroke-[#fde047]" />
+                        10
+                      </span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           )}
         </section>
 
-        {/* 너와의 인연 — 유료로 열람한 카드들. 궁합 점수 구간(70/80/90 이상)
+        {/* 더 많은 인연 — 유료로 열람한 카드들. 궁합 점수 구간(70/80/90 이상)
             배지를 노출한다. 가로 스와이프로 한 명씩 넘겨본다. */}
         {extras.length > 0 && (
           <section className="mt-[36px]">
             <h2 className="text-center text-[20px] font-bold text-white">
-              너와의 인연
+              더 많은 인연
             </h2>
             <div className="-mx-[24px] mt-[18px] overflow-x-auto pb-[8px] snap-x snap-mandatory [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <div className="flex">
