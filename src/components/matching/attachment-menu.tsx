@@ -7,9 +7,21 @@ import { useEffect, useRef, useState } from "react";
  * 채팅 + 버튼 메뉴 — 음성 메시지.
  *
  * 부모(ChatRoomPage)는 Blob 만 받아 sendMediaMessageTo 로 업로드한다.
- * 음성은 MediaRecorder API 로 녹음 후 Blob 으로 emit. 녹음 UI 는 메뉴
- * 안에서 자체 처리(시작/정지 버튼).
+ * 음성은 MediaRecorder API 로 최대 30초 녹음 후, 본인이 미리듣기로
+ * 확인하고 "전송" 을 눌렀을 때만 Blob 으로 emit 한다.
  */
+
+// 최대 녹음 길이(초).
+const MAX_RECORD_SECONDS = 30;
+
+// 녹음 완료본 — Blob, 미리듣기용 object URL, 길이(초).
+type RecordedClip = { blob: Blob; url: string; seconds: number };
+
+const fmtTime = (s: number) =>
+  `${Math.floor(s / 60)
+    .toString()
+    .padStart(2, "0")}:${(s % 60).toString().padStart(2, "0")}`;
+
 export function AttachmentMenu({
   open,
   onClose,
@@ -22,6 +34,9 @@ export function AttachmentMenu({
   const [recording, setRecording] = useState(false);
   const [recordSeconds, setRecordSeconds] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  // 녹음 완료본 — 미리듣기 후 전송이 확정되기 전까지 보관한다.
+  const [recorded, setRecorded] = useState<RecordedClip | null>(null);
+
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
   const startTimeRef = useRef<number>(0);
@@ -36,6 +51,23 @@ export function AttachmentMenu({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose, recording]);
+
+  // 메뉴가 닫히면 미리듣기 상태/에러를 초기화하고 object URL 을 해제한다.
+  useEffect(() => {
+    if (open) return;
+    setError(null);
+    setRecorded((r: RecordedClip | null) => {
+      if (r?.url) URL.revokeObjectURL(r.url);
+      return null;
+    });
+  }, [open]);
+
+  const clearTick = () => {
+    if (tickRef.current) {
+      window.clearInterval(tickRef.current);
+      tickRef.current = null;
+    }
+  };
 
   const stopAllTracks = () => {
     const recorder = recorderRef.current;
@@ -62,16 +94,21 @@ export function AttachmentMenu({
         if (e.data.size > 0) chunksRef.current.push(e.data);
       };
       recorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
+        // codecs 파라미터(예: ;codecs=opus)는 서버 허용목록과 맞지 않으므로
+        // 베이스 MIME(audio/webm 등)만 남겨 Blob 을 만든다.
+        const baseMime = (recorder.mimeType || "audio/webm")
+          .split(";")[0]
+          .trim();
+        const blob = new Blob(chunksRef.current, { type: baseMime });
+        const seconds = Math.min(
+          MAX_RECORD_SECONDS,
+          Math.round((Date.now() - startTimeRef.current) / 1000),
+        );
         stopAllTracks();
+        clearTick();
         setRecording(false);
-        if (tickRef.current) {
-          window.clearInterval(tickRef.current);
-          tickRef.current = null;
-        }
         if (blob.size > 0) {
-          onPickFile(blob, "audio");
-          onClose();
+          setRecorded({ blob, url: URL.createObjectURL(blob), seconds });
         }
       };
       recorder.start();
@@ -79,7 +116,10 @@ export function AttachmentMenu({
       setRecording(true);
       setRecordSeconds(0);
       tickRef.current = window.setInterval(() => {
-        setRecordSeconds(Math.floor((Date.now() - startTimeRef.current) / 1000));
+        const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+        setRecordSeconds(elapsed);
+        // 최대 길이 도달 시 자동 정지 → 미리듣기 단계로.
+        if (elapsed >= MAX_RECORD_SECONDS) stopRecording();
       }, 250);
     } catch (e) {
       setError(
@@ -94,6 +134,37 @@ export function AttachmentMenu({
     const recorder = recorderRef.current;
     if (!recorder) return;
     if (recorder.state !== "inactive") recorder.stop();
+  };
+
+  // 녹음 중 취소 — 녹음물을 버리고 메뉴로 돌아간다.
+  const cancelRecording = () => {
+    const recorder = recorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      recorder.onstop = () => {
+        stopAllTracks();
+        clearTick();
+        setRecording(false);
+      };
+      recorder.stop();
+    } else {
+      setRecording(false);
+    }
+  };
+
+  // 미리듣기 완료본 폐기.
+  const discardRecorded = () => {
+    setRecorded((r: RecordedClip | null) => {
+      if (r?.url) URL.revokeObjectURL(r.url);
+      return null;
+    });
+  };
+
+  // 미리듣기 후 전송 확정.
+  const sendRecorded = () => {
+    if (!recorded) return;
+    onPickFile(recorded.blob, "audio");
+    discardRecorded();
+    onClose();
   };
 
   return (
@@ -114,24 +185,19 @@ export function AttachmentMenu({
             {recording ? (
               <RecordingPanel
                 seconds={recordSeconds}
+                maxSeconds={MAX_RECORD_SECONDS}
                 onStop={stopRecording}
-                onCancel={() => {
-                  // discard recording
-                  const recorder = recorderRef.current;
-                  if (recorder && recorder.state !== "inactive") {
-                    recorder.onstop = () => {
-                      stopAllTracks();
-                      if (tickRef.current) {
-                        window.clearInterval(tickRef.current);
-                        tickRef.current = null;
-                      }
-                      setRecording(false);
-                    };
-                    recorder.stop();
-                  } else {
-                    setRecording(false);
-                  }
+                onCancel={cancelRecording}
+              />
+            ) : recorded ? (
+              <ReviewPanel
+                url={recorded.url}
+                seconds={recorded.seconds}
+                onReRecord={() => {
+                  discardRecorded();
+                  startRecording();
                 }}
+                onSend={sendRecorded}
               />
             ) : (
               <>
@@ -186,15 +252,15 @@ function Tile({
 
 function RecordingPanel({
   seconds,
+  maxSeconds,
   onStop,
   onCancel,
 }: {
   seconds: number;
+  maxSeconds: number;
   onStop: () => void;
   onCancel: () => void;
 }) {
-  const mm = Math.floor(seconds / 60).toString().padStart(2, "0");
-  const ss = (seconds % 60).toString().padStart(2, "0");
   return (
     <div className="flex flex-col items-center gap-[14px] py-[10px]">
       <div className="relative grid size-[80px] place-items-center">
@@ -202,10 +268,10 @@ function RecordingPanel({
         <Mic className="relative size-[36px] stroke-red-300" />
       </div>
       <p className="text-[14px] font-semibold text-white">
-        녹음 중 · {mm}:{ss}
+        녹음 중 · {fmtTime(seconds)} / {fmtTime(maxSeconds)}
       </p>
       <p className="text-[11px] text-white/55">
-        정지 버튼을 누르면 음성이 전송됩니다.
+        최대 {maxSeconds}초까지 녹음돼요. 정지하면 들어보고 전송할 수 있어요.
       </p>
       <div className="mt-[6px] flex w-full gap-[10px]">
         <button
@@ -221,7 +287,48 @@ function RecordingPanel({
           className="flex h-[44px] flex-1 items-center justify-center gap-[6px] rounded-[12px] bg-red-500 text-[14px] font-bold text-white hover:bg-red-600"
         >
           <Square className="size-[14px] fill-white stroke-white" />
-          정지 · 전송
+          정지
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ReviewPanel({
+  url,
+  seconds,
+  onReRecord,
+  onSend,
+}: {
+  url: string;
+  seconds: number;
+  onReRecord: () => void;
+  onSend: () => void;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-[12px] py-[6px]">
+      <p className="text-[14px] font-semibold text-white">
+        녹음 완료 · {fmtTime(seconds)}
+      </p>
+      <p className="text-[11px] text-white/55">
+        들어보고 전송하세요.
+      </p>
+      {/* 본인 확인용 미리듣기 */}
+      <audio src={url} controls className="w-full" />
+      <div className="mt-[6px] flex w-full gap-[10px]">
+        <button
+          type="button"
+          onClick={onReRecord}
+          className="h-[44px] flex-1 rounded-[12px] border border-white/15 bg-white/5 text-[14px] font-medium text-white/75 hover:bg-white/10"
+        >
+          다시 녹음
+        </button>
+        <button
+          type="button"
+          onClick={onSend}
+          className="h-[44px] flex-1 rounded-[12px] bg-emerald-500 text-[14px] font-bold text-white hover:bg-emerald-600"
+        >
+          전송
         </button>
       </div>
     </div>

@@ -376,6 +376,17 @@ export default function ChatRoomPage() {
   );
 }
 
+/** ISO 8601 → "오후 1:55" (한국어 12시간제). */
+function formatTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleTimeString("ko-KR", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
 function MediaContent({ message }: { message: Message }) {
   if (message.media_type === "image" && message.media_url) {
     return (
@@ -430,6 +441,9 @@ function ThemBubble({
           </p>
         )}
       </div>
+      <span className="mb-[2px] shrink-0 text-[10px] text-white/50">
+        {formatTime(message.created_at)}
+      </span>
     </div>
   );
 }
@@ -437,7 +451,10 @@ function ThemBubble({
 function MeBubble({ message }: { message: Message }) {
   const hasMedia = !!message.media_url;
   return (
-    <div className="flex justify-end">
+    <div className="flex items-end justify-end gap-[6px]">
+      <span className="mb-[2px] shrink-0 text-[10px] text-white/50">
+        {formatTime(message.created_at)}
+      </span>
       <div
         className={`max-w-[70%] rounded-[10px] bg-[#8b5cf6] text-[14px] text-white shadow-[0_0_4px_0_#8b5cf6] ${
           hasMedia ? "p-[6px]" : "px-[14px] py-[10px]"
