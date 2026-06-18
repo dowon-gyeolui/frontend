@@ -1,8 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useRef, useState } from "react";
-
+import { PhotoCarousel } from "@/components/matching/photo-carousel";
 import { ZamiVerifiedBadge } from "@/components/brand/zami-verified-badge";
 
 /**
@@ -67,75 +65,18 @@ export function MatchCard({
   const ageLabel = data.age !== null ? `${data.age}세` : "—";
   const tier = showScoreTier ? scoreTierLabel(data.score) : null;
 
-  const [index, setIndex] = useState(0);
-  const safeIndex = Math.min(index, photos.length - 1);
-  // 블라인드(미열람) 카드는 사진을 넘기지 못하게 한다.
-  const multiple = photos.length > 1 && !data.is_blinded;
-  const go = (dir: number) =>
-    setIndex((i) => (i + dir + photos.length) % photos.length);
-  const touchX = useRef<number | null>(null);
-
   return (
     <article className="overflow-hidden rounded-[22px] border border-white/15 bg-white/10 shadow-[0px_10px_24px_0px_rgba(0,0,0,0.3),0px_0px_36px_0px_rgba(168,85,247,0.18)] backdrop-blur-sm">
-      {/* Photo — 큰 세로 사진 캐러셀. Free 사용자는 블러 + 안내 pill. */}
-      <div
-        className="relative aspect-[4/5] w-full overflow-hidden"
-        onTouchStart={(e) => {
-          touchX.current = e.touches[0].clientX;
-        }}
-        onTouchEnd={(e) => {
-          if (touchX.current === null) return;
-          const dx = e.changedTouches[0].clientX - touchX.current;
-          touchX.current = null;
-          if (multiple && Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
-        }}
+      {/* Photo — 큰 세로 사진 캐러셀(드래그 스와이프 + 하단 점). */}
+      <PhotoCarousel
+        photos={photos}
+        alt={name}
+        enabled={!data.is_blinded}
+        className="aspect-[4/5] w-full overflow-hidden"
+        imageClassName={`size-full object-cover ${data.is_blinded ? "blur-[16px] scale-110" : ""}`}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={photos[safeIndex]}
-          alt={`${name} ${safeIndex + 1}`}
-          className={`size-full object-cover ${data.is_blinded ? "blur-[16px] scale-110" : ""}`}
-        />
         {/* Bottom fade so the name remains legible over any photo */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#1a1225]/85" />
-
-        {/* 사진 번호 (n/N) — 상단 중앙 */}
-        {multiple && (
-          <div className="absolute left-1/2 top-[12px] -translate-x-1/2 rounded-full bg-black/55 px-[10px] py-[3px] text-[12px] font-semibold text-white backdrop-blur-sm">
-            {safeIndex + 1} / {photos.length}
-          </div>
-        )}
-
-        {/* 좌우 넘기기 화살표 — 카드는 보통 클릭 시 모달을 여는 button 안에
-            들어가므로, span+stopPropagation 으로 사진 넘김과 모달 열림을 분리한다. */}
-        {multiple && (
-          <>
-            <span
-              role="button"
-              tabIndex={0}
-              onClick={(e) => {
-                e.stopPropagation();
-                go(-1);
-              }}
-              aria-label="이전 사진"
-              className="absolute left-[8px] top-1/2 grid size-[32px] -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-black/40 backdrop-blur-sm active:scale-95"
-            >
-              <ChevronLeft className="size-[20px] stroke-white stroke-[2.5]" />
-            </span>
-            <span
-              role="button"
-              tabIndex={0}
-              onClick={(e) => {
-                e.stopPropagation();
-                go(1);
-              }}
-              aria-label="다음 사진"
-              className="absolute right-[8px] top-1/2 grid size-[32px] -translate-y-1/2 cursor-pointer place-items-center rounded-full bg-black/40 backdrop-blur-sm active:scale-95"
-            >
-              <ChevronRight className="size-[20px] stroke-white stroke-[2.5]" />
-            </span>
-          </>
-        )}
 
         {/* ZAMI 공식 얼굴 인증 뱃지 */}
         {data.is_face_verified && !data.is_blinded && (
@@ -163,7 +104,7 @@ export function MatchCard({
         <p className="absolute bottom-[14px] left-[16px] text-[24px] font-bold tracking-tight text-white drop-shadow">
           {name}
         </p>
-      </div>
+      </PhotoCarousel>
 
       {/* Info — 나이 · MBTI · 한줄소개 */}
       <div className="flex flex-col gap-[8px] px-[16px] py-[14px]">

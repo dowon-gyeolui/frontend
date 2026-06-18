@@ -1,9 +1,10 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { X } from "lucide-react";
+import { useEffect } from "react";
 
 import { scoreTierLabel, type MatchCandidate } from "@/components/matching/match-card";
+import { PhotoCarousel } from "@/components/matching/photo-carousel";
 
 const PLACEHOLDER_PHOTO =
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop";
@@ -35,23 +36,13 @@ export function MatchInfoModal({
       ? candidate.photos
       : [candidate.photo_url ?? PLACEHOLDER_PHOTO];
 
-  const [index, setIndex] = useState(0);
-  const safeIndex = Math.min(index, photos.length - 1);
-  const hasMultiple = photos.length > 1;
-
-  const prev = () =>
-    setIndex((i) => (i - 1 + photos.length) % photos.length);
-  const next = () => setIndex((i) => (i + 1) % photos.length);
-
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
-      else if (e.key === "ArrowLeft" && hasMultiple) prev();
-      else if (e.key === "ArrowRight" && hasMultiple) next();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose, hasMultiple, photos.length]);
+  }, [onClose]);
 
   const name = candidate.nickname ?? "익명";
   const ageLabel = candidate.age !== null ? `${candidate.age}세` : "—";
@@ -76,48 +67,19 @@ export function MatchInfoModal({
           <X className="size-[20px] stroke-[#1b1029] stroke-[2]" />
         </button>
 
-        {/* Hero photo carousel. 카드를 아직 열람하지 않아 블라인드 상태면
-            블러 + 안내 pill 을 보여준다. */}
-        <div className="relative mt-[20px] aspect-[279/320] w-full overflow-hidden rounded-[14px]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={photos[safeIndex]}
-            alt={`${name} ${safeIndex + 1}`}
-            className={`size-full object-cover ${candidate.is_blinded ? "blur-[18px] scale-110" : ""}`}
-          />
+        {/* Hero photo carousel(드래그 스와이프 + 하단 점). 미열람(블라인드)
+            상태면 블러 + 안내 pill. */}
+        <PhotoCarousel
+          photos={photos}
+          alt={name}
+          enabled={!candidate.is_blinded}
+          className="mt-[20px] aspect-[279/320] w-full overflow-hidden rounded-[14px]"
+          imageClassName={`size-full object-cover ${candidate.is_blinded ? "blur-[18px] scale-110" : ""}`}
+        >
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#1a1225]/85" />
           <p className="absolute bottom-[14px] right-[16px] text-[24px] font-semibold tracking-tight text-white">
             {name}
           </p>
-
-          {/* 사진 번호 (n/N) — 상단 */}
-          {hasMultiple && (
-            <div className="absolute left-[14px] top-[12px] rounded-full bg-black/55 px-[10px] py-[3px] text-[12px] font-semibold text-white backdrop-blur-sm">
-              {safeIndex + 1} / {photos.length}
-            </div>
-          )}
-
-          {/* 좌우 화살표 */}
-          {hasMultiple && !candidate.is_blinded && (
-            <>
-              <button
-                type="button"
-                onClick={prev}
-                aria-label="이전 사진"
-                className="absolute left-[8px] top-1/2 grid size-[32px] -translate-y-1/2 place-items-center rounded-full bg-black/45 backdrop-blur-sm active:scale-95"
-              >
-                <ChevronLeft className="size-[20px] stroke-white stroke-[2.5]" />
-              </button>
-              <button
-                type="button"
-                onClick={next}
-                aria-label="다음 사진"
-                className="absolute right-[8px] top-1/2 grid size-[32px] -translate-y-1/2 place-items-center rounded-full bg-black/45 backdrop-blur-sm active:scale-95"
-              >
-                <ChevronRight className="size-[20px] stroke-white stroke-[2.5]" />
-              </button>
-            </>
-          )}
 
           {candidate.is_blinded && (
             <div className="pointer-events-none absolute inset-x-0 top-1/2 grid -translate-y-1/2 place-items-center">
@@ -126,7 +88,7 @@ export function MatchInfoModal({
               </div>
             </div>
           )}
-        </div>
+        </PhotoCarousel>
 
         {/* 나이 · MBTI · 한줄소개 */}
         <div className="mt-[12px] space-y-[6px] pl-[16px] pr-[8px] text-[#1b1029]">

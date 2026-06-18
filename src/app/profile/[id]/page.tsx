@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { ZamiVerifiedBadge } from "@/components/brand/zami-verified-badge";
 import { AppShell } from "@/components/layout/app-shell";
+import { PhotoCarousel } from "@/components/matching/photo-carousel";
 import { LoadingPanel } from "@/components/ui/loading-panel";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
@@ -17,6 +18,7 @@ type PublicProfile = {
   id: number;
   nickname: string | null;
   photo_url: string | null;
+  photos: string[];
   is_blinded: boolean;
   age: number | null;
   gender: string | null;
@@ -128,16 +130,20 @@ export default function ProfileDetailPage() {
 
         {data && (
           <>
-            {/* Hero photo */}
-            <div className="relative mt-[20px] aspect-[4/5] w-full overflow-hidden rounded-[18px] border border-white/15 bg-white/10">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={data.photo_url ?? PLACEHOLDER_PHOTO}
-                alt={data.nickname ?? "프로필"}
-                className={`size-full object-cover ${
-                  data.is_blinded ? "blur-[18px] scale-110" : ""
-                }`}
-              />
+            {/* Hero photo carousel(드래그 스와이프 + 하단 점) */}
+            <PhotoCarousel
+              photos={
+                data.photos && data.photos.length > 0
+                  ? data.photos
+                  : [data.photo_url ?? PLACEHOLDER_PHOTO]
+              }
+              alt={data.nickname ?? "프로필"}
+              enabled={!data.is_blinded}
+              className="mt-[20px] aspect-[4/5] w-full overflow-hidden rounded-[18px] border border-white/15 bg-white/10"
+              imageClassName={`size-full object-cover ${
+                data.is_blinded ? "blur-[18px] scale-110" : ""
+              }`}
+            >
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#1a1225]/85" />
               {data.compatibility_score !== null && (
                 <div className="absolute left-[14px] top-[14px] rounded-full bg-purple-500/95 px-[12px] py-[4px] text-[13px] font-bold text-white shadow-[0_0_10px_-2px_rgba(168,85,247,0.8)]">
@@ -167,7 +173,7 @@ export default function ProfileDetailPage() {
                   </div>
                 </div>
               )}
-            </div>
+            </PhotoCarousel>
 
             {/* 한 줄 자기소개 */}
             {data.bio && (
