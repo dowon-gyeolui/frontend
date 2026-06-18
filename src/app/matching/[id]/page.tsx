@@ -513,11 +513,22 @@ function MediaContent({ message }: { message: Message }) {
       />
     );
   }
-  if (message.media_type === "audio" && message.media_url) {
+  if (message.media_type === "audio") {
+    // 음성은 14일까지만 열람 가능 — 만료되면 서버가 media_url 을 비운다.
+    if (!message.media_url) {
+      return (
+        <p className="px-[6px] py-[4px] text-[12px] text-white/55">
+          ⌛ 만료된 음성메시지예요 (전송 후 14일 경과)
+        </p>
+      );
+    }
     return (
       <audio
         src={message.media_url}
         controls
+        // 다운로드·재생속도 메뉴 숨김. 우클릭 저장도 차단.
+        controlsList="nodownload noplaybackrate"
+        onContextMenu={(e) => e.preventDefault()}
         preload="metadata"
         className="w-full max-w-[260px]"
       />

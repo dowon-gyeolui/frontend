@@ -308,13 +308,19 @@ function ReviewPanel({
   return (
     <div className="flex flex-col items-center gap-[12px] py-[6px]">
       <p className="text-[14px] font-semibold text-white">
-        녹음 완료 · {fmtTime(seconds)}
+        {fmtTime(seconds)} 녹음 완료 
       </p>
       <p className="text-[11px] text-white/55">
         들어보고 전송하세요.
       </p>
-      {/* 본인 확인용 미리듣기 */}
-      <audio src={url} controls className="w-full" />
+      {/* 본인 확인용 미리듣기 — 다운로드 차단 */}
+      <audio
+        src={url}
+        controls
+        controlsList="nodownload noplaybackrate"
+        onContextMenu={(e) => e.preventDefault()}
+        className="w-full"
+      />
       <div className="mt-[6px] flex w-full gap-[10px]">
         <button
           type="button"
