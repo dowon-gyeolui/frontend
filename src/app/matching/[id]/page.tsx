@@ -15,6 +15,7 @@ import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import {
   fetchMessagesWith,
+  leaveChatWith,
   listThreads,
   markThreadRead,
   sendMediaMessageTo,
@@ -44,6 +45,11 @@ export default function ChatRoomPage() {
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [attachmentOpen, setAttachmentOpen] = useState(false);
   const [attachmentUploading, setAttachmentUploading] = useState(false);
+  // 방 나가기 확인 팝업.
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [blockOnLeave, setBlockOnLeave] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const [leaveError, setLeaveError] = useState<string | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   // Track the last seen message id for incremental polling.
@@ -216,6 +222,21 @@ export default function ChatRoomPage() {
     [attachmentUploading, peerId],
   );
 
+  const confirmLeave = useCallback(async () => {
+    if (leaving) return;
+    setLeaving(true);
+    setLeaveError(null);
+    try {
+      await leaveChatWith(peerId, blockOnLeave);
+      router.push("/matching?tab=chat");
+    } catch (e) {
+      // 실패 시 팝업을 유지하고 사유를 노출 — 차단/삭제가 안 됐을 수 있으므로
+      // 자동으로 방을 떠나지 않는다.
+      setLeaveError(e instanceof Error ? e.message : "방을 나가지 못했어요.");
+      setLeaving(false);
+    }
+  }, [leaving, peerId, blockOnLeave, router]);
+
   const otherName = candidate?.nickname ?? `사용자 ${peerId}`;
   const otherPhoto = candidate?.photo_url ?? PLACEHOLDER_PHOTO;
 
@@ -340,7 +361,12 @@ export default function ChatRoomPage() {
         peerId={peerId}
         open={reportOpen}
         onClose={() => setReportOpen(false)}
-        onLeaveRoom={() => router.push("/matching?tab=chat")}
+        onLeaveRoom={() => {
+          setReportOpen(false);
+          setBlockOnLeave(false);
+          setLeaveError(null);
+          setLeaveOpen(true);
+        }}
         onReport={() => {
           setReportOpen(false);
           setReportModalOpen(true);
@@ -372,6 +398,95 @@ export default function ChatRoomPage() {
           전송 중
         </div>
       )}
+
+      {leaveOpen && (
+        <LeaveRoomModal
+          block={blockOnLeave}
+          onToggleBlock={() => setBlockOnLeave((v) => !v)}
+          busy={leaving}
+          error={leaveError}
+          onConfirm={confirmLeave}
+          onCancel={() => {
+            if (leaving) return;
+            setLeaveOpen(false);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function LeaveRoomModal({
+  block,
+  onToggleBlock,
+  busy,
+  error,
+  onConfirm,
+  onCancel,
+}: {
+  block: boolean;
+  onToggleBlock: () => void;
+  busy: boolean;
+  error: string | null;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-[60] grid place-items-center bg-black/60 p-[20px] backdrop-blur-[2px]"
+      onClick={busy ? undefined : onCancel}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-[320px] max-w-full rounded-[18px] border border-white/15 bg-[#241338] p-[20px] shadow-[0_10px_40px_rgba(0,0,0,0.45)]"
+      >
+        <h3 className="text-center text-[16px] font-bold text-white">
+          채팅방을 나가시겠어요?
+        </h3>
+
+        <label className="mt-[16px] flex cursor-pointer items-start gap-[8px]">
+          <input
+            type="checkbox"
+            checked={block}
+            onChange={onToggleBlock}
+            disabled={busy}
+            className="mt-[2px] size-[16px] accent-[#8b5cf6]"
+          />
+          <span className="text-[12px] leading-[18px] text-white/80">
+            상대방의 채팅방에서도 삭제할게요{" "}
+            <span className="text-white/50">(차단)</span>
+            <br />
+            <span className="text-[11px] text-white/45">
+              체크하면 두 사람 모두 이 대화를 다시 볼 수 없어요.
+            </span>
+          </span>
+        </label>
+
+        {error && (
+          <p className="mt-[10px] text-center text-[11px] text-red-300">
+            {error}
+          </p>
+        )}
+
+        <div className="mt-[18px] flex gap-[10px]">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={busy}
+            className="h-[44px] flex-1 rounded-[12px] border border-white/15 bg-white/5 text-[14px] font-medium text-white/75 hover:bg-white/10 disabled:opacity-50"
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={busy}
+            className="h-[44px] flex-1 rounded-[12px] bg-[rgba(255,95,95,0.95)] text-[14px] font-bold text-white hover:bg-[rgba(255,95,95,1)] disabled:opacity-50"
+          >
+            {busy ? "나가는 중..." : "나가기"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

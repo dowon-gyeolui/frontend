@@ -60,6 +60,20 @@ export async function leaveThread(threadId: number): Promise<void> {
 }
 
 /**
+ * 채팅방 나가기 — peer 기준. 채팅방 헤더의 '방 나가기' 에서 사용.
+ *
+ * block=false: soft-leave(내 목록에서만 사라짐). block=true: 차단 —
+ * 상대 쪽 방까지 삭제하고 이후 매칭·추천·채팅에서 영구 제외.
+ */
+export async function leaveChatWith(
+  peerId: number,
+  block = false,
+): Promise<void> {
+  const qs = block ? "?block=true" : "";
+  await apiFetch(`/chat/with/${peerId}${qs}`, { method: "DELETE" });
+}
+
+/**
  * Fetch messages with `peer_id`. Pass `afterId` to get only newer messages
  * (poll mode). Initial load uses afterId=undefined to fetch the full history.
  */
