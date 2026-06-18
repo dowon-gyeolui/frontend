@@ -194,7 +194,7 @@ function PackageCard({
             </p>
             {product.featured && (
               <span className="rounded-full bg-[#fde047] px-[7px] py-[1px] text-[10px] font-bold text-[#1b1029]">
-                주력
+                추천
               </span>
             )}
           </div>
