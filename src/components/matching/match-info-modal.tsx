@@ -90,8 +90,9 @@ export function MatchInfoModal({
           )}
         </PhotoCarousel>
 
-        {/* 나이 · MBTI · 한줄소개 */}
+        {/* 한줄소개 (나이·MBTI·궁합은 추후 노출 — 지금은 자기소개만) */}
         <div className="mt-[12px] space-y-[6px] pl-[16px] pr-[8px] text-[#1b1029]">
+          {/* 추후 노출 예정 — 임시 숨김. 복구하려면 아래 주석을 푸세요.
           {tier && (
             <span className="inline-block rounded-full bg-purple-500/15 px-[10px] py-[3px] text-[13px] font-bold text-purple-700">
               궁합 {tier}
@@ -108,6 +109,7 @@ export function MatchInfoModal({
               </>
             )}
           </div>
+          */}
           {candidate.bio && (
             <p className="text-[14px] leading-[20px] text-[#1b1029]/70">
               {candidate.bio}
