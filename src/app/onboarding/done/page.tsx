@@ -80,6 +80,19 @@ export default function OnboardingDonePage() {
         });
         if (cancelled) return;
 
+        // 2.5) 연애 인터뷰 답변(선택) → PUT /users/me/interview.
+        //      비필수라 실패해도 온보딩은 계속 진행한다.
+        if (state.interview && state.interview.length > 0) {
+          try {
+            await apiFetch("/users/me/interview", {
+              method: "PUT",
+              body: JSON.stringify({ answers: state.interview }),
+            });
+          } catch {
+            /* 비필수 — 무시 */
+          }
+        }
+
         // 3) Kick off the LLM analysis. This is the "마지막 페이지" content —
         //    we wait so the user actually reads their own saju before going
         //    to /home. Failure is non-fatal: we still let them in.
@@ -108,7 +121,7 @@ export default function OnboardingDonePage() {
   }, []);
 
   return (
-    <OnboardingShell step={3}>
+    <OnboardingShell step={5}>
       <div className="flex flex-1 flex-col items-center justify-center px-[24px] pb-[40px]">
         {status.kind === "submitting" && (
           <>

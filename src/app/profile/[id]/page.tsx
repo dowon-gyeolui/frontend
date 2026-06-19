@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { ZamiVerifiedBadge } from "@/components/brand/zami-verified-badge";
 import { AppShell } from "@/components/layout/app-shell";
 import { PhotoCarousel } from "@/components/matching/photo-carousel";
+import { INTERVIEW_QUESTION_MAP } from "@/lib/interview";
 import { LoadingPanel } from "@/components/ui/loading-panel";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
@@ -34,6 +35,9 @@ type PublicProfile = {
   day_pillar: string | null;
   compatibility_score: number | null;
   is_face_verified: boolean;
+  // 연애 인터뷰 — 상호주의로 내가 볼 수 있는 만큼만. interview_total 은 상대 전체 답변 수.
+  interview_answers: { question_key: string; answer: string }[];
+  interview_total: number;
 };
 
 // ──────────────────────────────────────────────────────────────────────
@@ -66,6 +70,11 @@ const MOCK_PROFILE: Omit<PublicProfile, "id"> = {
   day_pillar: "을사",
   compatibility_score: 88,
   is_face_verified: true,
+  interview_answers: [
+    { question_key: "life_dayoff", answer: "주로 집에서 푹 쉬다가 저녁에 가볍게 산책해요." },
+    { question_key: "love_affection", answer: "말보다 행동으로 표현하는 편이에요." },
+  ],
+  interview_total: 4,
 };
 // ──────────────────────────────────────────────────────────────────────
 
@@ -246,6 +255,40 @@ export default function ProfileDetailPage() {
                 />
               </div>
             </section>
+
+            {/* 연애 인터뷰 — 상호주의로 내가 답한 만큼만 공개. */}
+            {data.interview_total > 0 && (
+              <section className="mt-[20px]">
+                <h2 className="text-center text-[16px] font-semibold text-white">
+                  연애 인터뷰
+                </h2>
+                <div className="mt-[10px] space-y-[10px]">
+                  {data.interview_answers.map((a) => (
+                    <div
+                      key={a.question_key}
+                      className="rounded-[14px] border border-white/15 bg-white/10 p-[14px] backdrop-blur-sm"
+                    >
+                      <p className="text-[12px] font-medium text-[#fde047]">
+                        {INTERVIEW_QUESTION_MAP[a.question_key] ?? "질문"}
+                      </p>
+                      <p className="mt-[6px] text-[13px] leading-[20px] text-white/90">
+                        {a.answer}
+                      </p>
+                    </div>
+                  ))}
+
+                  {/* 상호주의 잠금 안내 — 상대가 더 답했는데 내가 덜 답한 경우 */}
+                  {data.interview_total > data.interview_answers.length && (
+                    <div className="flex items-center justify-center gap-[6px] rounded-[14px] border border-dashed border-white/20 bg-white/5 px-[14px] py-[12px] text-center">
+                      <Lock className="size-[13px] text-white/50" />
+                      <p className="text-[12px] leading-[18px] text-white/60">
+                        잠긴 답변 {data.interview_total - data.interview_answers.length}개 · 내가 인터뷰를 더 답하면 볼 수 있어요
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
 
             {/* CTAs */}
             <div className="mt-[24px] flex flex-col gap-[10px]">

@@ -35,6 +35,8 @@ export type OnboardingState = {
   pref_age_max?: number;
   pref_region?: string; // 선호 지역 — 시·도 단위
   pref_height_min?: number;
+  // 연애 인터뷰(선택) — 답한 질문만. done 단계에서 PUT /users/me/interview.
+  interview?: { question_key: string; answer: string }[];
 };
 
 type OnboardingCtx = {

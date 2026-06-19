@@ -46,7 +46,7 @@ export default function OnboardingIdealTypePage() {
       pref_region: region,
       pref_height_min: Number(heightMin),
     });
-    router.push("/onboarding/done");
+    router.push("/onboarding/interview");
   };
 
   return (

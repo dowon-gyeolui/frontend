@@ -11,11 +11,11 @@ import { ZamiLogo } from "@/components/brand/zami-logo";
  * the segment that should appear filled.
  */
 export type OnboardingShellProps = {
-  step: 1 | 2 | 3 | 4;
+  step: 1 | 2 | 3 | 4 | 5;
   children: ReactNode;
 };
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 export function OnboardingShell({ step, children }: OnboardingShellProps) {
   return (
