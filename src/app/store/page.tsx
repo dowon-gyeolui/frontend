@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Sparkles, Star } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -184,9 +184,6 @@ function PackageCard({
       }`}
     >
       <div className="flex items-center gap-[14px]">
-        <div className="grid size-[48px] shrink-0 place-items-center rounded-full bg-gradient-to-br from-yellow-300 to-pink-400 shadow-[0_0_15px_-4px_rgba(253,224,71,0.6)]">
-          <Sparkles className="size-[24px] fill-white stroke-white" />
-        </div>
         <div>
           <div className="flex items-center gap-[6px]">
             <p className="text-[17px] font-bold text-white">
@@ -207,9 +204,9 @@ function PackageCard({
         <p className="text-[16px] font-bold text-[#fde047]">
           {product.price.toLocaleString("ko-KR")}원
         </p>
-        <p className="mt-[2px] text-[11px] text-white/60">
-          {pending ? "결제창 여는 중..." : "구매하기 →"}
-        </p>
+        {pending && (
+          <p className="mt-[2px] text-[11px] text-white/60">결제창 여는 중...</p>
+        )}
       </div>
     </button>
   );
