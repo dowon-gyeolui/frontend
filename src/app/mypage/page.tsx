@@ -5,8 +5,6 @@ import {
   Camera,
   Pencil,
   Search,
-  Star,
-  UserX,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -137,15 +135,12 @@ function MypageContent() {
           <h1 className="text-center text-[20px] font-bold text-white">마이페이지</h1>
           <button
             type="button"
-            onClick={() => {
-              setLeaveError(null);
-              setLeaveOpen(true);
-            }}
-            aria-label="탈퇴하기"
+            onClick={() => setBasicOpen(true)}
+            aria-label="기본 정보 편집하기"
             className="absolute right-0 top-[14px] flex items-center gap-[4px] rounded-full border border-white/20 bg-white/5 px-[10px] py-[4px] text-[11px] text-white/70 hover:bg-white/15"
           >
-            <UserX className="size-[12px] stroke-white/70 stroke-[2]" />
-            탈퇴하기
+            <Pencil className="size-[12px] stroke-white/70 stroke-[2]" />
+            편집하기
           </button>
         </div>
 
@@ -340,17 +335,17 @@ function MypageContent() {
           내 사주 보러가기
         </button>
 
-        {/* Dev: logout */}
+        {/* 탈퇴하기 */}
         <div className="mt-[20px] flex justify-center">
           <button
             type="button"
             onClick={() => {
-              clearToken();
-              router.replace("/");
+              setLeaveError(null);
+              setLeaveOpen(true);
             }}
             className="text-[12px] text-white/40 underline underline-offset-2"
           >
-            로그아웃
+            탈퇴하기
           </button>
         </div>
       </div>

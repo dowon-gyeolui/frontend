@@ -79,13 +79,13 @@ export function BioEditModal({
             autoFocus
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            maxLength={120}
+            maxLength={100}
             rows={3}
             placeholder="자기소개를 입력해주세요."
             className="w-full resize-none bg-transparent text-center text-[16px] font-medium leading-[24px] text-[#1b1029] placeholder:text-[#1b1029]/60 focus:outline-none"
           />
           <p className="mt-[2px] text-right text-[10px] text-[#5a3a82]/70">
-            {bio.length}/120
+            {bio.length}/100
           </p>
         </div>
 

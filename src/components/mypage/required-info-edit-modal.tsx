@@ -3,7 +3,6 @@
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { ScrollableDateInput } from "@/components/common/scrollable-date-input";
 import { TypingTimeInput } from "@/components/common/typing-time-input";
 import { apiFetch } from "@/lib/api";
 import { BIRTH_PLACE_OPTIONS } from "@/lib/birth-place";
@@ -44,13 +43,14 @@ export function RequiredInfoEditModal({
   onClose: () => void;
   onSaved: (patch: RequiredInfoPatch) => void;
 }) {
-  const [nickname, setNickname] = useState(initial.nickname ?? "");
-  const [gender, setGender] = useState(initial.gender ?? "");
-  const [birthDate, setBirthDate] = useState(initial.birth_date ?? "");
+  // 이름·성별·생년월일·달력·윤달은 수정 불가 — 표시·검증용으로만 보관(setter 없음).
+  const [nickname] = useState(initial.nickname ?? "");
+  const [gender] = useState(initial.gender ?? "");
+  const [birthDate] = useState(initial.birth_date ?? "");
   const [birthTime, setBirthTime] = useState(initial.birth_time ?? "");
   const [timeUnknown, setTimeUnknown] = useState(initial.birth_time === null);
-  const [calendar, setCalendar] = useState(initial.calendar_type ?? "solar");
-  const [isLeap, setIsLeap] = useState(initial.is_leap_month);
+  const [calendar] = useState(initial.calendar_type ?? "solar");
+  const [isLeap] = useState(initial.is_leap_month);
   const [birthPlace, setBirthPlace] = useState(initial.birth_place ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -152,84 +152,48 @@ export function RequiredInfoEditModal({
           필수 정보 수정
         </h2>
         <p className="mt-[6px] text-center text-[11px] text-[#5a3a82]">
-          처음 가입할 때 입력했던 정보를 수정할 수 있어요.
+          생시와 출생지만 수정할 수 있어요. 이름·성별·생년월일은 변경할 수 없어요.
         </p>
 
         <div className="mt-[20px] space-y-[8px]">
-          {/* 이름 — 단순 한 줄 */}
+          {/* 이름 — 수정 불가 */}
           <PillRow>
-            <PillInput
-              label="이름"
-              value={nickname}
-              onChange={setNickname}
-              placeholder="이름을 입력해주세요"
-              maxLength={50}
-            />
+            <span className="text-[16px] font-medium text-black shrink-0">이름 :</span>
+            <span className="flex-1 text-[16px] font-medium text-black">
+              {nickname || "—"}
+            </span>
+            <span className="shrink-0 text-[11px] text-black/40">수정 불가</span>
           </PillRow>
 
-          {/* 성별 — 단순 한 줄 */}
+          {/* 성별 — 수정 불가 */}
           <PillRow>
             <span className="text-[14px] font-medium text-black shrink-0">성별</span>
-            <div className="ml-auto flex gap-[6px]">
-              <SegmentChip
-                label="남자"
-                active={gender === "male"}
-                onClick={() => setGender("male")}
-                width={56}
-              />
-              <SegmentChip
-                label="여자"
-                active={gender === "female"}
-                onClick={() => setGender("female")}
-                width={56}
-              />
-            </div>
+            <span className="ml-auto text-[14px] font-medium text-black">
+              {gender === "male" ? "남자" : gender === "female" ? "여자" : "—"}
+            </span>
+            <span className="ml-[8px] shrink-0 text-[11px] text-black/40">수정 불가</span>
           </PillRow>
 
-          {/* 생년월일 — 2줄 (라벨 + 입력기 stacked). 단일 줄에 모두
-              넣으면 좁은 모달에서 잘려보이므로 라벨 위 / 입력 아래로
-              분리. 입력기는 compact 모드 (픽 너비 축소). */}
+          {/* 생년월일 — 수정 불가. 만 나이를 괄호로 함께, 안내 문구 노출. */}
           <StackedRow label="생년월일">
-            <ScrollableDateInput
-              value={birthDate}
-              onChange={setBirthDate}
-              variant="light"
-              compact
-            />
-          </StackedRow>
-
-          {/* 달력 + 윤달 — 한 줄에 묶음 */}
-          <PillRow>
-            <span className="text-[14px] font-medium text-black shrink-0">달력</span>
-            <div className="ml-auto flex items-center gap-[6px]">
-              <SegmentChip
-                label="양력"
-                active={calendar === "solar"}
-                onClick={() => {
-                  setCalendar("solar");
-                  setIsLeap(false);
-                }}
-                width={50}
-              />
-              <SegmentChip
-                label="음력"
-                active={calendar === "lunar"}
-                onClick={() => setCalendar("lunar")}
-                width={50}
-              />
-              {calendar === "lunar" && (
-                <label className="ml-[4px] flex cursor-pointer items-center gap-[3px] text-[12px] text-black">
-                  <input
-                    type="checkbox"
-                    checked={isLeap}
-                    onChange={(e) => setIsLeap(e.target.checked)}
-                    className="size-[14px] cursor-pointer accent-[#7c3aed]"
-                  />
-                  윤달
-                </label>
-              )}
+            <div className="flex items-baseline justify-between">
+              <span className="text-[15px] font-medium text-black">
+                {birthDate || "—"}
+                {initial.age !== null && (
+                  <span className="ml-[5px] text-[13px] text-black/60">
+                    (만 {initial.age}세)
+                  </span>
+                )}
+                <span className="ml-[6px] text-[12px] text-black/55">
+                  · {calendar === "lunar" ? `음력${isLeap ? " 윤달" : ""}` : "양력"}
+                </span>
+              </span>
+              <span className="shrink-0 text-[11px] text-black/40">수정 불가</span>
             </div>
-          </PillRow>
+            <p className="text-[10px] text-black/45">
+              ZAMI는 만 나이를 기준으로 합니다.
+            </p>
+          </StackedRow>
 
           {/* 생시 — 2줄 (라벨 + 입력기 + 모름). 시간 입력기에 시계
               아이콘이 inset 으로 박혀있어 가로 폭이 작아도 OK 지만,
@@ -279,11 +243,6 @@ export function RequiredInfoEditModal({
             </select>
           </PillRow>
 
-          {initial.age !== null && (
-            <p className="px-[6px] text-right text-[11px] text-black/55">
-              나이: {initial.age}세
-            </p>
-          )}
         </div>
 
         {error && (
@@ -336,59 +295,3 @@ function StackedRow({
   );
 }
 
-function PillInput({
-  label,
-  value,
-  onChange,
-  placeholder,
-  maxLength,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder: string;
-  maxLength?: number;
-}) {
-  return (
-    <>
-      <span className="text-[16px] font-medium text-black shrink-0">
-        {label} :
-      </span>
-      <input
-        type="text"
-        value={value}
-        maxLength={maxLength}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="flex-1 bg-transparent text-[16px] font-medium text-black placeholder:text-black/45 focus:outline-none"
-      />
-    </>
-  );
-}
-
-function SegmentChip({
-  label,
-  active,
-  onClick,
-  width,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-  width: number;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{ width, height: 25 }}
-      className={`grid place-items-center rounded-[18px] text-[14px] font-medium transition ${
-        active
-          ? "bg-[#7c3aed] text-white shadow-[0_0_6px_rgba(124,58,237,0.5)]"
-          : "bg-white/85 text-black hover:bg-white"
-      }`}
-    >
-      {label}
-    </button>
-  );
-}
