@@ -36,14 +36,6 @@ type PublicProfile = {
   is_face_verified: boolean;
 };
 
-const ELEMENT_HANJA: Record<string, string> = {
-  목: "나무",
-  화: "불",
-  토: "흙",
-  금: "금",
-  수: "물",
-};
-
 /**
  * /profile/[id] — 매칭 카드 "상세 정보 확인" CTA 의 도착지.
  *
@@ -184,23 +176,6 @@ export default function ProfileDetailPage() {
               </div>
             )}
 
-            {/* 사주 요약 (일주 + 주요 오행) */}
-            {(data.day_pillar || data.dominant_element) && (
-              <section className="mt-[16px] grid grid-cols-2 gap-[10px]">
-                {data.day_pillar && (
-                  <Stat label="일주" value={data.day_pillar} />
-                )}
-                {data.dominant_element && (
-                  <Stat
-                    label="주요 오행"
-                    value={`${data.dominant_element}(${
-                      ELEMENT_HANJA[data.dominant_element] ?? ""
-                    })`}
-                  />
-                )}
-              </section>
-            )}
-
             {/* 기본 정보 */}
             <section className="mt-[20px]">
               <h2 className="text-center text-[16px] font-semibold text-white">
@@ -252,15 +227,6 @@ export default function ProfileDetailPage() {
         )}
       </div>
     </AppShell>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[12px] border border-white/15 bg-white/5 p-[12px] text-center backdrop-blur-sm">
-      <p className="text-[11px] text-white/60">{label}</p>
-      <p className="mt-[4px] text-[18px] font-bold text-white">{value}</p>
-    </div>
   );
 }
 
