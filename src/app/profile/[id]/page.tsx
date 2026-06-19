@@ -36,6 +36,39 @@ type PublicProfile = {
   is_face_verified: boolean;
 };
 
+// ──────────────────────────────────────────────────────────────────────
+// ⚠️ 테스트용 mock — 김민주 한 명의 풀 프로필을 화면에서 바로 확인하기 위함.
+// true 면 백엔드 호출 대신 아래 mock 을 그대로 보여준다. 확인이 끝나면
+// false 로 바꾸거나 이 블록을 지우세요.
+const USE_MOCK_PROFILE = true;
+const MOCK_PROFILE: Omit<PublicProfile, "id"> = {
+  nickname: "김민주",
+  photo_url:
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&h=750&fit=crop",
+  photos: [
+    "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&h=750&fit=crop",
+    "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=750&fit=crop",
+    "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=750&fit=crop",
+    "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=600&h=750&fit=crop",
+  ],
+  is_blinded: false,
+  age: 26,
+  gender: "female",
+  bio: "주말엔 카페 투어랑 등산 좋아해요. 솔직하고 편한 대화 환영!",
+  height_cm: 164,
+  mbti: "ENFP",
+  job: "UX 디자이너",
+  region: "서울 마포구",
+  smoking: "비흡연",
+  drinking: "가끔",
+  religion: "무교",
+  dominant_element: "목",
+  day_pillar: "을사",
+  compatibility_score: 88,
+  is_face_verified: true,
+};
+// ──────────────────────────────────────────────────────────────────────
+
 /**
  * /profile/[id] — 매칭 카드 "상세 정보 확인" CTA 의 도착지.
  *
@@ -54,6 +87,11 @@ export default function ProfileDetailPage() {
   useEffect(() => {
     if (!getToken()) {
       router.replace("/");
+      return;
+    }
+    if (USE_MOCK_PROFILE) {
+      // 테스트 모드 — 백엔드 대신 김민주 mock 을 그대로 표시.
+      setData({ ...MOCK_PROFILE, id: peerId });
       return;
     }
     apiFetch<PublicProfile>(`/users/${peerId}/public-profile`)
