@@ -13,55 +13,39 @@ export type InterviewCategory = { category: string; questions: InterviewQuestion
 
 export const INTERVIEW_CATEGORIES: InterviewCategory[] = [
   {
-    category: "생활 패턴",
+    category: "일상/데이트 스타일",
     questions: [
-      { key: "life_dating_type", text: "나는 연애할 때 어떤 사람에 가까운가요?" },
       { key: "life_dayoff", text: "쉬는 날 나는 주로 어떻게 보내나요?" },
       { key: "life_habit_match", text: "연인과 꼭 맞았으면 하는 생활 습관은?" },
       { key: "life_date_style", text: "데이트는 집콕과 외출 중 어디에 가까운가요?" },
+      { key: "humor_small_happiness", text: "내가 생각하는 최고의 소소한 행복은?" },
     ],
   },
   {
-    category: "연애 성향",
+    category: "연애 성향/감정 표현",
     questions: [
+      { key: "life_dating_type", text: "나는 연애할 때 어떤 사람에 가까운가요?" },
       { key: "love_affection", text: "애정표현은 말, 행동, 스킨십 중 어디에 가까운가요?" },
       { key: "love_conflict", text: "갈등이 생겼을 때 나는 어떻게 푸는 편인가요?" },
       { key: "love_hurt", text: "상대에게 서운함을 느낄 때 나는 보통?" },
+      { key: "charm_crush", text: "내가 좋아하는 사람 앞에서 달라지는 점은?" },
     ],
   },
   {
-    category: "가치관",
+    category: "연애 속도/가치관",
     questions: [
+      { key: "pace_speed", text: "나는 천천히 알아가는 편인가요, 빠르게 가까워지는 편인가요?" },
+      { key: "pace_deepening", text: "관계가 깊어진다고 느끼는 순간은?" },
       { key: "value_dealbreaker", text: "연애에서 절대 가볍게 넘기기 어려운 건?" },
       { key: "value_good_person", text: "나에게 좋은 사람이라는 건 어떤 사람인가요?" },
     ],
   },
   {
-    category: "성격·매력",
+    category: "현실적인 모습",
     questions: [
-      { key: "charm_closer", text: "가까워지면 드러나는 내 모습은?" },
-      { key: "charm_crush", text: "내가 좋아하는 사람 앞에서 달라지는 점은?" },
-    ],
-  },
-  {
-    category: "유머",
-    questions: [
-      { key: "humor_small_happiness", text: "내가 생각하는 최고의 소소한 행복은?" },
-    ],
-  },
-  {
-    category: "관계 속도",
-    questions: [
-      { key: "pace_speed", text: "나는 천천히 알아가는 편인가요, 빠르게 가까워지는 편인가요?" },
-      { key: "pace_deepening", text: "관계가 깊어진다고 느끼는 순간은?" },
-    ],
-  },
-  {
-    category: "현실 연애",
-    questions: [
-      { key: "real_money", text: "상대와 꼭 맞았으면 하는 금전 감각은?" },
       { key: "real_balance", text: "친구, 일, 연애의 균형은 어느 정도가 편한가요?" },
       { key: "real_busy", text: "연인이 바빠질 때 나는 어떤 관계 방식을 원하나요?" },
+      { key: "charm_closer", text: "가까워지면 드러나는 내 모습은?" },
     ],
   },
 ];

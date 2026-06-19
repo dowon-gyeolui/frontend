@@ -1,8 +1,9 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
+import { InterviewSelfEditModal } from "@/components/matching/interview-self-edit-modal";
 import { scoreTierLabel, type MatchCandidate } from "@/components/matching/match-card";
 import { PhotoCarousel } from "@/components/matching/photo-carousel";
 
@@ -48,7 +49,11 @@ export function MatchInfoModal({
   const ageLabel = candidate.age !== null ? `${candidate.age}세` : "—";
   const tier = showScoreTier ? scoreTierLabel(candidate.score) : null;
 
+  // "나를 보여주는 연애 프로필 질문" — 내 인터뷰 작성/수정 모달.
+  const [interviewOpen, setInterviewOpen] = useState(false);
+
   return (
+    <>
     <div
       className="fixed inset-0 z-50 grid place-items-center bg-[rgba(27,16,41,0.4)] backdrop-blur-[2px] p-[20px]"
       onClick={onClose}
@@ -142,7 +147,21 @@ export function MatchInfoModal({
             채팅
           </button>
         </div>
+
+        {/* 나를 보여주는 연애 프로필 질문 — 내 인터뷰 작성/수정 */}
+        <button
+          type="button"
+          onClick={() => setInterviewOpen(true)}
+          className="mt-[10px] grid h-[40px] w-full place-items-center rounded-[18px] border border-[#7c3aed]/40 bg-[#7c3aed]/10 text-[14px] font-semibold text-purple-700 hover:bg-[#7c3aed]/20"
+        >
+          나를 보여주는 연애 프로필 질문
+        </button>
       </div>
     </div>
+
+    {interviewOpen && (
+      <InterviewSelfEditModal onClose={() => setInterviewOpen(false)} />
+    )}
+    </>
   );
 }
