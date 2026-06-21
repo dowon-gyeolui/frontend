@@ -77,6 +77,8 @@ export default function HomePage() {
   // 가벼운 토스트 — 추가 열람 한도 초과(403)·후보 없음(404) 안내용.
   // 몇 초 후 자동 사라짐.
   const [toast, setToast] = useState<string | null>(null);
+  // 로그아웃 확인 팝업.
+  const [logoutOpen, setLogoutOpen] = useState(false);
   useEffect(() => {
     if (!toast) return;
     const t = window.setTimeout(() => setToast(null), 2600);
@@ -430,16 +432,23 @@ export default function HomePage() {
         <div className="mt-[24px] flex justify-center">
           <button
             type="button"
-            onClick={() => {
-              clearToken();
-              router.replace("/");
-            }}
+            onClick={() => setLogoutOpen(true)}
             className="text-[12px] text-white/40 underline underline-offset-2"
           >
             로그아웃
           </button>
         </div>
       </div>
+
+      {logoutOpen && (
+        <LogoutConfirmModal
+          onClose={() => setLogoutOpen(false)}
+          onConfirm={() => {
+            clearToken();
+            router.replace("/");
+          }}
+        />
+      )}
 
       {activeMatch && (
         <MatchInfoModal
@@ -476,6 +485,50 @@ export default function HomePage() {
         </div>
       )}
     </AppShell>
+  );
+}
+
+/** 로그아웃 확인 팝업 — 마이페이지 탈퇴 팝업과 동일 톤. */
+function LogoutConfirmModal({
+  onClose,
+  onConfirm,
+}: {
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 grid place-items-center bg-black/60 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-[300px] rounded-[16px] border border-white/15 bg-[#1f1235] p-[20px]"
+      >
+        <h3 className="text-center text-[16px] font-bold text-white">
+          로그아웃 하시겠어요?
+        </h3>
+        <p className="mt-[10px] text-center text-[12px] leading-[18px] text-white/70">
+          다시 로그인하면 이어서 이용할 수 있어요.
+        </p>
+        <div className="mt-[16px] flex gap-[8px]">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-[40px] flex-1 rounded-[10px] border border-white/20 bg-white/5 text-[14px] text-white hover:bg-white/10"
+          >
+            취소
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="h-[40px] flex-1 rounded-[10px] bg-[rgba(255,95,95,0.9)] text-[14px] font-bold text-black hover:bg-[rgba(255,95,95,1)]"
+          >
+            로그아웃
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
