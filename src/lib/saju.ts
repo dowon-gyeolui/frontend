@@ -110,15 +110,15 @@ export const ELEMENT_DISPLAY: Record<
     ko: "흙",
     hanja: "土",
     en: "EARTH",
-    color: "#eab308",
-    bgGlow: "rgba(234, 179, 8, 0.3)",
+    color: "#9a6a3a", // 갈색
+    bgGlow: "rgba(154, 106, 58, 0.35)",
   },
   metal: {
     ko: "금",
     hanja: "金",
     en: "METAL",
-    color: "#cbd5e1",
-    bgGlow: "rgba(203, 213, 225, 0.3)",
+    color: "#d4af37", // 금색
+    bgGlow: "rgba(212, 175, 55, 0.35)",
   },
   water: {
     ko: "물",

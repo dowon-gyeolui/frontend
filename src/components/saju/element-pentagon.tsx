@@ -151,12 +151,6 @@ export function ElementPentagon({ profile, size = 280 }: Props) {
             >
               {display.ko}
             </div>
-            <span
-              className="mt-1 text-[9px] font-bold leading-none"
-              style={{ color: display.color }}
-            >
-              {display.en}
-            </span>
           </div>
         );
       })}

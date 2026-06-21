@@ -12,6 +12,8 @@ import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
 import {
   ELEMENT_DISPLAY,
   dominantElement,
+  type Element,
+  type ElementProfile,
   type SajuResponse,
 } from "@/lib/saju";
 
@@ -97,19 +99,9 @@ export default function SajuPage() {
               </div>
             </section>
 
-            {/* 오행 종합 해석 */}
+            {/* 오행 종합 해석 — 3단계(별명 / 연애 기운 / 오행 파트너) */}
             <section className="rounded-[14px] border border-white/15 bg-white/5 p-[16px] backdrop-blur-sm">
-              <h3 className="text-[14px] font-bold text-white">
-                종합 해석
-              </h3>
-              <div className="mt-[8px] space-y-[6px] text-[12px] leading-[20px] text-white/80 text-ko">
-                <DominantSummary profile={saju.element_profile} />
-                {saju.interpretation && (
-                  <p className="border-t border-white/10 pt-[6px]">
-                    {saju.interpretation}
-                  </p>
-                )}
-              </div>
+              <ElementLoveProfile profile={saju.element_profile} />
             </section>
 
             {/* 자미두수 풀이 — 버튼만. 본문은 /jamidusu 안에서 결제 후에만 노출 */}
@@ -121,21 +113,89 @@ export default function SajuPage() {
   );
 }
 
-function DominantSummary({
-  profile,
-}: {
-  profile: import("@/lib/saju").ElementProfile;
-}) {
+/**
+ * 오행 종합 해석 — 가장 강한 오행 기반 결정론적 3단계 풀이.
+ *   1. 별명(트렌디한 타이틀)  2. 내 연애 기운(강점·텐션)  3. 찾아야 할 오행 파트너
+ */
+const ELEMENT_LOVE_PROFILE: Record<
+  Element,
+  { nickname: string; strength: string; partner: string }
+> = {
+  fire: {
+    nickname: "뜨거운 열정을 품은 인간 벽난로형!",
+    strength:
+      "연애할 때 숨김없이 솔직하고, 상대방을 기분 좋게 리드하는 에너지를 가졌어요.",
+    partner:
+      "당신의 뜨거운 열기를 차분하게 식혀주고 안정감을 줄 금(金) 기운이나 수(水) 기운이 강한 이성을 만나면 완벽한 밸런스를 이뤄요!",
+  },
+  wood: {
+    nickname: "풋풋하고 싱그러운 대형견·비글형!",
+    strength:
+      "새로운 시작을 두려워하지 않고, 연인에게 긍정적이고 활기찬 에너지를 아낌없이 주는 타입이에요.",
+    partner:
+      "당신이 지칠 때 든든한 버팀목이 되어줄 토(土) 기운이 강한 파트너와 함께할 때 가장 안정적인 연애가 가능해요.",
+  },
+  earth: {
+    nickname: "변함없이 든든한 따뜻한 곰돌이형!",
+    strength:
+      "연인에게 안정감과 신뢰를 주고, 묵묵히 곁을 지키며 깊은 정을 쌓아가는 타입이에요.",
+    partner:
+      "당신의 잔잔한 일상에 설렘과 생기를 더해줄 목(木) 기운이나 화(火) 기운이 강한 이성과 잘 맞아요.",
+  },
+  metal: {
+    nickname: "반짝이는 시크함의 고양이형!",
+    strength:
+      "분명한 기준과 절제된 매력으로, 신뢰가 쌓이면 한 사람에게 깊고 진중하게 집중하는 타입이에요.",
+    partner:
+      "당신의 차분함에 따뜻한 온기와 생동감을 불어넣어줄 화(火) 기운이나 수(水) 기운이 강한 이성과 잘 어울려요.",
+  },
+  water: {
+    nickname: "깊고 유연한 물안개·해달형!",
+    strength:
+      "상대의 마음을 섬세하게 읽고, 유연하게 맞춰주며 깊은 교감을 나누는 타입이에요.",
+    partner:
+      "생각이 많아질 때 방향을 잡아주고 활력을 더해줄 목(木) 기운이나 화(火) 기운이 강한 이성과 함께하면 좋아요.",
+  },
+};
+
+function ElementLoveProfile({ profile }: { profile: ElementProfile }) {
   const dom = dominantElement(profile);
   const display = ELEMENT_DISPLAY[dom];
+  const p = ELEMENT_LOVE_PROFILE[dom];
   return (
-    <p>
-      <span style={{ color: display.color }} className="font-semibold">
-        {display.ko}({display.hanja})
-      </span>
-      의 기운이 가장 강합니다. 자유롭고 유연한 성향을 지니며, 균형을 위해
-      반대 기운을 보완해 보세요.
-    </p>
+    <div className="space-y-[12px]">
+      {/* 1. 나의 오행 타이틀(별명) */}
+      <div>
+        <p className="text-[11px] text-white/50">나의 오행</p>
+        <p
+          className="mt-[2px] text-[14px] font-bold"
+          style={{ color: display.color }}
+        >
+          {display.ko}({display.hanja})의 기운
+        </p>
+        <p className="mt-[6px] text-[16px] font-bold leading-[22px] text-white text-ko">
+          {p.nickname}
+        </p>
+      </div>
+
+      {/* 2. 내 연애 기운 분석 */}
+      <div className="border-t border-white/10 pt-[10px]">
+        <p className="text-[12px] font-semibold text-[#fde047]">내 연애 기운</p>
+        <p className="mt-[4px] text-[13px] leading-[20px] text-white/85 text-ko">
+          {p.strength}
+        </p>
+      </div>
+
+      {/* 3. 내가 찾아야 할 오행 파트너 */}
+      <div className="border-t border-white/10 pt-[10px]">
+        <p className="text-[12px] font-semibold text-[#fde047]">
+          내가 찾아야 할 오행 파트너
+        </p>
+        <p className="mt-[4px] text-[13px] leading-[20px] text-white/85 text-ko">
+          {p.partner}
+        </p>
+      </div>
+    </div>
   );
 }
 
