@@ -98,13 +98,32 @@ function MatchingPageContent() {
       {tab === "list" ? (
         <div className="px-[20px] pt-[18px]">
           {error && (
-            <p className="mt-4 text-center text-sm text-red-300">
-              열람한 인연을 불러오지 못했어요: {error}
-            </p>
+            <div className="mt-6 text-center">
+              <p className="text-sm text-red-300">인연을 불러오지 못했어요</p>
+              <p className="mt-1 text-[11px] leading-[16px] text-white/45">
+                일시적인 연결 문제일 수 있어요. 잠시 후 다시 시도해주세요.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setError(null);
+                  setUnlocked(null);
+                  listUnlocked()
+                    .then(setUnlocked)
+                    .catch((e: Error) => {
+                      setUnlocked([]);
+                      setError(e.message);
+                    });
+                }}
+                className="mt-3 rounded-full border border-white/20 bg-white/10 px-[16px] py-[6px] text-[13px] text-white hover:bg-white/15"
+              >
+                다시 시도
+              </button>
+            </div>
           )}
           {unlocked === null && !error && (
             <p className="mt-8 text-center text-[12px] text-white/50">
-              열람한 인연을 불러오는 중...
+              인연을 불러오는 중...
             </p>
           )}
           {unlocked !== null && unlocked.length === 0 && (

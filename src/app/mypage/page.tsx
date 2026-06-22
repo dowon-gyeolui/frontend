@@ -15,6 +15,7 @@ import {
   type BasicInfoInitial,
 } from "@/components/mypage/basic-info-edit-modal";
 import { BioEditModal } from "@/components/mypage/bio-edit-modal";
+import { InterviewSelfEditModal } from "@/components/matching/interview-self-edit-modal";
 import { PhotoUploadModal } from "@/components/mypage/photo-upload-modal";
 import {
   RequiredInfoEditModal,
@@ -87,6 +88,7 @@ function MypageContent() {
   const [bioOpen, setBioOpen] = useState(false);
   const [basicOpen, setBasicOpen] = useState(false);
   const [requiredOpen, setRequiredOpen] = useState(false);
+  const [interviewOpen, setInterviewOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [leaveError, setLeaveError] = useState<string | null>(null);
@@ -322,6 +324,20 @@ function MypageContent() {
           </button>
         </section>
 
+        {/* 나를 보여주는 연애 프로필 질문 — 내 답변 작성/수정 */}
+        <button
+          type="button"
+          onClick={() => setInterviewOpen(true)}
+          className="mt-[16px] block w-full rounded-[18px] border border-white/20 bg-white/10 p-[14px] text-left backdrop-blur-sm hover:bg-white/15"
+        >
+          <h2 className="text-center text-[16px] font-semibold text-white">
+            나를 보여주는 연애 프로필 질문
+          </h2>
+          <p className="mt-[6px] text-center text-[12px] text-white/55">
+            답하고 싶은 질문만 골라 답하면 매칭 상대에게 보여요 (탭해서 작성)
+          </p>
+        </button>
+
         {/* CTA — 운명의 지도 (사주) */}
         <button
           type="button"
@@ -456,6 +472,10 @@ function MypageContent() {
             setRequiredOpen(false);
           }}
         />
+      )}
+
+      {interviewOpen && (
+        <InterviewSelfEditModal onClose={() => setInterviewOpen(false)} />
       )}
 
       {leaveOpen && (

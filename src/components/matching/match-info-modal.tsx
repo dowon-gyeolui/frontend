@@ -3,7 +3,7 @@
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { InterviewSelfEditModal } from "@/components/matching/interview-self-edit-modal";
+import { InterviewViewModal } from "@/components/matching/interview-view-modal";
 import { scoreTierLabel, type MatchCandidate } from "@/components/matching/match-card";
 import { PhotoCarousel } from "@/components/matching/photo-carousel";
 
@@ -148,19 +148,23 @@ export function MatchInfoModal({
           </button>
         </div>
 
-        {/* 나를 보여주는 연애 프로필 질문 — 내 인터뷰 작성/수정 */}
+        {/* 상대의 연애 프로필 질문 답변 보기 (읽기 전용) */}
         <button
           type="button"
           onClick={() => setInterviewOpen(true)}
           className="mt-[10px] grid h-[40px] w-full place-items-center rounded-[18px] border border-[#7c3aed]/40 bg-[#7c3aed]/10 text-[14px] font-semibold text-purple-700 hover:bg-[#7c3aed]/20"
         >
-          나를 보여주는 연애 프로필 질문
+          연애 프로필 질문 보기
         </button>
       </div>
     </div>
 
     {interviewOpen && (
-      <InterviewSelfEditModal onClose={() => setInterviewOpen(false)} />
+      <InterviewViewModal
+        peerId={candidate.user_id}
+        name={name}
+        onClose={() => setInterviewOpen(false)}
+      />
     )}
     </>
   );
