@@ -37,7 +37,7 @@ export default function OnboardingBirthTimePage() {
               알려주세요
             </h1>
             <p className="text-center text-[14px] text-white/60">
-              정확한 사주 풀이에 사용돼요. 모르면 건너뛸 수 있어요.
+              모르면 건너뛸 수 있어요.
             </p>
           </div>
 
@@ -61,7 +61,7 @@ export default function OnboardingBirthTimePage() {
               }}
               className="size-[16px] cursor-pointer accent-white"
             />
-            시간 모름
+            모르겠어요
           </label>
         </div>
 

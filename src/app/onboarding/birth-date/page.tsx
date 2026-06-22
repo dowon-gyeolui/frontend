@@ -44,9 +44,9 @@ export default function OnboardingBirthDatePage() {
             cover it on mobile. */}
         <div className="flex flex-1 flex-col justify-start gap-[24px] pt-[40px]">
           <h1 className="text-center text-[24px] font-bold tracking-tight text-white">
-            당신이 우주에
+            언제
             <br />
-            기록된 날은 언제인가요?
+            태어나셨나요?
           </h1>
 
           {/* 휠/키보드로 년·월·일 각각 변경 가능. native date input 은
@@ -95,7 +95,7 @@ export default function OnboardingBirthDatePage() {
           {/* 출생지 — 시·도. 사주 시간 보정에 사용 (KST vs 실제 경도 차이) */}
           <div className="flex flex-col gap-[6px]">
             <label className="text-center text-[13px] text-white/70">
-              출생지 (선택)
+              출생지
             </label>
             <select
               value={birthPlace}
@@ -110,7 +110,7 @@ export default function OnboardingBirthDatePage() {
               ))}
             </select>
             <p className="text-center text-[10px] text-white/45">
-              한국 표준시(KST)와 출생지 경도 차이로 사주 시각을 보정해요.
+              한국 표준시각과 출생지로 보정해요.
             </p>
           </div>
         </div>
