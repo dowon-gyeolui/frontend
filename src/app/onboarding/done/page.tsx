@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
 import { LoadingPanel } from "@/components/ui/loading-panel";
 import { apiFetch } from "@/lib/api";
+import { cacheSet } from "@/lib/cache";
 import { useOnboarding } from "@/lib/onboarding-context";
 import {
   BRANCH_DATA,
@@ -100,6 +101,8 @@ export default function OnboardingDonePage() {
         try {
           const saju = await apiFetch<DetailedSajuResponse>("/saju/me/detailed");
           if (cancelled) return;
+          // 사주 페이지가 즉시 뜨도록 캐시를 미리 채워둔다(온보딩에서 이미 본 셈).
+          cacheSet("/saju/me/detailed", saju);
           setStatus({ kind: "ready", saju, nickname });
         } catch {
           if (cancelled) return;

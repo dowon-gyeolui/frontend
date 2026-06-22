@@ -71,10 +71,40 @@ const MOCK_PROFILE: Omit<PublicProfile, "id"> = {
   compatibility_score: 88,
   is_face_verified: true,
   interview_answers: [
-    { question_key: "life_dayoff", answer: "주로 집에서 푹 쉬다가 저녁에 가볍게 산책해요." },
-    { question_key: "love_affection", answer: "말보다 행동으로 표현하는 편이에요." },
+    {
+      question_key: "life_dayoff",
+      answer: "주로 집에서 푹 쉬다가 저녁엔 좋아하는 카페로 산책 겸 나가요.",
+    },
+    {
+      question_key: "life_date_style",
+      answer: "집콕도 좋지만 새로운 동네 카페·전시 찾아다니는 외출 데이트를 더 좋아해요.",
+    },
+    {
+      question_key: "humor_small_happiness",
+      answer: "퇴근길에 좋아하는 노래 들으면서 걷는 시간이 제일 행복해요.",
+    },
+    {
+      question_key: "life_dating_type",
+      answer: "처음엔 차분하지만 친해지면 장난도 많이 치는 편이에요.",
+    },
+    {
+      question_key: "love_affection",
+      answer: "말보다 행동으로 챙겨주는 걸로 마음을 표현하는 편이에요.",
+    },
+    {
+      question_key: "love_conflict",
+      answer: "감정이 가라앉은 뒤에 솔직하게 대화로 풀어가는 걸 좋아해요.",
+    },
+    {
+      question_key: "pace_speed",
+      answer: "천천히 알아가면서 신뢰를 쌓는 연애를 선호해요.",
+    },
+    {
+      question_key: "value_good_person",
+      answer: "함께 있을 때 편하고, 서로의 시간과 취향을 존중해주는 사람이요.",
+    },
   ],
-  interview_total: 4,
+  interview_total: 8,
 };
 // ──────────────────────────────────────────────────────────────────────
 
