@@ -35,7 +35,7 @@ export const STAR_COST_PER_CARD = 10;
 // true 면 백엔드가 돌려준 카드를 신시아 사진으로 덮어쓰고, 후보가 없으면
 // 신시아 가짜 카드를 띄운다. 테스트가 끝나면 false 로 바꾸거나 이 블록을 지우세요.
 const USE_MOCK_PHOTOS = true;
-const MOCK_PHOTOS = ["/cynthia.jpg"];
+const MOCK_PHOTOS = ["/cynthia.png"];
 
 function withMockPhotos(card: MatchCandidate | null): MatchCandidate | null {
   if (!USE_MOCK_PHOTOS || !card) return card;

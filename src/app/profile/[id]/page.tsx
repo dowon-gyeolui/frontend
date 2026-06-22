@@ -49,8 +49,8 @@ type MockProfile = Omit<PublicProfile, "id" | "interview_total">;
 const MOCK_PROFILES: MockProfile[] = [
   {
     nickname: "신시아",
-    photo_url: "/cynthia.jpg",
-    photos: ["/cynthia.jpg"],
+    photo_url: "/cynthia.png",
+    photos: ["/cynthia.png"],
     is_blinded: false,
     age: 30,
     gender: "female",
