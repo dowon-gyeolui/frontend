@@ -31,38 +31,33 @@ export const EXTRA_DAILY_LIMIT = 10;
 export const STAR_COST_PER_CARD = 10;
 
 // ──────────────────────────────────────────────────────────────────────
-// ⚠️ 테스트용 mock — 사진 스와이프 캐러셀 확인용.
-// true 면 백엔드가 돌려준 카드에 샘플 사진 여러 장을 끼워넣어 1/N + 스와이프를
-// 바로 확인할 수 있다. 테스트가 끝나면 false 로 바꾸거나 이 블록을 지우세요.
+// ⚠️ 테스트용 mock — 신시아 1명만 카드로 노출한다.
+// true 면 백엔드가 돌려준 카드를 신시아 사진으로 덮어쓰고, 후보가 없으면
+// 신시아 가짜 카드를 띄운다. 테스트가 끝나면 false 로 바꾸거나 이 블록을 지우세요.
 const USE_MOCK_PHOTOS = true;
-const MOCK_PHOTOS = [
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&h=750&fit=crop",
-  "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=750&fit=crop",
-  "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&h=750&fit=crop",
-  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=600&h=750&fit=crop",
-];
+const MOCK_PHOTOS = ["/cynthia.jpg"];
 
 function withMockPhotos(card: MatchCandidate | null): MatchCandidate | null {
   if (!USE_MOCK_PHOTOS || !card) return card;
-  // 스와이프가 보이도록 사진 여러 장 + 블라인드 해제.
+  // 신시아 사진으로 덮어쓰고 블라인드 해제.
   return { ...card, photos: MOCK_PHOTOS, is_blinded: false };
 }
 
-// 후보가 없을 때도 스와이프를 테스트할 수 있도록 만드는 가짜 카드.
+// 후보가 없을 때도 카드를 확인할 수 있도록 만드는 신시아 가짜 카드.
 function mockCard(): MatchCandidate {
   return {
     user_id: 999999,
-    score: 88,
-    nickname: "테스트",
-    age: 27,
+    score: 92,
+    nickname: "신시아",
+    age: 30,
     gender: "female",
     is_blinded: false,
     photo_url: MOCK_PHOTOS[0],
     photos: MOCK_PHOTOS,
-    bio: "사진 스와이프 테스트용 mock 카드예요.",
-    birth_year: 1998,
-    dominant_element: "화",
-    mbti: "ENFP",
+    bio: "잔잔한 대화와 여행을 좋아해요. 편하게 인사해요!",
+    birth_year: 1995,
+    dominant_element: "수",
+    mbti: "INFJ",
     is_face_verified: true,
   };
 }
