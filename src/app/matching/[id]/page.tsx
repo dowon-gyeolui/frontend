@@ -104,7 +104,7 @@ export default function ChatRoomPage() {
   // or arrival from the threads-tab list), resolve the peer's nickname/photo
   // by walking /chat/threads instead of showing "사용자 14".
   useEffect(() => {
-    if (candidate || !me) return;
+    if (candidate) return;
     let cancelled = false;
     listThreads()
       .then((threads) => {
@@ -129,12 +129,12 @@ export default function ChatRoomPage() {
     return () => {
       cancelled = true;
     };
-  }, [candidate, me, peerId]);
+  }, [candidate, peerId]);
 
-  // Initial history load. Once messages arrive, fire-and-forget a
+  // Initial history load — starts in parallel with /users/me (no dependency on me).
   // mark-as-read so the unread badge in /chat/threads drops to 0.
   useEffect(() => {
-    if (!me) return;
+    if (!getToken()) return;
     let cancelled = false;
     fetchMessagesWith(peerId)
       .then((msgs) => {
@@ -159,7 +159,7 @@ export default function ChatRoomPage() {
     return () => {
       cancelled = true;
     };
-  }, [me, peerId]);
+  }, [peerId, router]);
 
   // Polling for new messages every POLL_INTERVAL_MS.
   useEffect(() => {
