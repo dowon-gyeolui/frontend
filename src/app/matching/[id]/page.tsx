@@ -11,7 +11,7 @@ import { AttachmentMenu } from "@/components/matching/attachment-menu";
 import { CompatibilityReportDrawer } from "@/components/matching/compatibility-report-drawer";
 import type { MatchCandidate } from "@/components/matching/match-card";
 import { ReportModal } from "@/components/matching/report-modal";
-import { apiFetch } from "@/lib/api";
+import { ApiError, apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import {
   fetchMessagesWith,
@@ -148,7 +148,14 @@ export default function ChatRoomPage() {
         }
         markThreadRead(peerId).catch(() => {});
       })
-      .catch((e: Error) => setError(e.message));
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        if (e instanceof ApiError && e.status === 404) {
+          router.replace("/matching?tab=chat");
+        } else {
+          setError("메시지를 불러오지 못했어요. 잠시 후 다시 시도해주세요.");
+        }
+      });
     return () => {
       cancelled = true;
     };
@@ -203,7 +210,11 @@ export default function ChatRoomPage() {
       lastIdRef.current = Math.max(lastIdRef.current, msg.id);
       setInput("");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "전송 실패");
+      if (e instanceof ApiError && e.status === 404) {
+        setError("상대방 정보를 찾을 수 없어요.");
+      } else {
+        setError(e instanceof Error ? e.message : "전송 실패");
+      }
     } finally {
       setSending(false);
     }
@@ -221,7 +232,11 @@ export default function ChatRoomPage() {
         );
         lastIdRef.current = Math.max(lastIdRef.current, msg.id);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "미디어 전송 실패");
+        if (e instanceof ApiError && e.status === 404) {
+          setError("상대방 정보를 찾을 수 없어요.");
+        } else {
+          setError(e instanceof Error ? e.message : "미디어 전송 실패");
+        }
       } finally {
         setAttachmentUploading(false);
       }
@@ -567,8 +582,8 @@ function ThemBubble({
         className="mb-[2px] size-[42px] flex-shrink-0 rounded-full border border-white/20 object-cover"
       />
       <div
-        className={`max-w-[70%] rounded-[10px] border border-white/5 bg-white/10 text-[14px] text-white backdrop-blur-sm ${
-          hasMedia ? "p-[6px]" : "px-[14px] py-[10px]"
+        className={`max-w-[70%] rounded-[22px] border border-white/5 bg-white/10 text-[14px] text-white backdrop-blur-sm ${
+          hasMedia ? "p-[6px]" : "px-[16px] py-[10px]"
         }`}
       >
         <MediaContent message={message} />
@@ -593,8 +608,8 @@ function MeBubble({ message, isNew }: { message: Message; isNew?: boolean }) {
         {formatTime(message.created_at)}
       </span>
       <div
-        className={`max-w-[70%] rounded-[10px] bg-[#8b5cf6] text-[14px] text-white shadow-[0_0_4px_0_#8b5cf6] ${
-          hasMedia ? "p-[6px]" : "px-[14px] py-[10px]"
+        className={`max-w-[70%] rounded-[22px] bg-[#8b5cf6] text-[14px] text-white shadow-[0_0_4px_0_#8b5cf6] ${
+          hasMedia ? "p-[6px]" : "px-[16px] py-[10px]"
         }`}
       >
         <MediaContent message={message} />

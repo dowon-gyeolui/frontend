@@ -387,18 +387,6 @@ function PalaceCard({ palace }: { palace: DeepPalace }) {
               </p>
             </div>
           )}
-          {palace.keywords.length > 0 && (
-            <div className="flex flex-wrap gap-[5px]">
-              {palace.keywords.map((kw) => (
-                <span
-                  key={kw}
-                  className="rounded-full border border-white/20 bg-white/10 px-[8px] py-[3px] text-[11px] text-white/65"
-                >
-                  #{kw}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
       ) : palace.description ? (
         <p className="mt-[10px] text-[13px] leading-[20px] text-white/80 text-ko">
