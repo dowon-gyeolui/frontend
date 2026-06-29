@@ -8,7 +8,7 @@ import { ChatThreadRow } from "@/components/matching/chat-thread-row";
 import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
 import { MatchInfoModal } from "@/components/matching/match-info-modal";
 import { getToken } from "@/lib/auth";
-import { leaveThread, listThreads, type ChatThreadSummary } from "@/lib/chat";
+import { leaveThread, listThreads, prefetchMessages, type ChatThreadSummary } from "@/lib/chat";
 import { listUnlocked } from "@/lib/matches";
 
 type Tab = "list" | "chat";
@@ -214,6 +214,9 @@ function MatchingPageContent() {
                     x.thread_id === t.thread_id ? { ...x, unread_count: 0 } : x,
                   ) ?? prev,
                 );
+                // Start fetching messages now so they arrive while Next.js
+                // navigates — the chat page consumes this via consumePrefetch.
+                prefetchMessages(t.peer.user_id);
                 router.push(`/matching/${t.peer.user_id}`);
               }}
               onLeave={() => handleLeaveThread(t)}

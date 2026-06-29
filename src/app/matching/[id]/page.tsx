@@ -14,6 +14,7 @@ import { ReportModal } from "@/components/matching/report-modal";
 import { ApiError, apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import {
+  consumePrefetch,
   fetchMessagesWith,
   leaveChatWith,
   listThreads,
@@ -24,6 +25,8 @@ import {
 } from "@/lib/chat";
 
 const POLL_INTERVAL_MS = 2500;
+
+const msgCacheKey = (id: number) => `chat_msgs_${id}`;
 
 const PLACEHOLDER_PHOTO =
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop";
@@ -131,18 +134,38 @@ export default function ChatRoomPage() {
     };
   }, [candidate, peerId]);
 
-  // Initial history load — starts in parallel with /users/me (no dependency on me).
-  // mark-as-read so the unread badge in /chat/threads drops to 0.
+  // Initial history load — starts in parallel with /users/me.
+  // 1) Instantly show cached messages from sessionStorage (zero network wait).
+  // 2) Fetch fresh messages in background and update.
   useEffect(() => {
     if (!getToken()) return;
+
+    // Show cached messages immediately so the screen isn't blank.
+    try {
+      const cached = sessionStorage.getItem(msgCacheKey(peerId));
+      if (cached) {
+        const msgs = JSON.parse(cached) as Message[];
+        if (msgs.length > 0) {
+          setMessages(msgs);
+          lastIdRef.current = msgs[msgs.length - 1].id;
+          initialMaxIdRef.current = msgs[msgs.length - 1].id;
+        }
+      }
+    } catch { /* ignore corrupt cache */ }
+
     let cancelled = false;
-    fetchMessagesWith(peerId)
+    // Use the in-flight prefetch started on thread row click, or fetch fresh.
+    const promise = consumePrefetch(peerId) ?? fetchMessagesWith(peerId);
+    promise
       .then((msgs) => {
         if (cancelled) return;
         setMessages(msgs);
         if (msgs.length > 0) {
           lastIdRef.current = msgs[msgs.length - 1].id;
           initialMaxIdRef.current = msgs[msgs.length - 1].id;
+          try {
+            sessionStorage.setItem(msgCacheKey(peerId), JSON.stringify(msgs));
+          } catch { /* quota exceeded — skip */ }
         } else {
           initialMaxIdRef.current = 0;
         }
@@ -179,6 +202,12 @@ export default function ChatRoomPage() {
         });
         lastIdRef.current = newer[newer.length - 1].id;
         if (appendedFromPeer) markThreadRead(peerId).catch(() => {});
+        setMessages((prev) => {
+          try {
+            sessionStorage.setItem(msgCacheKey(peerId), JSON.stringify(prev));
+          } catch { /* quota exceeded */ }
+          return prev;
+        });
       } catch {
       }
     };

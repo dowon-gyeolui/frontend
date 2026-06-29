@@ -85,6 +85,23 @@ export async function fetchMessagesWith(
   return apiFetch<Message[]>(`/chat/with/${peerId}/messages${qs}`);
 }
 
+// Module-level map so the promise survives Next.js client-side navigation.
+const _prefetch = new Map<number, Promise<Message[]>>();
+
+/** Call on thread row click (before router.push) to start the fetch early. */
+export function prefetchMessages(peerId: number): void {
+  if (!_prefetch.has(peerId)) {
+    _prefetch.set(peerId, fetchMessagesWith(peerId));
+  }
+}
+
+/** Consume and clear the prefetched promise, or return undefined if none. */
+export function consumePrefetch(peerId: number): Promise<Message[]> | undefined {
+  const p = _prefetch.get(peerId);
+  if (p) _prefetch.delete(peerId);
+  return p;
+}
+
 export async function sendMessageTo(
   peerId: number,
   content: string,
