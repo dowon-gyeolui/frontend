@@ -54,6 +54,8 @@ export default function ChatRoomPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   // Track the last seen message id for incremental polling.
   const lastIdRef = useRef<number>(0);
+  // Messages added after initial history load should animate. -1 = not yet loaded.
+  const initialMaxIdRef = useRef<number>(-1);
 
   // Visual viewport height — shrinks when the soft keyboard opens. We bind
   // the chat container's height to this so the message list keeps its own
@@ -138,7 +140,12 @@ export default function ChatRoomPage() {
       .then((msgs) => {
         if (cancelled) return;
         setMessages(msgs);
-        if (msgs.length > 0) lastIdRef.current = msgs[msgs.length - 1].id;
+        if (msgs.length > 0) {
+          lastIdRef.current = msgs[msgs.length - 1].id;
+          initialMaxIdRef.current = msgs[msgs.length - 1].id;
+        } else {
+          initialMaxIdRef.current = 0;
+        }
         markThreadRead(peerId).catch(() => {});
       })
       .catch((e: Error) => setError(e.message));
@@ -309,7 +316,11 @@ export default function ChatRoomPage() {
       >
         {messages.map((m) =>
           m.sender_id === me?.id ? (
-            <MeBubble key={m.id} message={m} />
+            <MeBubble
+              key={m.id}
+              message={m}
+              isNew={initialMaxIdRef.current >= 0 && m.id > initialMaxIdRef.current}
+            />
           ) : (
             <ThemBubble
               key={m.id}
@@ -574,10 +585,10 @@ function ThemBubble({
   );
 }
 
-function MeBubble({ message }: { message: Message }) {
+function MeBubble({ message, isNew }: { message: Message; isNew?: boolean }) {
   const hasMedia = !!message.media_url;
   return (
-    <div className="flex items-end justify-end gap-[6px]">
+    <div className={`flex items-end justify-end gap-[6px]${isNew ? " animate-msg-float-up" : ""}`}>
       <span className="mb-[2px] shrink-0 text-[10px] text-white/50">
         {formatTime(message.created_at)}
       </span>
