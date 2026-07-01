@@ -195,7 +195,7 @@ export default function HomePage() {
   return (
     <AppShell
       topChip={
-        completion < 100 ? (
+        me !== null && completion < 100 ? (
           <Link
             href="/mypage?incomplete=1"
             className="grid h-[18px] place-items-center rounded-full bg-[#fde047] px-3 text-[12px] font-medium text-[#1b1029]"
@@ -206,8 +206,8 @@ export default function HomePage() {
       }
     >
       <div className="flex-1 px-[24px]">
-        {/* Top: 인연 탐색기 가동률 — 100% 완성 시 숨김 */}
-        {completion < 100 && (
+        {/* Top: 인연 탐색기 가동률 — 100% 완성 시 or 로딩 중 숨김 */}
+        {me !== null && completion < 100 && (
           <div className="mt-[14px]">
             <p className="text-center text-[12px] text-[#d8c8f2]">
               현재 <span className="font-medium">{nickname}</span>님의 프로필 진행률{" "}
@@ -321,23 +321,7 @@ export default function HomePage() {
                 >
                   오늘의 추가 열람을 모두 사용했어요
                 </button>
-              ) : balance < STAR_COST_PER_CARD ? (
-                <div className="rounded-[14px] border border-[#fde047]/40 bg-[#fde047]/10 p-[14px] text-center">
-                  <p className="text-[13px] font-semibold text-white">
-                    별이 부족해요
-                  </p>
-                  <p className="mt-[4px] text-[11px] text-white/70">
-                    인연 카드 1장을 받으려면 별 10개가 필요해요.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => router.push("/store")}
-                    className="mx-auto mt-[12px] block w-fit rounded-full bg-[#fde047] px-[16px] py-[6px] text-[13px] font-bold text-[#1b1029]"
-                  >
-                    별 충전하러 가기 →
-                  </button>
-                </div>
-              ) : (
+              ) : balance >= STAR_COST_PER_CARD ? (
                 <button
                   type="button"
                   onClick={openUnlock}
@@ -356,7 +340,7 @@ export default function HomePage() {
                     </>
                   )}
                 </button>
-              )}
+              ) : null}
             </div>
           )}
         </section>

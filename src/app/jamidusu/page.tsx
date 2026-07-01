@@ -270,8 +270,8 @@ function DetailView({
       <section className="mt-[24px] rounded-[18px] border border-purple-300/30 bg-gradient-to-br from-purple-900/40 via-purple-700/30 to-pink-700/30 p-[20px] backdrop-blur-sm">
         <h2 className="text-center text-[22px] font-bold text-white">
           {data
-            ? `${nickname ?? "나"}님의 자미두수 명반`
-            : `${nickname ?? "나"}님의 자미두수 풀이중...`}
+            ? `${nickname ? `${nickname}님의 ` : ""}자미두수 명반`
+            : `${nickname ? `${nickname}님의 ` : ""}자미두수 풀이중...`}
         </h2>
         {data?.bureau_name && (
           <p className="mt-[8px] text-center text-[12px] text-white/65">

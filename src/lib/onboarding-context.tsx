@@ -47,14 +47,31 @@ type OnboardingCtx = {
 
 const Ctx = createContext<OnboardingCtx | null>(null);
 
+const SESSION_KEY = "onboarding-state";
+
+function loadFromSession(): OnboardingState {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (raw) return JSON.parse(raw) as OnboardingState;
+  } catch { /* SSR or corrupt — ignore */ }
+  return {};
+}
+
 export function OnboardingProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<OnboardingState>({});
+  const [state, setState] = useState<OnboardingState>(loadFromSession);
 
   const update = useCallback((patch: Partial<OnboardingState>) => {
-    setState((prev) => ({ ...prev, ...patch }));
+    setState((prev) => {
+      const next = { ...prev, ...patch };
+      try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
   }, []);
 
-  const reset = useCallback(() => setState({}), []);
+  const reset = useCallback(() => {
+    try { sessionStorage.removeItem(SESSION_KEY); } catch { /* ignore */ }
+    setState({});
+  }, []);
 
   const value = useMemo(() => ({ state, update, reset }), [state, update, reset]);
 
