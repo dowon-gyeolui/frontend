@@ -1,4 +1,5 @@
 "use client";
+// 스타 충전 업셀 안내 페이지 (/premium) — /store 충전으로 유도
 
 import { ArrowLeft, MessageCircle, Sparkles, Star } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -6,20 +7,10 @@ import { Suspense } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
 
-/**
- * 스타·인연 카드 안내 업셀 화면.
- *
- * 수익모델이 월구독에서 "스타 재화로 인연 카드 열람"(PRD 5번) 으로 바뀌어,
- * 이 화면은 구독 결제 대신 스타 충전(/store) 으로 유도한다.
- *
- * 진입점별로 카피가 살짝 달라진다:
- *   /premium?from=chat       — 채팅을 시작하려다 들어온 경우
- *   /premium?from=jamidusu   — 자미두수에서 들어온 경우
- */
 function PremiumContent() {
   const router = useRouter();
   const params = useSearchParams();
-  const from = params.get("from"); // "chat" | "jamidusu" | null
+  const from = params.get("from");
 
   const HeroIcon = from === "chat" ? MessageCircle : Star;
 
@@ -36,7 +27,6 @@ function PremiumContent() {
   return (
     <AppShell>
       <div className="flex-1 px-[20px] pb-[40px]">
-        {/* Sub-header: back arrow + title */}
         <div className="relative pt-[14px]">
           <button
             type="button"
@@ -52,7 +42,6 @@ function PremiumContent() {
           <div className="mt-[10px] h-px bg-white/30" />
         </div>
 
-        {/* Hero */}
         <section className="mt-[24px] rounded-[18px] border border-yellow-300/40 bg-gradient-to-br from-purple-900/40 via-purple-700/30 to-pink-700/30 p-[20px] text-center backdrop-blur-sm">
           <div className="flex justify-center">
             <div className="grid size-[64px] place-items-center rounded-full bg-gradient-to-br from-yellow-300 to-pink-400 shadow-[0_0_25px_-5px_rgba(253,224,71,0.6)]">
@@ -65,7 +54,6 @@ function PremiumContent() {
           </p>
         </section>
 
-        {/* 스타 사용처 */}
         <section className="mt-[24px]">
           <h3 className="text-[16px] font-bold text-white">별로 할 수 있는 것</h3>
           <ul className="mt-[12px] space-y-[12px] text-[14px] text-white/85">
@@ -87,7 +75,6 @@ function PremiumContent() {
           </ul>
         </section>
 
-        {/* 충전 CTA */}
         <section className="mt-[28px] rounded-[18px] border-2 border-yellow-300/50 bg-gradient-to-br from-yellow-300/10 to-pink-400/10 p-[20px] text-center">
           <p className="text-[12px] font-medium uppercase tracking-wider text-[#fde047]">
             ZAMI STAR

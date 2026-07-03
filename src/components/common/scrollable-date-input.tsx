@@ -1,22 +1,9 @@
 "use client";
+// 생년월일 입력기 — 년/월/일 직접 타이핑 + 달력 아이콘으로 native date picker 열기.
 
 import { Calendar } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-/**
- * 생년월일 입력기 — 년/월/일 3-박스 + 달력 아이콘.
- *
- * 두 가지 입력 경로를 모두 지원:
- *  1. 각 박스를 직접 탭해서 숫자를 타이핑 (4자리 연 / 2자리 월·일).
- *  2. 오른쪽 달력 아이콘을 탭하면 native `<input type="date">` 의
- *     showPicker() 가 호출돼 캘린더 위젯이 열린다.
- *
- * iOS Safari 에서는 type=date 의 dash placeholder 를 직접 탭해도 picker
- * 가 안 뜨는 경우가 있어 명시적인 아이콘 버튼이 필요. 동시에 데스크톱
- * 사용자는 키보드 타이핑이 더 빠르므로 둘 다 가능하게 둔다.
- *
- * 출력값은 `YYYY-MM-DD` ISO 문자열 (불완전한 입력 중에는 빈 문자열).
- */
 export function ScrollableDateInput({
   value,
   onChange,
@@ -29,10 +16,7 @@ export function ScrollableDateInput({
   onChange: (next: string) => void;
   minYear?: number;
   maxYear?: number;
-  /** "dark" — onboarding (purple bg). "light" — modal (white bg). */
   variant?: "dark" | "light";
-  /** compact 모드 — 좁은 모달 안에서 사용. 픽 너비 축소 + 년/월/일
-   *  접미사 라벨 제거. 풀-페이지에선 false. */
   compact?: boolean;
 }) {
   const today = new Date();
@@ -47,20 +31,6 @@ export function ScrollableDateInput({
   const dayRef = useRef<HTMLInputElement>(null);
   const pickerRef = useRef<HTMLInputElement>(null);
 
-  // Sync local input strings FROM the parent only when the parent's
-  // value is a NEW parseable date that differs from what local state
-  // currently represents. Two reasons:
-  //
-  //   1. Don't clear when value === "" — most often that's the user
-  //      mid-typing in the day box; clearing all three fields would
-  //      wipe their year/month progress too.
-  //   2. Don't re-pad while typing — entering "3" in the day box
-  //      causes commit() → onChange("YYYY-MM-03") → and without this
-  //      check we'd setDText("03") via useEffect, dropping the "1"
-  //      the user is about to type to make "31".
-  //
-  // Net: the effect only fires for genuine external updates (initial
-  // load, native picker selection, parent reset via remount).
   useEffect(() => {
     const p = parseDate(value);
     if (!p) return;
@@ -68,15 +38,13 @@ export function ScrollableDateInput({
       yText.length === 4 && mText.length > 0 && dText.length > 0
         ? `${pad4(Number(yText))}-${pad2(Number(mText))}-${pad2(Number(dText))}`
         : null;
-    if (localISO === value) return; // already in sync, leave typing alone
+    if (localISO === value) return;
     setYText(String(p.y));
     setMText(pad2(p.m));
     setDText(pad2(p.d));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
-  // Push completed YYYY-MM-DD up to parent whenever locally-edited
-  // values together form a real, in-range date.
   const commit = (y: string, m: string, d: string) => {
     if (y.length !== 4) return onChange("");
     const yi = Number(y);
@@ -107,7 +75,6 @@ export function ScrollableDateInput({
         el.showPicker();
         return;
       } catch {
-        /* fall through */
       }
     }
     el.focus();
@@ -136,7 +103,6 @@ export function ScrollableDateInput({
     commit(yText, mText, digits);
   };
 
-  // compact: 좁은 모달 안 사용 — 픽 너비 줄이고 접미사 제거.
   const yWidth = compact ? 60 : 78;
   const mdWidth = compact ? 40 : 50;
   const showSuffix = !compact;
@@ -193,7 +159,6 @@ export function ScrollableDateInput({
         }}
       />
 
-      {/* Calendar icon — opens native date picker for users who prefer scroll. */}
       <button
         type="button"
         onClick={openPicker}
@@ -208,8 +173,6 @@ export function ScrollableDateInput({
         <Calendar className={compact ? "size-[16px]" : "size-[18px]"} />
       </button>
 
-      {/* Hidden native picker. We never show it directly — the icon button
-          above triggers showPicker(). When the user picks, push back up. */}
       <input
         ref={pickerRef}
         type="date"
@@ -225,15 +188,6 @@ export function ScrollableDateInput({
   );
 }
 
-/**
- * One labelled pill containing an editable numeric input.
- *
- * The input is absolutely positioned to fill the entire pill box so a
- * tap anywhere on the box focuses the input. The previous version put
- * the input as a grid child with `place-items-center`, which on iOS
- * shrank the input to its content size and left a non-clickable border
- * around it — that's why tapping the day pill seemed dead.
- */
 function PillInput({
   suffix,
   width,
@@ -287,6 +241,5 @@ function pad4(n: number): string {
 }
 
 function daysInMonth(year: number, month: number): number {
-  // month is 1..12. Day 0 of next month = last day of given month.
   return new Date(year, month, 0).getDate();
 }

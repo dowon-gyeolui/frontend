@@ -1,14 +1,9 @@
 "use client";
+// 역할 설명: 사주 페이지 하단에 표시되는 접이식 용어 설명(글로서리) 섹션
 
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 
-/**
- * Plain-Korean glossary the saju page renders at the bottom. Collapsed by
- * default — the user opens it on demand. Each entry pairs a "term card"
- * with a friendly definition so the screen above (which uses the actual
- * terminology) stays readable.
- */
 type Entry = {
   term: string;
   short: string;

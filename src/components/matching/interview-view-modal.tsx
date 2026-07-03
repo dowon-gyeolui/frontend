@@ -1,4 +1,5 @@
 "use client";
+// 상대의 연애 인터뷰 답변을 읽기 전용으로 보여주는 모달 — 상호주의로 잠긴 개수도 표시.
 
 import { Lock, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -11,13 +12,6 @@ type InterviewView = {
   interview_total: number;
 };
 
-/**
- * 상대의 연애 프로필 질문 답변 — 읽기 전용. 매칭 정보 팝업의
- * "연애 프로필 질문 보기" 에서 연다.
- *
- * 상호주의(맞팔): 내가 답한 개수만큼만 상대 답변이 열린다. 서버(public-profile)
- * 가 이미 그만큼만 내려주므로, 여기선 받은 답변 + 잠긴 개수만 표시한다.
- */
 export function InterviewViewModal({
   peerId,
   name,

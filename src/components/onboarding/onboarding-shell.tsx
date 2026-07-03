@@ -1,15 +1,11 @@
 "use client";
+// 역할 설명: 온보딩 화면 공통 셸 — 그라디언트 배경, 상단 로고 바, 진행 단계 표시
 
 import { User } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { ZamiLogo } from "@/components/brand/zami-logo";
 
-/**
- * Shared shell for every onboarding screen — gradient background, top logo
- * bar, and a 3-segment progress indicator. ``step`` is 1-based and matches
- * the segment that should appear filled.
- */
 export type OnboardingShellProps = {
   step: 1 | 2 | 3 | 4 | 5;
   children: ReactNode;
@@ -26,7 +22,6 @@ export function OnboardingShell({ step, children }: OnboardingShellProps) {
           "linear-gradient(to bottom, #12081f 0%, #2a0e4f 50%, #5e35b1 100%)",
       }}
     >
-      {/* Top bar — ZAMI logo + user icon + bottom border */}
       <div className="relative pt-[39px]">
         <div className="flex items-center justify-between px-[24px]">
           <ZamiLogo size="sm" />
@@ -35,7 +30,6 @@ export function OnboardingShell({ step, children }: OnboardingShellProps) {
         <div className="mt-[14px] h-px bg-white/40" />
       </div>
 
-      {/* Step header */}
       <div className="relative pt-[14px]">
         <p className="text-center text-[18px] font-semibold text-white">
           필수 정보 입력
@@ -52,7 +46,6 @@ export function OnboardingShell({ step, children }: OnboardingShellProps) {
         </div>
       </div>
 
-      {/* Content slot */}
       <div className="flex flex-1 flex-col">{children}</div>
     </div>
   );

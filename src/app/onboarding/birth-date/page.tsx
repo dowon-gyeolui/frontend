@@ -1,4 +1,5 @@
 "use client";
+// 온보딩 2단계(/onboarding/birth-date) — 생년월일, 양/음력, 출생지 입력 페이지
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -30,7 +31,6 @@ export default function OnboardingBirthDatePage() {
     update({
       birth_date: birthDate,
       calendar_type: calendar,
-      // Leap month is meaningful only for lunar calendars; force false on solar.
       is_leap_month: calendar === "lunar" ? isLeap : false,
       birth_place: birthPlace || undefined,
     });
@@ -40,8 +40,6 @@ export default function OnboardingBirthDatePage() {
   return (
     <OnboardingShell step={2}>
       <div className="flex flex-1 flex-col px-[36px] pb-[40px]">
-        {/* Form group — sits near the top so keyboard / month picker don't
-            cover it on mobile. */}
         <div className="flex flex-1 flex-col justify-start gap-[24px] pt-[40px]">
           <h1 className="text-center text-[24px] font-bold tracking-tight text-white">
             언제
@@ -49,8 +47,6 @@ export default function OnboardingBirthDatePage() {
             태어나셨나요?
           </h1>
 
-          {/* 휠/키보드로 년·월·일 각각 변경 가능. native date input 은
-              모바일에서 월 휠이 안 되는 경우가 많아 자체 위젯으로 교체. */}
           <div className="flex h-[52px] items-center justify-center rounded-[5px] border border-[#5a3a82] bg-[#352052] px-[12px]">
             <ScrollableDateInput value={birthDate} onChange={setBirthDate} />
           </div>
@@ -92,7 +88,6 @@ export default function OnboardingBirthDatePage() {
             </label>
           )}
 
-          {/* 출생지 — 시·도. 사주 시간 보정에 사용 (KST vs 실제 경도 차이) */}
           <div className="flex flex-col gap-[6px]">
             <label className="text-center text-[13px] text-white/70">
               출생지
@@ -115,7 +110,6 @@ export default function OnboardingBirthDatePage() {
           </div>
         </div>
 
-        {/* Bottom: 이전 + 다음 */}
         <div className="mt-[80px] flex gap-[10px]">
           <button
             type="button"

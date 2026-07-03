@@ -1,4 +1,5 @@
 "use client";
+// 매칭 리스트 / 채팅 목록 탭 페이지 (/matching)
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -14,8 +15,6 @@ import { listUnlocked } from "@/lib/matches";
 type Tab = "list" | "chat";
 
 export default function MatchingPage() {
-  // useSearchParams() requires a Suspense boundary in Next 16 client
-  // components — wrap so the fallback shows while the URL parses.
   return (
     <Suspense
       fallback={
@@ -34,38 +33,28 @@ export default function MatchingPage() {
 function MatchingPageContent() {
   const router = useRouter();
   const params = useSearchParams();
-  // Default to "list" but honour ?tab=chat so the back button from the
-  // chat room lands directly on the chat list instead of the matching
-  // list (which forced the user to retap to find the conversation).
   const initialTab: Tab = params.get("tab") === "chat" ? "chat" : "list";
   const [tab, setTab] = useState<Tab>(initialTab);
-  // 열람한 인연 카드 = 채팅 가능한 상대 목록 (GET /matches).
   const [unlocked, setUnlocked] = useState<MatchCandidate[] | null>(null);
   const [threads, setThreads] = useState<ChatThreadSummary[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeMatch, setActiveMatch] = useState<MatchCandidate | null>(null);
-  // Which thread row currently has its swipe-action revealed. Only one
-  // row can be open at a time so the UI stays unambiguous.
   const [openThreadId, setOpenThreadId] = useState<number | null>(null);
 
   const handleLeaveThread = async (t: ChatThreadSummary) => {
     if (!confirm(`${t.peer.nickname ?? "이 채팅"} 방에서 나가시겠어요?\n나간 후에는 더 이상 보이지 않아요.`)) {
       return;
     }
-    // Optimistic removal — drop from local state, then call backend.
-    // If the request fails, re-fetch to restore the row.
     setThreads((prev) => prev?.filter((x) => x.thread_id !== t.thread_id) ?? prev);
     setOpenThreadId(null);
     try {
       await leaveThread(t.thread_id);
     } catch (e) {
       setError(e instanceof Error ? e.message : "채팅방 나가기 실패");
-      // Re-fetch to undo the optimistic removal.
       listThreads().then(setThreads).catch(() => {});
     }
   };
 
-  // Auth + initial fetch of unlocked cards.
   useEffect(() => {
     if (!getToken()) {
       router.replace("/");
@@ -79,7 +68,6 @@ function MatchingPageContent() {
       });
   }, [router]);
 
-  // Refresh threads when the chat tab becomes active (cheap, on each click).
   useEffect(() => {
     if (tab !== "chat") return;
     listThreads()
@@ -188,9 +176,6 @@ function MatchingPageContent() {
                 setOpenThreadId(open ? t.thread_id : null)
               }
               onClick={() => {
-                // Pre-seed sessionStorage so the chat header shows the
-                // peer's nickname immediately instead of "사용자 14" while
-                // the fallback fetch resolves.
                 sessionStorage.setItem(
                   "activeChat",
                   JSON.stringify({
@@ -206,16 +191,11 @@ function MatchingPageContent() {
                     mbti: null,
                   } as MatchCandidate),
                 );
-                // Optimistically clear the badge for this row so the user
-                // doesn't see stale unread numbers between navigation and
-                // the chat room's mark-read call landing.
                 setThreads((prev) =>
                   prev?.map((x) =>
                     x.thread_id === t.thread_id ? { ...x, unread_count: 0 } : x,
                   ) ?? prev,
                 );
-                // Start fetching messages now so they arrive while Next.js
-                // navigates — the chat page consumes this via consumePrefetch.
                 prefetchMessages(t.peer.user_id);
                 router.push(`/matching/${t.peer.user_id}`);
               }}
@@ -233,7 +213,6 @@ function MatchingPageContent() {
             router.push(`/profile/${activeMatch.user_id}`);
           }}
           onStartChat={() => {
-            // 열람한 카드이므로 바로 채팅 가능.
             sessionStorage.setItem("activeChat", JSON.stringify(activeMatch));
             router.push(`/matching/${activeMatch.user_id}`);
           }}

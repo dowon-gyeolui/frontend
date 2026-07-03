@@ -1,10 +1,4 @@
-/**
- * 출생지 옵션 — 17개 시·도 + "해외/기타".
- *
- * 백엔드는 이 라벨을 그대로 받아 saju_engine 의 분 단위 보정 lookup 에
- * 사용한다. 추가/삭제 시 `services/saju_engine.py::_BIRTH_PLACE_OFFSET_MIN`
- * 도 같이 갱신해야 함.
- */
+// 출생지 선택 옵션 목록 (17개 시·도 + 해외/기타).
 export const BIRTH_PLACE_OPTIONS: string[] = [
   "서울특별시",
   "부산광역시",

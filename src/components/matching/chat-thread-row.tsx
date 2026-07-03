@@ -1,4 +1,5 @@
 "use client";
+// 채팅 탭의 스와이프 가능한 대화방 행 — 좌로 드래그하면 나가기 버튼 노출.
 
 import { Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -8,19 +9,9 @@ import type { ChatThreadSummary } from "@/lib/chat";
 const PLACEHOLDER_PHOTO =
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop";
 
-const ACTION_WIDTH = 88; // px — width of the revealed "나가기" button
-const SWIPE_THRESHOLD = 36; // px the user must drag before snapping open
+const ACTION_WIDTH = 88;
+const SWIPE_THRESHOLD = 36;
 
-/**
- * One swipeable row in the chat tab.
- *
- * Drag left to reveal a "나가기" button (KakaoTalk-style). Tap the row
- * body to navigate into the chat room. An unread badge appears in the
- * top-right corner of the row when `unread_count > 0`.
- *
- * Single-row "open" state is managed by the parent: it passes `isOpen`
- * + `onOpenChange` so opening one row auto-closes any other.
- */
 export function ChatThreadRow({
   thread,
   isOpen,
@@ -39,13 +30,9 @@ export function ChatThreadRow({
   const startY = useRef(0);
   const startTranslate = useRef(0);
   const dragging = useRef(false);
-  // True once the user moves enough to count as a horizontal swipe. Until
-  // then, taps still trigger onClick (we don't suppress vertical scrolls
-  // either — a downward scroll cancels the swipe altogether).
   const swiping = useRef(false);
   const [translateX, setTranslateX] = useState(isOpen ? -ACTION_WIDTH : 0);
 
-  // Sync translate when parent toggles isOpen (e.g. another row opens).
   useEffect(() => {
     if (!dragging.current) {
       setTranslateX(isOpen ? -ACTION_WIDTH : 0);
@@ -53,8 +40,6 @@ export function ChatThreadRow({
   }, [isOpen]);
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    // Don't start a swipe from the action button itself — that should
-    // just receive the click and trigger onLeave.
     const target = e.target as HTMLElement;
     if (target.closest("[data-row-action]")) return;
 
@@ -66,7 +51,6 @@ export function ChatThreadRow({
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
     } catch {
-      /* pointer capture is best-effort */
     }
   };
 
@@ -75,19 +59,15 @@ export function ChatThreadRow({
     const dx = e.clientX - startX.current;
     const dy = e.clientY - startY.current;
 
-    // Decide swipe vs scroll on the first meaningful motion. If the
-    // user is clearly dragging vertically, abort so the page can scroll.
     if (!swiping.current) {
       if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) {
         dragging.current = false;
         return;
       }
-      if (Math.abs(dx) < 6) return; // not yet enough to commit either way
+      if (Math.abs(dx) < 6) return;
       swiping.current = true;
     }
 
-    // Clamp so the row only opens leftward (negative translate). A small
-    // rightward drag past 0 is allowed for finger overshoot but snaps back.
     const next = Math.min(8, Math.max(-ACTION_WIDTH - 16, startTranslate.current + dx));
     setTranslateX(next);
   };
@@ -95,11 +75,9 @@ export function ChatThreadRow({
   const finishDrag = () => {
     if (!dragging.current) return;
     dragging.current = false;
-    if (!swiping.current) return; // it was a tap, no snap needed
+    if (!swiping.current) return;
     swiping.current = false;
 
-    // Snap based on where the row ended up + which way the user was
-    // moving. If past threshold leftward → open; otherwise → closed.
     const wasOpen = startTranslate.current <= -ACTION_WIDTH / 2;
     const nowPast = translateX <= -SWIPE_THRESHOLD;
     const shouldOpen = wasOpen ? translateX <= -SWIPE_THRESHOLD : nowPast;
@@ -117,8 +95,6 @@ export function ChatThreadRow({
   const onPointerCancel = () => finishDrag();
 
   const handleRowClick = () => {
-    // If a swipe just happened (or the row is open), the click should
-    // close instead of navigate. Otherwise, navigate.
     if (translateX !== 0 || swiping.current) {
       setTranslateX(0);
       onOpenChange(false);
@@ -133,7 +109,6 @@ export function ChatThreadRow({
 
   return (
     <div ref={containerRef} className="relative h-[86px] w-full overflow-hidden rounded-[10px]">
-      {/* Behind: leave action — revealed when the foreground translates left. */}
       <button
         type="button"
         data-row-action
@@ -146,7 +121,6 @@ export function ChatThreadRow({
         <span className="text-[12px] font-semibold">나가기</span>
       </button>
 
-      {/* Foreground: the row content. Drag left to expose the button. */}
       <div
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}

@@ -1,4 +1,5 @@
 "use client";
+// 결제 실패 리다이렉트 페이지 (/payment/fail) — 토스 결제 실패/취소 도착지
 
 import { XCircle } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -6,10 +7,6 @@ import { Suspense } from "react";
 
 import { AppShell } from "@/components/layout/app-shell";
 
-/**
- * /payment/fail — 토스 결제 실패/취소 리다이렉트 도착지.
- * 토스가 failUrl 에 code/message/orderId 를 쿼리로 붙여 보낸다.
- */
 function FailContent() {
   const router = useRouter();
   const params = useSearchParams();

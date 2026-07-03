@@ -1,17 +1,6 @@
 "use client";
+// ZAMI 얼굴 인증 뱃지 컴포넌트 — 인증된 사진 위에 겹쳐 노출하는 sparkle 배지.
 
-/**
- * ZAMI 공식 얼굴 인증 뱃지 — 사진이 strict face check (얼굴 면적
- * 25%+ 단일 인물) 를 통과한 경우에만 노출.
- *
- * 디자인: 진보라 원형 배경 + 노란 4-point sparkle (브랜드 마크).
- * 매칭 카드 / 프로필 상세 / 갤러리 사진 우상단에 overlay.
- *
- * 크기 프리셋:
- *   sm — 매칭 카드 사진 (작게)
- *   md — 프로필 상세 hero 사진
- *   lg — 향후 큰 노출 위치
- */
 type Size = "sm" | "md" | "lg";
 
 const SIZE_PX: Record<Size, number> = {
@@ -20,8 +9,8 @@ const SIZE_PX: Record<Size, number> = {
   lg: 36,
 };
 
-const ACCENT = "#fde047"; // 브랜드 yellow (zami-logo 와 동일)
-const BG = "#1f1235";     // 진보라 (배경/카드 톤과 통일)
+const ACCENT = "#fde047";
+const BG = "#1f1235";
 
 export function ZamiVerifiedBadge({
   size = "sm",
@@ -52,7 +41,6 @@ export function ZamiVerifiedBadge({
 }
 
 function Sparkle({ px, color }: { px: number; color: string }) {
-  // 4-point sparkle — zami-logo 의 BigSparkle 과 동일한 path 비율.
   const w = px;
   const h = Math.round(px * (23 / 14));
   return (

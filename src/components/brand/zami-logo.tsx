@@ -1,26 +1,13 @@
 "use client";
+// ZAMI 워드마크 로고 컴포넌트 — 텍스트 + sparkle 아이콘을 인라인 SVG로 렌더링한다.
 
-/**
- * ZAMI 워드마크 — Figma node 14:1910 기준.
- *
- * 디자인: "ZAMI" 흰색 텍스트(Jalnan Gothic) + A·M 사이 위치의 노란색
- * 세로형 4-point sparkle + 그 안쪽 아래에 작은 동심 sparkle.
- *
- * 인라인 SVG 로 그렸기 때문에 외부 asset 의존 없음 (Figma asset URL 의
- * 7-day expiry 영향도 받지 않음).
- */
 type Size = "sm" | "md" | "lg";
 
 type Preset = {
   textPx: number;
   trackingEm: number;
-  /** Visible sparkle height (px). 1:1.6 wide-to-tall ratio retained. */
   sparkleHeightPx: number;
-  /** Horizontal offset from start of ZAMI text. ~35% lands the sparkle
-   *  inside the A glyph (4-letter ZAMI: Z=12.5%, A≈37%, M≈63%, I=87.5%). */
   sparkleLeftPct: number;
-  /** Vertical offset of sparkle top relative to the text top. Negative
-   *  = above baseline. */
   sparkleTopOffsetPx: number;
 };
 
@@ -48,7 +35,7 @@ const SIZE_PRESETS: Record<Size, Preset> = {
   },
 };
 
-const ACCENT = "#fde047"; // tailwind yellow-300, used elsewhere in the app
+const ACCENT = "#fde047";
 
 export function ZamiLogo({
   size = "sm",
@@ -57,14 +44,12 @@ export function ZamiLogo({
   className = "",
 }: {
   size?: Size;
-  /** ZAMI 텍스트 색 */
   color?: string;
-  /** Sparkle 색 — 기본은 노란색 (Figma 시안 기준) */
   accentColor?: string;
   className?: string;
 }) {
   const preset = SIZE_PRESETS[size];
-  const sparkleWidth = preset.sparkleHeightPx * (16 / 31); // Figma 16:31 box ratio
+  const sparkleWidth = preset.sparkleHeightPx * (16 / 31);
 
   return (
     <span
@@ -94,8 +79,6 @@ export function ZamiLogo({
         aria-hidden="true"
         className="pointer-events-none absolute"
         style={{
-          // Small accent shares the big sparkle's horizontal centre
-          // (Figma node 14:1913 sits exactly under 14:1912's center).
           left: `${preset.sparkleLeftPct}%`,
           top: `${preset.sparkleTopOffsetPx + preset.sparkleHeightPx * 0.55}px`,
           width: `${sparkleWidth * 0.55}px`,
@@ -110,7 +93,6 @@ export function ZamiLogo({
 }
 
 function BigSparkle({ color }: { color: string }) {
-  // Tall 4-pointed sparkle — concave-sided diamond.
   return (
     <svg
       viewBox="0 0 14 23"
@@ -132,7 +114,6 @@ function BigSparkle({ color }: { color: string }) {
 }
 
 function SmallSparkle({ color }: { color: string }) {
-  // Compact 4-point twinkle — used as the inner accent. Square box.
   return (
     <svg
       viewBox="0 0 10 10"

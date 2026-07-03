@@ -1,31 +1,20 @@
 "use client";
+// 역할 설명: 탭하면 사주 용어 설명 카드를 띄워주는 뱃지 컴포넌트
 
 import { Info, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import type { GlossaryEntry } from "@/lib/saju-glossary-data";
 
-/**
- * Tappable pill that pops a small explanation card on tap. Used wherever
- * we surface a saju term ("정재", "도화 발동", "오늘 일주 기묘"...) so
- * users who don't know the jargon can read a plain-Korean meaning in place.
- *
- * The popup is anchored absolute to the badge, on top of surrounding
- * content. Tap-outside / X / Esc closes it.
- */
 export function InfoBadge({
   label,
   entry,
   variant = "default",
   showInfoIcon = true,
 }: {
-  /** Visible label on the pill (e.g. "도화 발동", "정재"). */
   label: string;
-  /** The glossary entry to show in the popup. */
   entry: GlossaryEntry;
-  /** Color variant. */
   variant?: "default" | "yellow" | "muted";
-  /** Whether to show the small info-icon hint after the label. */
   showInfoIcon?: boolean;
 }) {
   const [open, setOpen] = useState(false);

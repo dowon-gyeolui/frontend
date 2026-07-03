@@ -1,4 +1,5 @@
 "use client";
+// 온보딩 마지막 단계(/onboarding/done) — 프로필/생년월일 저장 후 사주 분석 결과 표시
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -17,7 +18,6 @@ import {
   type SajuPillar,
 } from "@/lib/saju";
 
-/** /saju/me/detailed response — same shape as in /saju/page.tsx. */
 type DetailedSajuResponse = {
   pillars: SajuPillar[];
   element_profile: ElementProfile;
@@ -28,9 +28,9 @@ type DetailedSajuResponse = {
 };
 
 type SubmitState =
-  | { kind: "submitting" }                              // saving profile + birth-data
-  | { kind: "analyzing" }                               // LLM call in progress
-  | { kind: "ready"; saju: DetailedSajuResponse | null; nickname: string } // LLM done (or skipped on failure)
+  | { kind: "submitting" }
+  | { kind: "analyzing" }
+  | { kind: "ready"; saju: DetailedSajuResponse | null; nickname: string }
   | { kind: "error"; message: string };
 
 export default function OnboardingDonePage() {
@@ -42,20 +42,14 @@ export default function OnboardingDonePage() {
     let cancelled = false;
 
     async function submit() {
-      // Guard: if the user reloaded straight onto /onboarding/done with an
-      // empty context, kick them back to step 1 instead of POSTing nothing.
       if (!state.nickname || !state.gender || !state.birth_date || !state.calendar_type) {
         router.replace("/onboarding/name");
         return;
       }
 
-      // Snapshot nickname before any state mutation — `reset()` later in
-      // this handler clears the onboarding context, so reading
-      // `state.nickname` from the ReadyView render would yield "".
       const nickname = state.nickname;
 
       try {
-        // 1) Nickname + 이상형(필수) → PATCH /users/me/profile
         await apiFetch("/users/me/profile", {
           method: "PATCH",
           body: JSON.stringify({
@@ -67,7 +61,6 @@ export default function OnboardingDonePage() {
           }),
         });
 
-        // 2) Birth data → POST /users/me/birth-data
         await apiFetch("/users/me/birth-data", {
           method: "POST",
           body: JSON.stringify({
@@ -81,8 +74,6 @@ export default function OnboardingDonePage() {
         });
         if (cancelled) return;
 
-        // 2.5) 연애 인터뷰 답변(선택) → PUT /users/me/interview.
-        //      비필수라 실패해도 온보딩은 계속 진행한다.
         if (state.interview && state.interview.length > 0) {
           try {
             await apiFetch("/users/me/interview", {
@@ -90,18 +81,13 @@ export default function OnboardingDonePage() {
               body: JSON.stringify({ answers: state.interview }),
             });
           } catch {
-            /* 비필수 — 무시 */
           }
         }
 
-        // 3) Kick off the LLM analysis. This is the "마지막 페이지" content —
-        //    we wait so the user actually reads their own saju before going
-        //    to /home. Failure is non-fatal: we still let them in.
         setStatus({ kind: "analyzing" });
         try {
           const saju = await apiFetch<DetailedSajuResponse>("/saju/me/detailed");
           if (cancelled) return;
-          // 사주 페이지가 즉시 뜨도록 캐시를 미리 채워둔다(온보딩에서 이미 본 셈).
           cacheSet("/saju/me/detailed", saju);
           setStatus({ kind: "ready", saju, nickname });
         } catch {
@@ -235,7 +221,6 @@ function ReadyView({
         {nickname} 님의 사주를 풀었어요
       </h1>
 
-      {/* When LLM succeeds — show summary cards */}
       {saju && dayPillar && dominant && (
         <div className="mt-[20px] w-full max-w-[340px] space-y-[12px]">
           <div className="grid grid-cols-2 gap-[10px]">
@@ -254,7 +239,6 @@ function ReadyView({
         </div>
       )}
 
-      {/* When LLM failed — friendly fallback */}
       {!saju && (
         <p className="mt-[16px] max-w-[300px] text-center text-[13px] leading-[20px] text-white/70">
           일시적으로 오류가 발생했어요. 자세한 풀이는{" "}
@@ -262,7 +246,6 @@ function ReadyView({
         </p>
       )}
 
-      {/* CTAs */}
       <div className="mt-[24px] flex w-full max-w-[340px] flex-col gap-[10px]">
         <button
           type="button"

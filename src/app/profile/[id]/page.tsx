@@ -1,4 +1,5 @@
 "use client";
+// 상대 공개 프로필 상세 페이지 (/profile/[id]) — 매칭 카드 "상세 정보 확인" 도착지
 
 import { ArrowLeft, Lock } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -35,15 +36,10 @@ type PublicProfile = {
   day_pillar: string | null;
   compatibility_score: number | null;
   is_face_verified: boolean;
-  // 연애 인터뷰 — 상호주의로 내가 볼 수 있는 만큼만. interview_total 은 상대 전체 답변 수.
   interview_answers: { question_key: string; answer: string }[];
   interview_total: number;
 };
 
-// ──────────────────────────────────────────────────────────────────────
-// ⚠️ 테스트용 mock — 사람별(peerId) 로 다른 프로필을 보여준다. interview_total
-// 은 동적으로 채우므로 여기선 interview_answers 만(=상대의 전체 답변) 담는다.
-// 확인이 끝나면 USE_MOCK_PROFILE 을 false 로 바꾸거나 이 블록을 지우세요.
 const USE_MOCK_PROFILE = true;
 type MockProfile = Omit<PublicProfile, "id" | "interview_total">;
 const MOCK_PROFILES: MockProfile[] = [
@@ -77,21 +73,12 @@ const MOCK_PROFILES: MockProfile[] = [
   },
 ];
 
-/** peerId 로 안정적으로 한 명을 고른다(같은 사람 → 항상 같은 mock). */
 function pickMockProfile(peerId: number): MockProfile {
   const n = MOCK_PROFILES.length;
   const i = (((peerId % n) + n) % n) || 0;
   return MOCK_PROFILES[Number.isFinite(i) ? i : 0];
 }
-// ──────────────────────────────────────────────────────────────────────
 
-/**
- * /profile/[id] — 매칭 카드 "상세 정보 확인" CTA 의 도착지.
- *
- * 상대의 공개 프로필(사진/닉네임/나이/MBTI/직업/거주지/한 줄 자기소개 +
- * 사주 요약)을 보여준다. 무료 티어이면 사진은 잠긴 상태로 노출되고,
- * 결제 후 채팅 시작 버튼이 활성화된다.
- */
 export default function ProfileDetailPage() {
   const router = useRouter();
   const params = useParams<{ id: string }>();
@@ -106,8 +93,6 @@ export default function ProfileDetailPage() {
       return;
     }
     if (USE_MOCK_PROFILE) {
-      // 테스트 모드 — peerId 로 사람을 고르고, 상호주의(내가 답한 개수만큼만
-      // 상대 답변 공개)를 그대로 흉내낸다. 내 답변 수는 실제 백엔드에서 읽어온다.
       const base = pickMockProfile(peerId);
       const total = base.interview_answers.length;
       apiFetch<{ question_key: string; answer: string }[]>("/users/me/interview")
@@ -121,7 +106,6 @@ export default function ProfileDetailPage() {
           });
         })
         .catch(() => {
-          // 내 답변을 못 불러오면 0개로 간주 → 전부 잠김.
           setData({
             ...base,
             id: peerId,
@@ -136,9 +120,6 @@ export default function ProfileDetailPage() {
       .catch((e: Error) => setError(e.message));
   }, [router, peerId]);
 
-  // 채팅 권한은 백엔드가 "카드 열람 여부"로 게이팅한다(PRD 6.2). 이 화면은
-  // 열람한 카드의 상세에서 도달하므로 바로 채팅 진입한다. 미열람 상태라면
-  // 채팅방에서 첫 전송 시 403 안내가 노출된다.
   const startChat = () => {
     if (!data) return;
     sessionStorage.setItem(
@@ -197,7 +178,6 @@ export default function ProfileDetailPage() {
 
         {data && (
           <>
-            {/* Hero photo carousel(드래그 스와이프 + 하단 점) */}
             <PhotoCarousel
               photos={
                 data.photos && data.photos.length > 0
@@ -217,8 +197,6 @@ export default function ProfileDetailPage() {
                   궁합 {data.compatibility_score}%
                 </div>
               )}
-              {/* ZAMI 공식 얼굴 인증 뱃지 — 메인 사진이 strict face check
-                  통과한 사용자에게 우상단에 노출. 신뢰도 시그널. */}
               {data.is_face_verified && !data.is_blinded && (
                 <div className="absolute right-[14px] top-[14px]">
                   <ZamiVerifiedBadge size="md" />
@@ -242,7 +220,6 @@ export default function ProfileDetailPage() {
               )}
             </PhotoCarousel>
 
-            {/* 한 줄 자기소개 */}
             {data.bio && (
               <div className="mt-[16px] rounded-[14px] border border-white/15 bg-white/10 p-[14px] backdrop-blur-sm">
                 <p className="text-center text-[14px] leading-[22px] text-white">
@@ -251,7 +228,6 @@ export default function ProfileDetailPage() {
               </div>
             )}
 
-            {/* 기본 정보 */}
             <section className="mt-[20px]">
               <h2 className="text-center text-[16px] font-semibold text-white">
                 기본 정보
@@ -284,7 +260,6 @@ export default function ProfileDetailPage() {
               </div>
             </section>
 
-            {/* 연애 인터뷰 — 상호주의로 내가 답한 만큼만 공개. */}
             {data.interview_total > 0 && (
               <section className="mt-[20px]">
                 <h2 className="text-center text-[16px] font-semibold text-white">
@@ -305,7 +280,6 @@ export default function ProfileDetailPage() {
                     </div>
                   ))}
 
-                  {/* 상호주의 잠금 안내 — 상대가 더 답했는데 내가 덜 답한 경우 */}
                   {data.interview_total > data.interview_answers.length && (
                     <div className="flex items-center justify-center gap-[6px] rounded-[14px] border border-dashed border-white/20 bg-white/5 px-[14px] py-[12px] text-center">
                       <Lock className="size-[13px] text-white/50" />
@@ -318,7 +292,6 @@ export default function ProfileDetailPage() {
               </section>
             )}
 
-            {/* CTAs */}
             <div className="mt-[24px] flex flex-col gap-[10px]">
               <button
                 type="button"

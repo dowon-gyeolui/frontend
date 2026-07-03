@@ -1,17 +1,11 @@
 "use client";
+// 인연 카드 추가 열람 팝업 — 보유 스타 표시 + 열람 수량 선택기.
 
 import { Minus, Plus, Star, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const STAR_COST_PER_CARD = 10;
 
-/**
- * 인연 카드 추가 열람 팝업.
- *
- * 보유 스타와 열람 수량 선택기(1 ~ maxCount)를 보여주고, 확인 시 선택한
- * 장수를 onConfirm 으로 넘긴다. maxCount 는 호출부가 보유 스타와 하루 한도를
- * 반영해 계산해 넘긴다(= min(floor(balance/10), 남은 일일 한도)).
- */
 export function UnlockModal({
   balance,
   maxCount,
@@ -61,7 +55,6 @@ export function UnlockModal({
           인연 카드 추가 열람
         </h3>
 
-        {/* 보유 스타 */}
         <div className="mt-[14px] flex items-center justify-center gap-[6px] text-white/80">
           <span className="text-[13px]">보유 스타</span>
           <Star className="size-[16px] fill-[#fde047] stroke-[#fde047]" />
@@ -70,7 +63,6 @@ export function UnlockModal({
           </span>
         </div>
 
-        {/* 수량 선택기 */}
         <div className="mt-[18px]">
           <p className="text-center text-[12px] text-white/55">
             몇 장 더 열람할까요?
@@ -103,14 +95,12 @@ export function UnlockModal({
           </p>
         </div>
 
-        {/* 차감 안내 */}
         <div className="mt-[16px] flex items-center justify-center gap-[6px] rounded-[10px] bg-white/5 py-[10px] text-[13px] text-white/85">
           <span>차감</span>
           <Star className="size-[15px] fill-[#fde047] stroke-[#fde047]" />
           <span className="font-bold text-[#fde047]">{cost}</span>
         </div>
 
-        {/* 확인 */}
         <button
           type="button"
           onClick={() => onConfirm(count)}

@@ -1,4 +1,5 @@
 "use client";
+// 마이페이지 (/mypage) — 내 프로필 조회/수정, 스타 잔액, 탈퇴
 
 import {
   ArrowLeft,
@@ -47,10 +48,6 @@ type Me = {
   religion: string | null;
   star_balance: number;
 };
-
-// Profile completion is now derived in lib/profile-completion.ts so home
-// and mypage agree on weights (basic 30 / time 10 / photo 20 / bio 20 /
-// basic-info 20).
 
 function calcAge(birthDate: string | null): number | null {
   if (!birthDate) return null;
@@ -124,7 +121,6 @@ function MypageContent() {
   return (
     <AppShell>
       <div className="flex-1 px-[20px]">
-        {/* Sub-header — back arrow + "마이페이지" title */}
         <div className="relative pt-[14px]">
           <button
             type="button"
@@ -146,7 +142,6 @@ function MypageContent() {
           </button>
         </div>
 
-        {/* Profile photo */}
         <div className="mt-[24px] flex justify-center">
           <div className="relative size-[230px] overflow-hidden rounded-[18px] bg-white/10">
             {me?.photo_url ? (
@@ -164,7 +159,6 @@ function MypageContent() {
           </div>
         </div>
 
-        {/* Action icons — under the photo, evenly spaced */}
         <div className="mt-[16px] flex items-start justify-around text-[11px] text-white">
           <button
             type="button"
@@ -192,7 +186,6 @@ function MypageContent() {
           </button>
         </div>
 
-        {/* Completion progress bar */}
         <div className="mt-[20px]">
           <div className="h-[5px] w-full overflow-hidden rounded-full bg-white/30">
             <div
@@ -209,9 +202,6 @@ function MypageContent() {
           </p>
         </div>
 
-        {/* Missing-items callout — shown when not yet 100%. The yellow highlight
-            kicks in when the user came from "프로필 완성하기" on /home so it's
-            obvious why they were redirected. */}
         {me && completion < 100 && (
           <div
             className={`mt-[12px] rounded-[14px] border p-[14px] backdrop-blur-sm ${
@@ -256,7 +246,6 @@ function MypageContent() {
           </div>
         )}
 
-        {/* 한 줄 자기소개 — backed by users.bio; tap to edit */}
         <button
           type="button"
           onClick={() => setBioOpen(true)}
@@ -270,7 +259,6 @@ function MypageContent() {
           </p>
         </button>
 
-        {/* 보유 스타 — 충전(/store) 으로 연결 */}
         <section className="mt-[16px] flex items-center justify-between rounded-[18px] border border-yellow-300/40 bg-gradient-to-br from-[#fde047]/15 to-[#a78bfa]/10 p-[16px] backdrop-blur-sm">
           <div className="flex items-center gap-[10px]">
             <div>
@@ -292,7 +280,6 @@ function MypageContent() {
           </button>
         </section>
 
-        {/* 기본 정보 */}
         <section className="mt-[20px]">
           <h2 className="text-center text-[16px] font-semibold text-white">
             기본 정보
@@ -324,7 +311,6 @@ function MypageContent() {
           </button>
         </section>
 
-        {/* 나를 보여주는 연애 프로필 질문 — 내 답변 작성/수정 */}
         <button
           type="button"
           onClick={() => setInterviewOpen(true)}
@@ -338,7 +324,6 @@ function MypageContent() {
           </p>
         </button>
 
-        {/* CTA — 운명의 지도 (사주) */}
         <button
           type="button"
           onClick={() => router.push("/saju")}
@@ -351,7 +336,6 @@ function MypageContent() {
           내 사주 보러가기
         </button>
 
-        {/* 탈퇴하기 */}
         <div className="mt-[20px] flex justify-center">
           <button
             type="button"
@@ -371,9 +355,6 @@ function MypageContent() {
           currentPhoto={me?.photo_url ?? null}
           onClose={() => setPhotoModalOpen(false)}
           onSave={(url) => {
-            // Gallery modal calls this on every mutation (add / delete /
-            // promote). `url` is the new primary photo URL, or null if
-            // every photo was deleted.
             setMe((prev) => (prev ? { ...prev, photo_url: url } : prev));
             cacheClearAll();
           }}
@@ -420,7 +401,6 @@ function MypageContent() {
                   }
                 : prev,
             );
-            // MBTI 변경은 매칭 리스트 키워드/한줄평에 반영되니 캐시 무효화.
             cacheClearAll();
             setBasicOpen(false);
           }}
@@ -466,8 +446,6 @@ function MypageContent() {
                   }
                 : prev,
             );
-            // 생년월일/시간이 바뀌면 사주·자미두수·궁합·운명 풀이가 전부
-            // 무효 — 다음 방문 때 다시 계산되도록 캐시 클리어.
             cacheClearAll();
             setRequiredOpen(false);
           }}

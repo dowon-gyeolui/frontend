@@ -1,4 +1,5 @@
 "use client";
+// 채팅 헤더에서 여는 사주 궁합 분석 리포트 드로우 — 등급/키워드 표시 + 신고/나가기 액션.
 
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -16,10 +17,6 @@ export type CompatibilityReport = {
   keywords: string[];
 };
 
-/**
- * 사주 궁합 점수(0~100) 를 1~6 등급 + 한 줄 설명으로 환산.
- * min 내림차순으로 정렬되어 있어 위에서부터 처음 충족하는 구간이 등급.
- */
 const GRADE_TABLE: { min: number; grade: number; line: string }[] = [
   {
     min: 90,
@@ -67,13 +64,6 @@ function ScoreGrade({ score }: { score: number }) {
   );
 }
 
-/**
- * 운명 분석 리포트 드로우 — 채팅 헤더의 햄버거 아이콘을 누르면 우측에서 슬라이드인.
- *
- * Figma node 37:1657. 본문은 백엔드 GET /compatibility/report/{peer_id} 가
- * 채워주고, 두 CTA(운명의 실타래 / 데이트 추천)는 프리미엄 게이팅이라 잠긴
- * 상태로 잠금 아이콘과 함께 노출. /jamidusu 로 라우팅된다.
- */
 export function CompatibilityReportDrawer({
   peerId,
   open,
@@ -106,7 +96,6 @@ export function CompatibilityReportDrawer({
       });
   }, [open, peerId]);
 
-  // ESC closes the drawer
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -118,7 +107,6 @@ export function CompatibilityReportDrawer({
 
   return (
     <>
-      {/* Backdrop */}
       <div
         aria-hidden={!open}
         onClick={onClose}
@@ -127,7 +115,6 @@ export function CompatibilityReportDrawer({
         }`}
       />
 
-      {/* Drawer panel */}
       <aside
         role="dialog"
         aria-label="운명 분석 결과"
@@ -136,7 +123,6 @@ export function CompatibilityReportDrawer({
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* Header */}
         <div className="relative px-[18px] pt-[28px]">
           <button
             type="button"
@@ -152,7 +138,6 @@ export function CompatibilityReportDrawer({
           <div className="mt-[14px] h-px bg-white/40" />
         </div>
 
-        {/* Body */}
         <div className="flex-1 overflow-y-auto px-[18px] py-[18px]">
           {loading && (
             <div className="pt-8">
@@ -177,7 +162,6 @@ export function CompatibilityReportDrawer({
 
           {report && !loading && !error && (
             <>
-              {/* Summary section */}
               <h3 className="text-center text-[15px] font-semibold text-white">
                 {report.nickname_a ?? "나"}님과 {report.nickname_b ?? "상대"}님의 궁합 요약
               </h3>
@@ -190,10 +174,8 @@ export function CompatibilityReportDrawer({
                 ))}
               </ul>
 
-              {/* Score grade — 1~6등급 + 한 줄 설명 */}
               <ScoreGrade score={report.score} />
 
-              {/* Keywords */}
               <h3 className="mt-[20px] text-center text-[15px] font-semibold text-white">
                 주요 키워드
               </h3>
@@ -208,7 +190,6 @@ export function CompatibilityReportDrawer({
           )}
         </div>
 
-        {/* Bottom action row */}
         <div className="flex gap-[10px] px-[18px] pb-[20px] pt-[10px]">
           <button
             type="button"

@@ -1,3 +1,4 @@
+// 루트 레이아웃 — 전체 앱(/)의 HTML 뼈대와 공통 메타데이터를 정의
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 

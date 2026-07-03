@@ -1,4 +1,5 @@
 "use client";
+// 온보딩 4단계(/onboarding/ideal-type) — 선호 나이대/지역/최소 키 입력 페이지
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -7,9 +8,7 @@ import { OnboardingShell } from "@/components/onboarding/onboarding-shell";
 import { BIRTH_PLACE_OPTIONS } from "@/lib/birth-place";
 import { useOnboarding } from "@/lib/onboarding-context";
 
-// 선호 나이대 선택 범위 (성인 기준).
 const AGE_OPTIONS = Array.from({ length: 99 - 18 + 1 }, (_, i) => 18 + i);
-// 선호 최소 키 선택 범위.
 const HEIGHT_OPTIONS = Array.from({ length: 200 - 140 + 1 }, (_, i) => 140 + i);
 
 const SELECT_CLASS =
@@ -64,7 +63,6 @@ export default function OnboardingIdealTypePage() {
             </p>
           </div>
 
-          {/* 선호 나이대 */}
           <div className="flex flex-col gap-[8px]">
             <label className="text-[15px] font-medium text-white/90">
               선호 나이대
@@ -103,7 +101,6 @@ export default function OnboardingIdealTypePage() {
             )}
           </div>
 
-          {/* 선호 지역 */}
           <div className="flex flex-col gap-[8px]">
             <label className="text-[15px] font-medium text-white/90">
               선호 지역
@@ -122,7 +119,6 @@ export default function OnboardingIdealTypePage() {
             </select>
           </div>
 
-          {/* 선호 최소 키 */}
           <div className="flex flex-col gap-[8px]">
             <label className="text-[15px] font-medium text-white/90">
               선호 최소 키
@@ -142,7 +138,6 @@ export default function OnboardingIdealTypePage() {
           </div>
         </div>
 
-        {/* Bottom: 이전 + 다음 */}
         <div className="mt-[40px] flex gap-[10px]">
           <button
             type="button"

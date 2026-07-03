@@ -1,4 +1,5 @@
 "use client";
+// 역할 설명: 마이페이지에서 프로필 사진 여러 장을 추가/삭제/메인 지정하는 갤러리 모달
 
 import { Camera, Check, ImagePlus, Star, Trash2, X } from "lucide-react";
 
@@ -26,24 +27,11 @@ type GalleryResponse = {
 };
 
 type Props = {
-  /** Currently-displayed primary photo (mypage's me.photo_url). */
   currentPhoto: string | null;
   onClose: () => void;
-  /** Called whenever the primary photo URL changes (add/delete/promote)
-   *  so the parent can keep its `me.photo_url` in sync without refetch. */
   onSave: (newPrimaryUrl: string | null) => void;
 };
 
-/**
- * Multi-photo gallery modal.
- *
- * - Lists existing photos (GET /users/me/photos).
- * - Add: 앨범 / 카메라 → POST /users/me/photos.
- * - Delete: per-photo trash icon → DELETE /users/me/photos/{id}.
- * - Set primary: per-photo star icon → PATCH /users/me/photos/{id}/primary.
- *
- * After every mutation we re-read the gallery to keep state simple.
- */
 export function PhotoUploadModal({ currentPhoto, onClose, onSave }: Props) {
   const [photos, setPhotos] = useState<GalleryPhoto[] | null>(null);
   const [busy, setBusy] = useState(false);
@@ -69,9 +57,6 @@ export function PhotoUploadModal({ currentPhoto, onClose, onSave }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // If the gallery is empty but the legacy users.photo_url exists, render
-  // the legacy photo as a non-deletable preview slot so the user always
-  // sees their current photo.
   const legacyOnly = photos !== null && photos.length === 0 && currentPhoto;
 
   const onPick = async (file: File | null) => {
@@ -93,15 +78,11 @@ export function PhotoUploadModal({ currentPhoto, onClose, onSave }: Props) {
       });
       if (!resp.ok) {
         const body = await resp.text();
-        // FastAPI 응답은 { "detail": "..." } 형태. moderation 거절도
-        // 이걸로 사용자용 한국어 사유가 내려오니 detail 만 노출.
         let detail: string | null = null;
         try {
           const parsed = JSON.parse(body) as { detail?: unknown };
           if (typeof parsed.detail === "string") detail = parsed.detail;
-        } catch {
-          /* not JSON */
-        }
+        } catch {}
         throw new Error(detail ?? `${resp.status}: ${body}`);
       }
       await refresh();
@@ -171,7 +152,6 @@ export function PhotoUploadModal({ currentPhoto, onClose, onSave }: Props) {
           최대 {MAX_PHOTOS}장까지 등록 · 메인으로 표시한 사진이 매칭에서 보여요
         </p>
 
-        {/* Gallery grid */}
         <div className="mt-[14px] grid grid-cols-3 gap-[8px]">
           {photos === null ? (
             <div className="col-span-3 grid h-[100px] place-items-center text-[12px] text-[#1b1029]/50">
@@ -189,10 +169,6 @@ export function PhotoUploadModal({ currentPhoto, onClose, onSave }: Props) {
                 />
               ))}
 
-              {/* Legacy single-photo fallback — only when gallery is empty
-                  but users.photo_url is set (e.g. legacy users uploaded
-                  before the gallery existed). Prompts re-upload via the
-                  ImagePlus tile below. */}
               {legacyOnly && (
                 <div className="relative aspect-square overflow-hidden rounded-[12px] bg-zinc-200">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -207,7 +183,6 @@ export function PhotoUploadModal({ currentPhoto, onClose, onSave }: Props) {
                 </div>
               )}
 
-              {/* Add tile — visible until MAX is reached */}
               {canAdd && (
                 <button
                   type="button"
@@ -225,7 +200,6 @@ export function PhotoUploadModal({ currentPhoto, onClose, onSave }: Props) {
           )}
         </div>
 
-        {/* Action buttons — alternate sources for adding */}
         <div className="mt-[14px] flex gap-[8px]">
           <button
             type="button"
@@ -314,8 +288,6 @@ function PhotoTile({
           메인
         </div>
       )}
-      {/* ZAMI 공식 얼굴 인증 — strict face check 통과 사진에만 노출.
-          사용자가 본인 갤러리에서 어떤 사진이 인증되었는지 확인 가능. */}
       {photo.is_face_verified && (
         <div className="absolute right-[6px] top-[6px]">
           <ZamiVerifiedBadge size="sm" />

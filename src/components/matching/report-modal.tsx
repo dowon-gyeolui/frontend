@@ -1,4 +1,5 @@
 "use client";
+// 운명 분석 리포트 drawer 의 신고하기 모달 — 사유 선택 + 기타 직접 입력.
 
 import { Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -30,10 +31,6 @@ const REASONS: { id: Reason; title: string; desc: string }[] = [
   },
 ];
 
-/**
- * 운명 분석 리포트 drawer 의 신고하기 버튼이 띄우는 모달.
- * 4개 카테고리 토글 + 기타 직접 입력. 제출 시 POST /reports.
- */
 export function ReportModal({
   reportedUserId,
   onClose,
@@ -69,7 +66,6 @@ export function ReportModal({
         body: JSON.stringify({
           reported_user_id: reportedUserId,
           reason,
-          // Always send details when present — even non-other reasons can carry context.
           details: details.trim() || undefined,
         }),
       });
@@ -108,7 +104,6 @@ export function ReportModal({
           허위 신고 시 이용에 제한이 있을 수 있어요.
         </p>
 
-        {/* 신고 사유 선택 */}
         <div className="mt-[14px] space-y-[8px]">
           {REASONS.map((r) => {
             const active = reason === r.id;
@@ -143,7 +138,6 @@ export function ReportModal({
           })}
         </div>
 
-        {/* 기타 카테고리 textarea — reason 이 other 일 때만 활성 */}
         {reason === "other" && (
           <div className="mt-[12px]">
             <label className="text-[12px] font-medium text-white/80">
@@ -166,7 +160,6 @@ export function ReportModal({
           <p className="mt-[10px] text-center text-[11px] text-red-300">{error}</p>
         )}
 
-        {/* CTAs */}
         <div className="mt-[14px] flex gap-[8px]">
           <button
             type="button"

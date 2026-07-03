@@ -1,10 +1,10 @@
 "use client";
+// 홈 화면 상단 전광판 — 서비스 통계 문구를 순환하며 노출한다.
 
 import { useEffect, useMemo, useState } from "react";
 
 import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
 
-/** GET /stats/home 응답. 백엔드 HomeStats 스키마 미러. */
 type HomeStats = {
   signups_total: number;
   signups_today: number;
@@ -16,11 +16,6 @@ type HomeStats = {
   same_element: { element: string; count: number } | null;
 };
 
-/**
- * 회전 문구 정의 — 전광판에 띄울 문구들을 한곳에서 관리한다.
- * 각 항목은 stats 를 받아 문구를 만들고, 노출 가치가 없으면(예: 0명)
- * null 을 돌려준다. 새 문구를 실험하려면 여기 배열에 한 줄 추가하면 된다.
- */
 const MESSAGES: ((s: HomeStats) => string | null)[] = [
   (s) =>
     s.signups_total > 0
@@ -51,9 +46,7 @@ const MESSAGES: ((s: HomeStats) => string | null)[] = [
       : null,
 ];
 
-// 문구 교체 주기(ms).
 const ROTATE_MS = 4000;
-// 페이드 전환 시간(ms) — Tailwind duration-300 과 맞춤.
 const FADE_MS = 300;
 
 export function StatBillboard() {
@@ -67,7 +60,6 @@ export function StatBillboard() {
     });
   }, []);
 
-  // stats 로 실제 노출할 문구 리스트를 만든다(0 값 문구 제거).
   const lines = useMemo(() => {
     if (!stats) return [] as string[];
     return MESSAGES.map((fn) => fn(stats)).filter(
@@ -75,7 +67,6 @@ export function StatBillboard() {
     );
   }, [stats]);
 
-  // 문구 회전 — 페이드 아웃 → 인덱스 교체 → 페이드 인.
   useEffect(() => {
     if (lines.length <= 1) return;
     const id = window.setInterval(() => {
@@ -88,7 +79,6 @@ export function StatBillboard() {
     return () => window.clearInterval(id);
   }, [lines.length]);
 
-  // 문구가 하나도 없으면(브랜드 초기) 전광판 자체를 숨긴다.
   if (lines.length === 0) return null;
 
   const current = lines[index % lines.length];
@@ -102,7 +92,6 @@ export function StatBillboard() {
       >
         {current}
       </p>
-      {/* 진행 도트 — 현재 문구 위치 표시 */}
       {lines.length > 1 && (
         <div className="flex shrink-0 gap-[3px]">
           {lines.map((_, i) => (

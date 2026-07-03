@@ -1,4 +1,5 @@
 "use client";
+// 자미두수 12궁 소개/해석 페이지 (/jamidusu)
 
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -9,8 +10,6 @@ import { LoadingPanel } from "@/components/ui/loading-panel";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
-
-// --- Types ---
 
 type DeepStar = {
   name: string;
@@ -49,13 +48,11 @@ type DeepResponse = {
 type Me = { id: number; nickname: string | null };
 type Step = "intro" | "detail";
 
-// --- 12궁 표시 순서 ---
 const PALACE_ORDER = [
   "명궁", "부처궁", "복덕궁", "질액궁", "천이궁",
   "재백궁", "전택궁", "관록궁", "노복궁", "형제궁", "자녀궁", "부모궁",
 ];
 
-// --- 소개 페이지용 궁 설명 ---
 const PALACE_INTRO: Record<string, { app_title: string; desc: string }> = {
   명궁: {
     app_title: "나의 기본 매력",
@@ -107,8 +104,6 @@ const PALACE_INTRO: Record<string, { app_title: string; desc: string }> = {
   },
 };
 
-// --- Page ---
-
 export default function JamidusuPage() {
   const router = useRouter();
   const [me, setMe] = useState<Me | null>(null);
@@ -122,7 +117,6 @@ export default function JamidusuPage() {
       return;
     }
     apiFetch<Me>("/users/me").then(setMe).catch(() => {});
-    // 소개 페이지 보는 동안 미리 fetch
     fetchWithCache<DeepResponse>("/saju/me/jamidusu-deep", CACHE_TTL.saju, setData, {
       onError: (e: Error) => setError(e.message),
     });
@@ -157,8 +151,6 @@ export default function JamidusuPage() {
     </AppShell>
   );
 }
-
-// --- 소개 페이지 ---
 
 function IntroView({ onNext }: { onNext: () => void }) {
   return (
@@ -245,8 +237,6 @@ function IntroView({ onNext }: { onNext: () => void }) {
     </div>
   );
 }
-
-// --- 해석 페이지 ---
 
 function DetailView({
   nickname,
@@ -353,8 +343,6 @@ function DetailView({
   );
 }
 
-// --- 12궁 카드 ---
-
 function PalaceCard({ palace }: { palace: DeepPalace }) {
   const appTitle = palace.app_title || PALACE_INTRO[palace.name_ko]?.app_title || "";
   const hasNewFormat = !!(palace.summary || palace.love_interpretation || palace.love_tip);
@@ -383,7 +371,7 @@ function PalaceCard({ palace }: { palace: DeepPalace }) {
           {palace.love_tip && (
             <div className="rounded-[8px] border border-yellow-300/20 bg-yellow-300/5 px-[12px] py-[8px]">
               <p className="text-[12px] leading-[18px] text-yellow-100/90 text-ko">
-                💡 {palace.love_tip}
+                {palace.love_tip}
               </p>
             </div>
           )}

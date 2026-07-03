@@ -1,4 +1,5 @@
 "use client";
+// 역할 설명: 마이페이지에서 키/MBTI/직업/거주지/종교/흡연/음주 등 기본 정보를 수정하는 모달
 
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -10,9 +11,6 @@ const SMOKING_OPTIONS = ["X", "O"] as const;
 const DRINKING_OPTIONS = ["X", "1주에 1번", "1달에 1번", "자주 마심"] as const;
 const RELIGION_OPTIONS = ["무교", "기독교", "불교", "천주교", "기타"] as const;
 
-// MBTI 4 글자 각 자리에 허용되는 문자. 백엔드 검증과 동일 규칙.
-// 사용자가 placeholder("MBTI") 같은 잘못된 값을 그대로 입력해 422 에러를
-// 받는 사례가 있어, 클라이언트에서 먼저 차단해 친절한 메시지를 보여줌.
 const MBTI_POSITION_CHARS: ReadonlyArray<ReadonlyArray<string>> = [
   ["E", "I"],
   ["N", "S"],
@@ -26,9 +24,6 @@ function isValidMbti(code: string): boolean {
   return MBTI_POSITION_CHARS.every((opts, i) => opts.includes(upper[i]));
 }
 
-// 백엔드 422 ("body" location 에 type=value_error 가 잔뜩 들어있음) 를
-// 사용자가 읽을 수 있는 한국어 한 줄로 변환. 알려진 필드는 친절한 라벨,
-// 모르는 건 그냥 raw 메시지 노출.
 const FIELD_LABEL_KO: Record<string, string> = {
   mbti: "MBTI",
   height_cm: "키",
@@ -44,7 +39,6 @@ type ValidationItem = { loc?: unknown[]; msg?: string };
 function humanizeApiError(err: unknown): string {
   if (!(err instanceof Error)) return "저장 실패";
   const raw = err.message;
-  // apiFetch 가 throw 하는 메시지가 "API 422: {json}" 형태인 경우 파싱 시도.
   const jsonStart = raw.indexOf("{");
   if (jsonStart === -1) return raw;
   try {
@@ -54,10 +48,8 @@ function humanizeApiError(err: unknown): string {
       const first = detail[0] as ValidationItem;
       const field = Array.isArray(first.loc) ? String(first.loc[1] ?? "") : "";
       const label = FIELD_LABEL_KO[field] ?? field;
-      // FastAPI value_error 메시지에서 "Value error, " prefix 제거.
       const msg = (first.msg ?? "").replace(/^Value error,\s*/i, "");
       if (label && msg) {
-        // MBTI 처럼 영어 메시지가 박힌 경우 한글로 치환.
         if (field === "mbti") {
           return `MBTI는 4글자 코드로 입력해주세요 (예: ENFP, ISTJ). 모르시면 비워두세요.`;
         }
@@ -66,9 +58,7 @@ function humanizeApiError(err: unknown): string {
       return msg || raw;
     }
     if (typeof detail === "string") return detail;
-  } catch {
-    // JSON parsing 실패 시 raw 그대로.
-  }
+  } catch {}
   return raw;
 }
 
@@ -82,12 +72,6 @@ export type BasicInfoInitial = {
   drinking: string | null;
 };
 
-/**
- * 기본 정보 수정 modal — 매칭 카드/궁합 분석에 영향을 주는 보조 정보만.
- * 키 / MBTI / 직업 / 거주지 / 종교 / 흡연 / 음주.
- *
- * 필수 정보(이름/성별/생년월일 등)는 별도의 RequiredInfoEditModal 에서.
- */
 export function BasicInfoEditModal({
   initial,
   onClose,

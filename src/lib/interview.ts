@@ -1,13 +1,4 @@
-/**
- * 연애 인터뷰 질문 카탈로그 — 온보딩 마지막 단계에서 카테고리별로 노출.
- *
- * 사용자는 원하는 질문만 체크해 답하고, 답한 질문이 프로필에 노출된다.
- * 노출은 상호주의(맞팔) — 상대가 답한 개수만큼만 내 답을 볼 수 있다(서버 처리).
- *
- * question key 는 DB(interview_answers.question_key)에 저장되는 안정적 식별자다.
- * 질문 문구를 바꿔도 key 는 유지할 것(기존 답변 보존).
- */
-
+// 온보딩 연애 인터뷰 질문 카탈로그.
 export type InterviewQuestion = { key: string; text: string };
 export type InterviewCategory = { category: string; questions: InterviewQuestion[] };
 
@@ -50,7 +41,6 @@ export const INTERVIEW_CATEGORIES: InterviewCategory[] = [
   },
 ];
 
-/** question key → 질문 문구. 프로필에서 답변과 함께 질문을 표시할 때 사용. */
 export const INTERVIEW_QUESTION_MAP: Record<string, string> = Object.fromEntries(
   INTERVIEW_CATEGORIES.flatMap((c) => c.questions.map((q) => [q.key, q.text])),
 );

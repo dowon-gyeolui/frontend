@@ -1,16 +1,11 @@
 "use client";
+// 역할 설명: 마이페이지에서 자기소개 문구를 수정하는 모달
 
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { apiFetch } from "@/lib/api";
 
-/**
- * 자기소개 modal — Figma node 34:595.
- *
- * Glass-card overlay sized 341×~294px (rounded 18, white/0.7 + blur-25)
- * with a single textarea, a tip line, and a gradient 저장하기 button.
- */
 export function BioEditModal({
   initialBio,
   onClose,
@@ -57,7 +52,6 @@ export function BioEditModal({
         onClick={(e) => e.stopPropagation()}
         className="relative w-[341px] max-w-full rounded-[18px] border border-white/20 bg-white/70 p-[24px] backdrop-blur-[25px] shadow-[0_10px_40px_rgba(0,0,0,0.3)]"
       >
-        {/* Close */}
         <button
           type="button"
           onClick={onClose}
@@ -68,12 +62,10 @@ export function BioEditModal({
           <X className="size-[20px] stroke-[#1b1029] stroke-[2]" />
         </button>
 
-        {/* Title */}
         <h2 className="text-center text-[20px] font-bold tracking-[-0.6px] text-[#1b1029]">
           자기소개
         </h2>
 
-        {/* Textarea pill */}
         <div className="mt-[20px] rounded-[12px] border border-white/20 bg-white/60 p-[14px] backdrop-blur-[5px]">
           <textarea
             autoFocus
@@ -89,7 +81,6 @@ export function BioEditModal({
           </p>
         </div>
 
-        {/* Tip */}
         <p className="mt-[14px] whitespace-pre-line text-center text-[10px] leading-[14px] text-[#5a3a82] text-ko">
           {`Tip : "솔직함은 좋은 운명의 상대를 불러옵니다."`}
         </p>
@@ -98,7 +89,6 @@ export function BioEditModal({
           <p className="mt-[10px] text-center text-[11px] text-red-500">{error}</p>
         )}
 
-        {/* Save button */}
         <div className="mt-[18px] flex justify-center">
           <button
             type="button"

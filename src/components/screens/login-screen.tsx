@@ -1,4 +1,5 @@
 "use client";
+// 역할 설명: 카카오 로그인 버튼을 보여주는 초기 로그인 화면
 
 import { MessageCircle } from "lucide-react";
 

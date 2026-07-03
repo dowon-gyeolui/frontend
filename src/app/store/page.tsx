@@ -1,4 +1,5 @@
 "use client";
+// 스타 충전 페이지 (/store) — 토스 결제 패키지 선택 및 테스트 충전
 
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -18,19 +19,11 @@ import {
 
 type Me = { id: number; star_balance: number };
 
-/**
- * /store — 스타 충전 화면 (PRD 5번 BM).
- *
- * 패키지 4종 카드. 클릭 → createOrder → 토스 결제창. 결제 성공은
- * /payment/success 로 리다이렉트되어 confirm + 적립이 일어난다.
- * 디자인 톤은 /premium 업셀 화면과 통일(보라/노랑 그라데이션).
- */
 export default function StorePage() {
   const router = useRouter();
   const [me, setMe] = useState<Me | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // TEST ONLY — 토스 연결 전 임시 충전 진행 상태. 토스 연결되면 삭제.
   const [testing, setTesting] = useState(false);
 
   useEffect(() => {
@@ -54,18 +47,13 @@ export default function StorePage() {
     setError(null);
     setPendingId(product.product_id);
     try {
-      // 성공 시 토스가 /payment/success 로 리다이렉트 — 아래 코드는 실행되지 않음.
       await startStarCheckout(product.product_id, customerKeyFor(me?.id));
     } catch (e) {
-      // 사용자가 결제창을 닫거나 주문 생성이 실패한 경우.
       setError(e instanceof Error ? e.message : "결제를 시작하지 못했어요.");
       setPendingId(null);
     }
   };
 
-  // TEST ONLY — 토스 연결 전, 결제 없이 스타만 적립해 카드 열람/스와이프
-  // 흐름을 테스트한다. 토스 키가 설정되면 버튼 자체가 사라지고 백엔드도
-  // 404 를 돌려준다. 토스 연결 후 이 함수와 아래 버튼을 삭제할 것.
   const testTopup = async () => {
     if (testing) return;
     setError(null);
@@ -87,7 +75,6 @@ export default function StorePage() {
   return (
     <AppShell>
       <div className="flex-1 px-[20px] pb-[40px]">
-        {/* Sub-header */}
         <div className="relative pt-[14px]">
           <button
             type="button"
@@ -103,7 +90,6 @@ export default function StorePage() {
           <div className="mt-[10px] h-px bg-white/30" />
         </div>
 
-        {/* 현재 보유 스타 */}
         <section className="mt-[20px] rounded-[18px] border border-yellow-300/40 bg-gradient-to-br from-[#fde047]/15 to-[#a78bfa]/10 p-[18px] text-center backdrop-blur-sm">
           <p className="text-[12px] text-white/70">현재 보유 별</p>
           <div className="mt-[6px] flex items-center justify-center gap-[8px]">
@@ -116,7 +102,6 @@ export default function StorePage() {
           </p>
         </section>
 
-        {/* 패키지 4종 */}
         <section className="mt-[24px] space-y-[12px]">
           {STAR_PRODUCTS.map((p) => (
             <PackageCard
@@ -133,13 +118,10 @@ export default function StorePage() {
           <p className="mt-[16px] text-center text-[12px] text-red-300">{error}</p>
         )}
 
-        {/* TEST ONLY — 토스페이먼츠 연결 전 임시 충전. 결제 없이 스타만 +100.
-            토스 클라이언트 키가 설정되면 이 블록은 자동으로 사라진다.
-            토스 연결 후 이 블록과 testTopup 함수를 삭제할 것. */}
         {!isTossConfigured() && (
           <section className="mt-[24px] rounded-[18px] border border-dashed border-white/30 bg-white/5 p-[16px] text-center">
             <p className="text-[12px] font-semibold text-white/80">
-              🧪 테스트 모드
+              테스트 모드
             </p>
             <p className="mt-[4px] text-[11px] text-white/55">
               토스페이먼츠 연결 전, 결제 없이 스타를 충전해 카드 열람·스와이프를
@@ -151,7 +133,7 @@ export default function StorePage() {
               disabled={testing}
               className="mx-auto mt-[12px] block w-fit rounded-full bg-white/15 px-[18px] py-[8px] text-[13px] font-bold text-white disabled:opacity-50"
             >
-              {testing ? "충전 중..." : "테스트 충전 +100 ⭐"}
+              {testing ? "충전 중..." : "테스트 충전 +100"}
             </button>
           </section>
         )}

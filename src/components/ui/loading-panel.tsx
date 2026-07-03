@@ -1,12 +1,8 @@
 "use client";
+// 역할 설명: ProgressLoader를 카드 스타일로 감싼 로딩 패널 컴포넌트
 
 import { ProgressLoader, type ProgressMessage } from "@/components/ui/progress-loader";
 
-/**
- * Drop-in replacement for the spinner-in-a-card pattern. Wraps
- * <ProgressLoader> in the project's standard rounded-card style so
- * call sites only need to pass `messages` + `estimatedMs` + `done`.
- */
 export function LoadingPanel({
   estimatedMs,
   done,
@@ -17,7 +13,6 @@ export function LoadingPanel({
   estimatedMs: number;
   done?: boolean;
   messages: ProgressMessage[];
-  /** Optional decorative emoji above the bar. */
   emoji?: string;
   className?: string;
 }) {

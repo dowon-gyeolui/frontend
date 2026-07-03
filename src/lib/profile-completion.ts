@@ -1,20 +1,4 @@
-/**
- * Profile completion percentage shown on home / mypage as the "인연 탐색기
- * 가동률" gauge. Weights are spec'd by product:
- *
- *   기본 필수 정보 입력  (이름 + 생년월일 + 성별)        30%
- *   시간 (출생 시간)                                  +10%
- *   프로필 사진 추가     (카카오톡 기본 OR 변경)         +20%
- *   한 줄 자기소개 추가                                +20%
- *   기본 정보 입력       (키/MBTI/직업/거주지 중 ≥1)    +20%
- *                                                   ─────
- *                                                   100%
- *
- * "기본 정보 입력" earns once any of height/MBTI/job/region is set; the
- * smoking/drinking/religion dropdowns are nice-to-have but don't gate the
- * tier on their own.
- */
-
+// 프로필 완성도(가동률) 계산 — 홈/마이페이지 게이지에 사용.
 export type CompletionInput = {
   nickname: string | null | undefined;
   birth_date: string | null | undefined;
@@ -22,7 +6,6 @@ export type CompletionInput = {
   gender?: string | null | undefined;
   photo_url?: string | null | undefined;
   bio?: string | null | undefined;
-  // 기본 정보 fields — any one of these earns the row.
   height_cm?: number | null | undefined;
   mbti?: string | null | undefined;
   job?: string | null | undefined;
@@ -31,8 +14,8 @@ export type CompletionInput = {
 
 export type CompletionRow = {
   label: string;
-  pct: number;        // weight (e.g. 30, 10, 20, 20, 20)
-  earned: boolean;    // does the user satisfy this row right now?
+  pct: number;
+  earned: boolean;
 };
 
 export function completionRows(me: CompletionInput | null): CompletionRow[] {

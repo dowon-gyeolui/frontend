@@ -1,4 +1,5 @@
 "use client";
+// 홈 화면 페이지 (/home) — 오늘의 인연 카드, 추가 열람, 전광판 노출
 
 import { Star } from "lucide-react";
 import Link from "next/link";
@@ -10,7 +11,6 @@ import { StatBillboard } from "@/components/home/stat-billboard";
 import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
 import { MatchInfoModal } from "@/components/matching/match-info-modal";
 import { UnlockModal } from "@/components/matching/unlock-modal";
-import { LoadingPanel } from "@/components/ui/loading-panel";
 import { ApiError, apiFetch } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
 import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
@@ -53,31 +53,20 @@ type Me = {
 export default function HomePage() {
   const router = useRouter();
   const [me, setMe] = useState<Me | null>(null);
-  // 오늘의 인연(무료 1장) — null=로딩중, {card:null}=후보 없음.
   const [today, setToday] = useState<{ card: MatchCandidate | null } | null>(
     null,
   );
-  // 추가로 열람한 인연들(이번 세션). 카드는 항상 unblind 상태.
   const [extras, setExtras] = useState<MatchCandidate[]>([]);
-  // 오늘 추가 열람한 장수(첫 열람 전엔 null=아직 모름). 한도 10장.
   const [extraUsed, setExtraUsed] = useState<number | null>(null);
   const [unlocking, setUnlocking] = useState(false);
   const [fortune, setFortune] = useState<TodayFortune | null>(null);
   const [guide, setGuide] = useState<ActionGuide | null>(null);
-  // fortune fetch 가 실패한 적 있는지 — null 만으론 "로딩 중" 과
-  // "실패" 를 구분 못 해서 사용자가 영원히 placeholder 만 보게 됨.
-  // 한번이라도 실패하면 fallback 문구로 전환.
   const [fortuneFailed, setFortuneFailed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeMatch, setActiveMatch] = useState<MatchCandidate | null>(null);
-  // 모달이 "너와의 인연"(유료) 카드에서 열렸는지 — 점수 티어 노출 여부.
   const [activeIsPaid, setActiveIsPaid] = useState(false);
-  // 추가 열람 수량 선택 팝업 표시 여부.
   const [unlockOpen, setUnlockOpen] = useState(false);
-  // 가벼운 토스트 — 추가 열람 한도 초과(403)·후보 없음(404) 안내용.
-  // 몇 초 후 자동 사라짐.
   const [toast, setToast] = useState<string | null>(null);
-  // 로그아웃 확인 팝업.
   const [logoutOpen, setLogoutOpen] = useState(false);
   useEffect(() => {
     if (!toast) return;
@@ -135,7 +124,6 @@ export default function HomePage() {
   );
 
   const openUnlock = () => {
-    // 별이 부족하면 버튼 자체가 노출되지 않지만, 안전장치로 한 번 더 확인.
     if (balance < STAR_COST_PER_CARD) return;
     setUnlockOpen(true);
   };
@@ -180,8 +168,6 @@ export default function HomePage() {
     } else if (stopReason === "limit") {
       setToast(`오늘 추가 열람 한도(${EXTRA_DAILY_LIMIT}장)에 도달했어요.`);
     } else if (stopReason === "stars") {
-      // 배치 도중 별이 떨어진 경우 — 잔액이 갱신되면 아래 영역이 자동으로
-      // "별이 부족해요" 안내로 바뀐다. 토스트로 부분 열람 결과만 알림.
       setToast(
         opened > 0
           ? `인연 카드 ${opened}장을 열었어요. 별이 부족해 더 열지 못했어요.`
@@ -206,7 +192,6 @@ export default function HomePage() {
       }
     >
       <div className="flex-1 px-[24px]">
-        {/* Top: 인연 탐색기 가동률 — 100% 완성 시 or 로딩 중 숨김 */}
         {me !== null && completion < 100 && (
           <div className="mt-[14px]">
             <p className="text-center text-[12px] text-[#d8c8f2]">
@@ -229,31 +214,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* 오늘의 인연운 — 홈에서 잠시 숨김. 백엔드 /saju/me/today-fortune
-            과 fortune state/fetch 는 보존되어 있어 위 useEffect 의 호출이
-            계속 캐시를 채움. 복원하려면 아래 블록의 주석을 제거하면 됨. */}
-        {/*
-        <section className="mt-[20px] rounded-[18px] border border-white/20 bg-white/10 p-[16px] backdrop-blur-sm">
-          <div className="flex items-center justify-center gap-[8px]">
-            <h2 className="text-center text-[20px] font-bold text-white">
-              오늘의 인연운
-            </h2>
-          </div>
-          <p className="mt-[12px] whitespace-pre-line text-center text-[14px] leading-[22px] text-[#d8c8f2] text-ko">
-            {fortune
-              ? fortune.fortune_text
-              : !me?.birth_date
-                ? `"${nickname}님, 생년월일을 입력해주세요!"`
-                : fortuneFailed
-                  ? `"${nickname}님은 오늘 운명의 상대를 만날 확률이 높아요!"`
-                  : `"${nickname}님의 오늘 인연운을 풀고 있어요..."`}
-          </p>
-        </section>
-        */}
-
-        {/* 얼굴 사진 미등록 시 게이트 배너 — 매칭 카드 자체를 가리고
-            대신 안내 + CTA 노출. 백엔드도 photo_url IS NULL 인 사용자
-            에겐 빈 pack 을 돌려주지만, 이 배너로 사용자 인지 강화. */}
         {me && me.photo_url === null && (
           <section
             className="mt-[24px] rounded-[18px] border border-[#fde047]/40 bg-gradient-to-br from-[#fde047]/15 to-[#a78bfa]/10 p-[16px] backdrop-blur-sm"
@@ -276,8 +236,6 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* 오늘의 인연 (무료 1장). 유료 추가 열람분은 아래 "더 많은 인연"
-            섹션으로 분리된다. */}
         <section className="mt-[36px]">
           <h2 className="text-center text-[20px] font-bold text-white">
             오늘의 인연
@@ -301,16 +259,11 @@ export default function HomePage() {
                 }}
                 className="relative block w-full text-left transition active:scale-[0.98]"
               >
-                {/* 오늘의 인연(무료) 카드 — 점수 미노출 */}
                 <MatchCard data={todayCard} />
               </button>
             </div>
           )}
 
-          {/* 추가 인연 열람 영역.
-              - 일일 한도 소진 → 비활성 안내 버튼
-              - 별 부족(< 10) → 버튼 대신 부족 안내 + 충전 CTA 를 바로 노출
-              - 그 외 → 열람 버튼(클릭 시 수량 선택 팝업) */}
           {today !== null && today.card !== null && (
             <div className="mt-[18px]">
               {limitReached ? (
@@ -345,8 +298,6 @@ export default function HomePage() {
           )}
         </section>
 
-        {/* 더 많은 인연 — 유료로 열람한 카드들. 궁합 점수 구간(70/80/90 이상)
-            배지를 노출한다. 가로 스와이프로 한 명씩 넘겨본다. */}
         {extras.length > 0 && (
           <section className="mt-[36px]">
             <h2 className="text-center text-[20px] font-bold text-white">
@@ -376,37 +327,7 @@ export default function HomePage() {
           </section>
         )}
 
-        {/* 전광판 — 가입자/성비/활성/오늘 매칭/개인화 사주 통계 회전 티커 */}
         <StatBillboard />
-
-        {/* 행동 가이드 — 홈에서 잠시 숨김. 백엔드 /saju/me/action-guide
-            와 guide state/fetch 는 보존. 복원하려면 아래 주석을 풀면 됨. */}
-        {/*
-        {me?.birth_date && (
-          <section className="mt-[40px]">
-            <h2 className="text-center text-[20px] font-bold text-white">
-              행동 가이드
-            </h2>
-            {guide ? (
-              <p className="mt-[14px] whitespace-pre-line text-center text-[14px] leading-[24px] text-[#d8c8f2] text-ko">
-                {guide.text}
-              </p>
-            ) : (
-              <div className="mt-[14px]">
-                <LoadingPanel
-                  estimatedMs={2500}
-                  done={!!guide}
-                  messages={[
-                    { atPct: 0, text: "오늘의 사주 일진 보는 중..." },
-                    { atPct: 40, text: "어울리는 옷·태도 고르는 중..." },
-                    { atPct: 75, text: "마음가짐 메시지 다듬는 중..." },
-                  ]}
-                />
-              </div>
-            )}
-          </section>
-        )}
-        */}
 
         {error && (
           <p className="mt-[20px] text-center text-xs text-red-300">
@@ -443,15 +364,12 @@ export default function HomePage() {
             router.push(`/profile/${activeMatch.user_id}`);
           }}
           onStartChat={() => {
-            // 홈에 보이는 카드는 모두 이미 열람한(=unblind) 인연이므로
-            // 바로 채팅 가능. (채팅 권한은 백엔드가 카드 열람 여부로 게이팅.)
             sessionStorage.setItem("activeChat", JSON.stringify(activeMatch));
             router.push(`/matching/${activeMatch.user_id}`);
           }}
         />
       )}
 
-      {/* 추가 인연 열람 수량 선택 팝업 */}
       {unlockOpen && (
         <UnlockModal
           balance={balance}
@@ -462,7 +380,6 @@ export default function HomePage() {
         />
       )}
 
-      {/* 토스트 — 추가 열람 한도/후보 없음 안내, 하단 중앙 고정 */}
       {toast && (
         <div className="fixed bottom-[100px] left-1/2 z-20 -translate-x-1/2 rounded-full border border-white/15 bg-black/70 px-[14px] py-[8px] text-[12px] text-white backdrop-blur-sm">
           {toast}
@@ -472,7 +389,6 @@ export default function HomePage() {
   );
 }
 
-/** 로그아웃 확인 팝업 — 마이페이지 탈퇴 팝업과 동일 톤. */
 function LogoutConfirmModal({
   onClose,
   onConfirm,
@@ -515,23 +431,3 @@ function LogoutConfirmModal({
     </div>
   );
 }
-
-/** 카드 한 장. 탭하면 onOpen. */
-function CardTile({
-  candidate,
-  onOpen,
-}: {
-  candidate: MatchCandidate;
-  onOpen: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="relative block w-full text-left transition active:scale-[0.98]"
-    >
-      <MatchCard data={candidate} />
-    </button>
-  );
-}
-

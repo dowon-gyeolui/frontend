@@ -1,4 +1,5 @@
 "use client";
+// 내 연애 인터뷰 답변 작성/수정 모달 — 카테고리별 질문 선택 후 답변 저장.
 
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -10,14 +11,6 @@ const MAX_ANSWER_LEN = 200;
 
 type Answer = { question_key: string; answer: string };
 
-/**
- * 내 연애 인터뷰 작성/수정 모달 — 매칭 정보 팝업의
- * "나를 보여주는 연애 프로필 질문" CTA 에서 연다.
- *
- * 카테고리를 펼쳐 답하고 싶은 질문만 체크해 답한다. 기존 답변은 GET 으로
- * prefill, 저장 시 PUT /users/me/interview 로 전체 교체한다. 내가 답한
- * 개수만큼 상대 답변도 열린다(상호주의).
- */
 export function InterviewSelfEditModal({ onClose }: { onClose: () => void }) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -97,7 +90,6 @@ export function InterviewSelfEditModal({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
         className="relative flex max-h-[85vh] w-[360px] max-w-full flex-col rounded-[18px] border border-white/15 bg-[#241338] shadow-[0_10px_40px_rgba(0,0,0,0.45)]"
       >
-        {/* Header */}
         <div className="relative px-[20px] pt-[18px]">
           <button
             type="button"
@@ -118,7 +110,6 @@ export function InterviewSelfEditModal({ onClose }: { onClose: () => void }) {
           </p>
         </div>
 
-        {/* Body */}
         <div className="flex-1 overflow-y-auto px-[20px] py-[14px]">
           {loading ? (
             <p className="py-[30px] text-center text-[13px] text-white/50">
@@ -198,7 +189,6 @@ export function InterviewSelfEditModal({ onClose }: { onClose: () => void }) {
           )}
         </div>
 
-        {/* Footer */}
         <div className="px-[20px] pb-[18px] pt-[10px]">
           {error && (
             <p className="mb-[8px] text-center text-[11px] text-red-300">{error}</p>

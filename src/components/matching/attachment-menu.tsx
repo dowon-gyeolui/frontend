@@ -1,20 +1,11 @@
 "use client";
+// 채팅방 + 버튼 첨부 메뉴 — 음성 메시지 녹음/미리듣기/전송 바텀시트.
 
 import { Mic, Square } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-/**
- * 채팅 + 버튼 메뉴 — 음성 메시지.
- *
- * 부모(ChatRoomPage)는 Blob 만 받아 sendMediaMessageTo 로 업로드한다.
- * 음성은 MediaRecorder API 로 최대 30초 녹음 후, 본인이 미리듣기로
- * 확인하고 "전송" 을 눌렀을 때만 Blob 으로 emit 한다.
- */
-
-// 최대 녹음 길이(초).
 const MAX_RECORD_SECONDS = 30;
 
-// 녹음 완료본 — Blob, 미리듣기용 object URL, 길이(초).
 type RecordedClip = { blob: Blob; url: string; seconds: number };
 
 const fmtTime = (s: number) =>
@@ -34,7 +25,6 @@ export function AttachmentMenu({
   const [recording, setRecording] = useState(false);
   const [recordSeconds, setRecordSeconds] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  // 녹음 완료본 — 미리듣기 후 전송이 확정되기 전까지 보관한다.
   const [recorded, setRecorded] = useState<RecordedClip | null>(null);
 
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -42,7 +32,6 @@ export function AttachmentMenu({
   const startTimeRef = useRef<number>(0);
   const tickRef = useRef<number | null>(null);
 
-  // ESC closes the menu (when not actively recording)
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -52,7 +41,6 @@ export function AttachmentMenu({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose, recording]);
 
-  // 메뉴가 닫히면 미리듣기 상태/에러를 초기화하고 object URL 을 해제한다.
   useEffect(() => {
     if (open) return;
     setError(null);
@@ -94,8 +82,6 @@ export function AttachmentMenu({
         if (e.data.size > 0) chunksRef.current.push(e.data);
       };
       recorder.onstop = () => {
-        // codecs 파라미터(예: ;codecs=opus)는 서버 허용목록과 맞지 않으므로
-        // 베이스 MIME(audio/webm 등)만 남겨 Blob 을 만든다.
         const baseMime = (recorder.mimeType || "audio/webm")
           .split(";")[0]
           .trim();
@@ -118,7 +104,6 @@ export function AttachmentMenu({
       tickRef.current = window.setInterval(() => {
         const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
         setRecordSeconds(elapsed);
-        // 최대 길이 도달 시 자동 정지 → 미리듣기 단계로.
         if (elapsed >= MAX_RECORD_SECONDS) stopRecording();
       }, 250);
     } catch (e) {
@@ -136,7 +121,6 @@ export function AttachmentMenu({
     if (recorder.state !== "inactive") recorder.stop();
   };
 
-  // 녹음 중 취소 — 녹음물을 버리고 메뉴로 돌아간다.
   const cancelRecording = () => {
     const recorder = recorderRef.current;
     if (recorder && recorder.state !== "inactive") {
@@ -151,7 +135,6 @@ export function AttachmentMenu({
     }
   };
 
-  // 미리듣기 완료본 폐기.
   const discardRecorded = () => {
     setRecorded((r: RecordedClip | null) => {
       if (r?.url) URL.revokeObjectURL(r.url);
@@ -159,7 +142,6 @@ export function AttachmentMenu({
     });
   };
 
-  // 미리듣기 후 전송 확정.
   const sendRecorded = () => {
     if (!recorded) return;
     onPickFile(recorded.blob, "audio");
@@ -169,7 +151,6 @@ export function AttachmentMenu({
 
   return (
     <>
-      {/* Backdrop + sheet */}
       {open && (
         <div
           className="fixed inset-0 z-[55] flex items-end justify-center bg-black/60 backdrop-blur-[2px]"
@@ -179,7 +160,6 @@ export function AttachmentMenu({
             onClick={(e) => e.stopPropagation()}
             className="w-full max-w-[420px] rounded-t-[20px] border-t border-white/15 bg-[#1f1235] px-[20px] pb-[24px] pt-[18px]"
           >
-            {/* Drag handle */}
             <div className="mx-auto mb-[14px] h-[4px] w-[36px] rounded-full bg-white/25" />
 
             {recording ? (
@@ -308,12 +288,11 @@ function ReviewPanel({
   return (
     <div className="flex flex-col items-center gap-[12px] py-[6px]">
       <p className="text-[14px] font-semibold text-white">
-        {fmtTime(seconds)} 녹음 완료 
+        {fmtTime(seconds)} 녹음 완료
       </p>
       <p className="text-[11px] text-white/55">
         들어보고 전송하세요.
       </p>
-      {/* 본인 확인용 미리듣기 — 다운로드 차단 */}
       <audio
         src={url}
         controls

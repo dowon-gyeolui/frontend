@@ -1,4 +1,5 @@
 "use client";
+// 결제 성공 리다이렉트 페이지 (/payment/success) — 토스 결제 승인 확인 및 스타 적립
 
 import { Star } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -8,13 +9,6 @@ import { AppShell } from "@/components/layout/app-shell";
 import { confirmPayment, productByAmount } from "@/lib/payments";
 import { notifyStarsChanged } from "@/lib/stars";
 
-/**
- * /payment/success — 토스 결제 성공 리다이렉트 도착지.
- *
- * 토스가 successUrl 에 paymentKey/orderId/amount 를 쿼리로 붙여 보낸다.
- * 이 값으로 백엔드 confirm 을 호출해 최종 승인 + 스타 적립을 마친다.
- * (confirm 은 멱등이라 StrictMode 더블 호출/새로고침에도 안전.)
- */
 function SuccessContent() {
   const router = useRouter();
   const params = useSearchParams();

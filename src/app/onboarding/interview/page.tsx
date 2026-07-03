@@ -1,4 +1,5 @@
 "use client";
+// 온보딩 연애 인터뷰(/onboarding/interview) — 선택형 질문에 답변하는 페이지
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -13,17 +14,14 @@ export default function OnboardingInterviewPage() {
   const router = useRouter();
   const { state, update } = useOnboarding();
 
-  // 기존(뒤로 갔다 온 경우) 답변 복원.
   const [answers, setAnswers] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
     for (const a of state.interview ?? []) init[a.question_key] = a.answer;
     return init;
   });
-  // 답하기로 체크한 질문 keys.
   const [selected, setSelected] = useState<Set<string>>(
     () => new Set((state.interview ?? []).map((a) => a.question_key)),
   );
-  // 펼쳐진 카테고리.
   const [open, setOpen] = useState<Set<string>>(new Set());
 
   const toggleCategory = (name: string) =>
@@ -49,7 +47,6 @@ export default function OnboardingInterviewPage() {
       return next;
     });
 
-  // 실제로 저장될(체크 + 내용 있는) 답변 수.
   const answeredCount = [...selected].filter(
     (k) => (answers[k] ?? "").trim().length > 0,
   ).length;
@@ -155,7 +152,6 @@ export default function OnboardingInterviewPage() {
           </p>
         </div>
 
-        {/* Bottom: 이전 + 다음 */}
         <div className="mt-[24px] flex gap-[10px]">
           <button
             type="button"

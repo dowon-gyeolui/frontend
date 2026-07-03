@@ -1,3 +1,4 @@
+// 역할 설명: 앱 전역에서 쓰이는 공통 버튼 디자인 시스템 프리미티브
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
 

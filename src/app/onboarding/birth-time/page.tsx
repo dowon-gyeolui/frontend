@@ -1,4 +1,5 @@
 "use client";
+// 온보딩 3단계(/onboarding/birth-time) — 출생 시간 입력(모름 선택 가능) 페이지
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -12,8 +13,6 @@ export default function OnboardingBirthTimePage() {
   const { state, update } = useOnboarding();
 
   const [birthTime, setBirthTime] = useState(state.birth_time ?? "");
-  // Birth time is OPTIONAL on the backend — surface a "모름" toggle so the
-  // user can skip without typing a fake value.
   const [unknown, setUnknown] = useState<boolean>(state.birth_time === "");
 
   const canContinue =
@@ -28,7 +27,6 @@ export default function OnboardingBirthTimePage() {
   return (
     <OnboardingShell step={3}>
       <div className="flex flex-1 flex-col px-[36px] pb-[40px]">
-        {/* Form group near the top — keyboard / time picker shouldn't cover it. */}
         <div className="flex flex-1 flex-col justify-start gap-[20px] pt-[40px]">
           <div className="flex flex-col gap-[10px]">
             <h1 className="text-center text-[24px] font-bold tracking-tight text-white">
@@ -65,7 +63,6 @@ export default function OnboardingBirthTimePage() {
           </label>
         </div>
 
-        {/* Bottom: 이전 + 다음 */}
         <div className="mt-[80px] flex gap-[10px]">
           <button
             type="button"

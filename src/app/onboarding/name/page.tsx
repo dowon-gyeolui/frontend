@@ -1,4 +1,5 @@
 "use client";
+// 온보딩 1단계(/onboarding/name) — 닉네임, 성별 입력 페이지
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -13,7 +14,6 @@ export default function OnboardingNamePage() {
   const [nickname, setNickname] = useState(state.nickname ?? "");
   const [gender, setGender] = useState<Gender | undefined>(state.gender);
 
-  // "다음" button is enabled only after both fields are populated.
   const canContinue = nickname.trim().length >= 1 && gender !== undefined;
 
   const onNext = () => {
@@ -25,8 +25,6 @@ export default function OnboardingNamePage() {
   return (
     <OnboardingShell step={1}>
       <div className="flex flex-1 flex-col px-[36px] pb-[40px]">
-        {/* Form group — sits near the top of the available space so the
-            keyboard doesn't push it out of view on mobile. */}
         <div className="flex flex-1 flex-col justify-start gap-[26px] pt-[40px]">
           <h1 className="text-center text-[24px] font-bold tracking-tight text-white">
             당신은 누구인가요?
@@ -68,9 +66,6 @@ export default function OnboardingNamePage() {
           </div>
         </div>
 
-        {/* Bottom CTA — sits at the bottom of the column thanks to the
-            form group's flex-1; pt-[40px] enforces a minimum breathing gap
-            even when the viewport is tiny. */}
         <button
           type="button"
           disabled={!canContinue}

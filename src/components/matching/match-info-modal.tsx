@@ -1,23 +1,16 @@
 "use client";
+// 매칭 정보 확인 모달 — hero 사진 캐러셀 + 이름/한줄소개 + 상세보기/채팅 CTA.
 
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { InterviewViewModal } from "@/components/matching/interview-view-modal";
-import { scoreTierLabel, type MatchCandidate } from "@/components/matching/match-card";
+import { type MatchCandidate } from "@/components/matching/match-card";
 import { PhotoCarousel } from "@/components/matching/photo-carousel";
 
 const PLACEHOLDER_PHOTO =
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop";
 
-/**
- * 매칭 정보 확인 modal — hero 사진 캐러셀(좌우 화살표 + n/N 번호),
- * 이름/나이/MBTI/한줄소개, 두 개의 CTA(상세 정보 확인 / 채팅).
- *
- * 사진은 후보가 등록한 전체 사진(candidate.photos)을 좌우로 넘겨본다.
- * photos 가 비어 있으면 photo_url(대표 사진) 한 장으로 폴백한다.
- * 궁합 점수는 노출하지 않는다.
- */
 export function MatchInfoModal({
   candidate,
   onClose,
@@ -29,7 +22,6 @@ export function MatchInfoModal({
   onClose: () => void;
   onOpenDetail: () => void;
   onStartChat: () => void;
-  /** "너와의 인연"(유료 열람) 카드에만 궁합 점수 구간 배지를 노출 */
   showScoreTier?: boolean;
 }) {
   const photos =
@@ -46,10 +38,7 @@ export function MatchInfoModal({
   }, [onClose]);
 
   const name = candidate.nickname ?? "익명";
-  const ageLabel = candidate.age !== null ? `${candidate.age}세` : "—";
-  const tier = showScoreTier ? scoreTierLabel(candidate.score) : null;
 
-  // "나를 보여주는 연애 프로필 질문" — 내 인터뷰 작성/수정 모달.
   const [interviewOpen, setInterviewOpen] = useState(false);
 
   return (
@@ -62,7 +51,6 @@ export function MatchInfoModal({
         onClick={(e) => e.stopPropagation()}
         className="relative w-[341px] max-w-full rounded-[18px] border border-white/20 bg-white/70 p-[16px] backdrop-blur-[25px] shadow-[0_10px_40px_rgba(0,0,0,0.3)]"
       >
-        {/* Close X */}
         <button
           type="button"
           onClick={onClose}
@@ -72,8 +60,6 @@ export function MatchInfoModal({
           <X className="size-[20px] stroke-[#1b1029] stroke-[2]" />
         </button>
 
-        {/* Hero photo carousel(드래그 스와이프 + 하단 점). 미열람(블라인드)
-            상태면 블러 + 안내 pill. */}
         <PhotoCarousel
           photos={photos}
           alt={name}
@@ -95,26 +81,7 @@ export function MatchInfoModal({
           )}
         </PhotoCarousel>
 
-        {/* 한줄소개 (나이·MBTI·궁합은 추후 노출 — 지금은 자기소개만) */}
         <div className="mt-[12px] space-y-[6px] pl-[16px] pr-[8px] text-[#1b1029]">
-          {/* 추후 노출 예정 — 임시 숨김. 복구하려면 아래 주석을 푸세요.
-          {tier && (
-            <span className="inline-block rounded-full bg-purple-500/15 px-[10px] py-[3px] text-[13px] font-bold text-purple-700">
-              궁합 {tier}
-            </span>
-          )}
-          <div className="flex items-center gap-[8px] text-[18px] font-medium leading-[26px]">
-            <span>나이 : {ageLabel}</span>
-            {candidate.mbti && (
-              <>
-                <span className="text-black/30">·</span>
-                <span className="rounded-full bg-[#1b1029]/10 px-[8px] py-[2px] text-[14px] font-semibold">
-                  {candidate.mbti}
-                </span>
-              </>
-            )}
-          </div>
-          */}
           {candidate.bio && (
             <p className="text-[14px] leading-[20px] text-[#1b1029]/70">
               {candidate.bio}
@@ -122,7 +89,6 @@ export function MatchInfoModal({
           )}
         </div>
 
-        {/* CTAs */}
         <div className="mt-[14px] grid grid-cols-2 gap-[10px]">
           <button
             type="button"
@@ -148,7 +114,6 @@ export function MatchInfoModal({
           </button>
         </div>
 
-        {/* 상대의 연애 프로필 질문 답변 보기 (읽기 전용) */}
         <button
           type="button"
           onClick={() => setInterviewOpen(true)}

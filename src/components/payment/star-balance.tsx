@@ -1,14 +1,11 @@
 "use client";
+// 역할 설명: 상단바에 보유 별(스타) 잔액을 표시하고 탭 시 스토어로 이동하는 칩
 
 import { Star } from "lucide-react";
 import Link from "next/link";
 
 import { useStarBalance } from "@/lib/stars";
 
-/**
- * 상단바에 노출되는 보유 스타 칩. 탭하면 /store(충전) 로 이동.
- * 잔액을 아직 못 읽었으면(null) 렌더하지 않아 레이아웃이 흔들리지 않게 한다.
- */
 export function StarBalancePill() {
   const balance = useStarBalance();
   if (balance === null) return null;

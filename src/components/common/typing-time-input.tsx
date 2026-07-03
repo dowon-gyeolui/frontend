@@ -1,26 +1,9 @@
 "use client";
+// 출생 시간 입력기 (HH:MM) — 키보드 직접 타이핑 + native time picker 다이얼.
 
 import { Clock } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-/**
- * 시간 입력기 (HH:MM) — 키보드 직접 타이핑 + 다이얼(native time picker).
- *
- * 한 박스 안에 모두 들어있는 단일 컴포넌트:
- *   ┌─────────────────────────────────┐
- *   │     HH:MM         (다이얼)    │
- *   └─────────────────────────────────┘
- *
- * - 좌측 본문: 키보드 타이핑. 두 자리 입력하면 자동으로 ":" 삽입.
- * - 우측 시계 아이콘: 그 영역 위로 native `<input type="time">` 가
- *   absolute inset 으로 깔려있어 탭 = 모바일 다이얼 picker 즉시 오픈.
- *
- * 이전엔 시계 영역을 flex 의 두 번째 자식(별도 박스)으로 뒀는데, 좁은
- * iOS Safari 뷰포트에서 시계 박스가 우측으로 밀려나 화면 밖으로
- * 잘렸음. 박스 내부 inset 으로 가져와 어떤 폭에서도 보이도록 보장.
- *
- * 출력값은 `HH:MM` (24h, 0-padded) 또는 빈 문자열.
- */
 export function TypingTimeInput({
   value,
   onChange,
@@ -30,7 +13,6 @@ export function TypingTimeInput({
   value: string;
   onChange: (next: string) => void;
   disabled?: boolean;
-  /** "dark" — purple bg pages. "light" — white modal. */
   variant?: "dark" | "light";
 }) {
   const pickerRef = useRef<HTMLInputElement>(null);
@@ -60,9 +42,6 @@ export function TypingTimeInput({
     commit(next);
   };
 
-  // Belt-and-braces fallback: if the overlapping native input doesn't
-  // receive the tap (some iOS versions), the icon area's onClick still
-  // tries showPicker() to force the dial open.
   const openPicker = () => {
     const el = pickerRef.current;
     if (!el) return;
@@ -71,7 +50,6 @@ export function TypingTimeInput({
         el.showPicker();
         return;
       } catch {
-        /* fall through */
       }
     }
     el.focus();
@@ -88,9 +66,6 @@ export function TypingTimeInput({
 
   return (
     <div className="relative w-full">
-      {/* Text input — extra right padding (pr-[52px]) reserves the
-          space the clock icon overlays so the typed digits never sit
-          underneath it. */}
       <input
         type="text"
         inputMode="numeric"
@@ -104,9 +79,6 @@ export function TypingTimeInput({
         className={`h-[52px] w-full rounded-[8px] px-4 pr-[52px] text-center text-[18px] font-medium outline-none focus:border-white/60 disabled:opacity-40 ${inputCls}`}
       />
 
-      {/* Clock area — sits inside the text input on the right. The
-          visible icon is purely cosmetic; the native time input on top
-          captures the tap and opens the dial. */}
       <div
         onClick={openPicker}
         role="button"

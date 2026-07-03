@@ -1,20 +1,11 @@
 "use client";
+// 카카오 OAuth 콜백 처리 페이지 (/auth/callback) — 토큰 저장 후 온보딩/홈으로 라우팅
 
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { saveToken } from "@/lib/auth";
 
-/**
- * OAuth landing page.
- *
- * Backend's /auth/kakao/callback redirects here with ?token=...&is_new=0|1.
- * We persist the JWT and route the user to onboarding (new) or home (returning).
- *
- * useSearchParams() must be inside a Suspense boundary in Next.js 15+ —
- * the page component wraps the inner reader so the static prerender
- * doesn't bail out on /auth/callback.
- */
 function CallbackBackground({ children }: { children: React.ReactNode }) {
   return (
     <div

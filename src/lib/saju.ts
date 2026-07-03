@@ -1,20 +1,12 @@
-/**
- * Saju (사주) display helpers — Korean stem/branch labels, hanja glyphs,
- * zodiac animals, and five-element colors.
- *
- * The backend returns Korean stem ("갑") + Korean branch ("자"); these maps
- * provide the supporting display data the UI needs.
- */
-
+// 사주 표시용 헬퍼 — 천간/지지 한글·한자·동물·오행 데이터와 색상 매핑.
 export type Element = "wood" | "fire" | "earth" | "metal" | "water";
 
 export type SajuPillar = {
-  label: string; // "년주" | "월주" | "일주" | "시주"
-  stem: string; // 천간 한글: 갑/을/...
-  branch: string; // 지지 한글: 자/축/...
-  combined: string; // stem + branch, e.g. "갑자"
+  label: string;
+  stem: string;
+  branch: string;
+  combined: string;
 
-  // 명식 chart fields — optional so older clients keep parsing.
   stem_hanja?: string | null;
   stem_element?: Element | null;
   stem_polarity?: "+" | "-" | null;
@@ -54,7 +46,6 @@ export type SajuResponse = {
   interpretation: string | null;
 };
 
-// 천간 한글 → 한자 + 오행
 export const STEM_HANJA: Record<string, { hanja: string; element: Element }> = {
   갑: { hanja: "甲", element: "wood" },
   을: { hanja: "乙", element: "wood" },
@@ -68,7 +59,6 @@ export const STEM_HANJA: Record<string, { hanja: string; element: Element }> = {
   계: { hanja: "癸", element: "water" },
 };
 
-// 지지 한글 → 한자 + 동물 + 오행
 export const BRANCH_DATA: Record<
   string,
   { hanja: string; animal: string; element: Element }
@@ -87,7 +77,6 @@ export const BRANCH_DATA: Record<
   해: { hanja: "亥", animal: "돼지", element: "water" },
 };
 
-// 오행 → 한글 + 한자 + 색상
 export const ELEMENT_DISPLAY: Record<
   Element,
   { ko: string; hanja: string; en: string; color: string; bgGlow: string }
@@ -110,14 +99,14 @@ export const ELEMENT_DISPLAY: Record<
     ko: "흙",
     hanja: "土",
     en: "EARTH",
-    color: "#9a6a3a", // 갈색
+    color: "#9a6a3a",
     bgGlow: "rgba(154, 106, 58, 0.35)",
   },
   metal: {
     ko: "금",
     hanja: "金",
     en: "METAL",
-    color: "#d4af37", // 금색
+    color: "#d4af37",
     bgGlow: "rgba(212, 175, 55, 0.35)",
   },
   water: {
@@ -129,8 +118,6 @@ export const ELEMENT_DISPLAY: Record<
   },
 };
 
-// Order to render around the pentagon (clockwise from top).
-// Top — fire; then earth, metal, water, wood (back to top).
 export const ELEMENT_PENTAGON_ORDER: Element[] = [
   "fire",
   "earth",
@@ -139,7 +126,6 @@ export const ELEMENT_PENTAGON_ORDER: Element[] = [
   "wood",
 ];
 
-/** Compute the dominant element (highest count) for the summary line. */
 export function dominantElement(profile: ElementProfile): Element {
   const entries: [Element, number][] = [
     ["wood", profile.wood],
@@ -151,23 +137,6 @@ export function dominantElement(profile: ElementProfile): Element {
   return entries.reduce((a, b) => (b[1] > a[1] ? b : a))[0];
 }
 
-/** Element with the lowest count — what the user should "balance" toward. */
-export function weakestElement(profile: ElementProfile): Element {
-  const entries: [Element, number][] = [
-    ["wood", profile.wood],
-    ["fire", profile.fire],
-    ["earth", profile.earth],
-    ["metal", profile.metal],
-    ["water", profile.water],
-  ];
-  return entries.reduce((a, b) => (b[1] < a[1] ? b : a))[0];
-}
-
-/**
- * Traditional Korean description of each heavenly stem character. Drives the
- * "일간(나)" card subtitle so it varies meaningfully per user instead of
- * showing one hardcoded placeholder.
- */
 export const STEM_DESCRIPTION: Record<string, string> = {
   갑: "큰 나무, 푸른 숲",
   을: "여린 풀, 새싹",
@@ -181,16 +150,6 @@ export const STEM_DESCRIPTION: Record<string, string> = {
   계: "빗물, 이슬",
 };
 
-/** Color name suggested for the *weakest* element — wear it to balance. */
-export const RECOMMENDED_COLOR: Record<Element, { name: string; hex: string }> = {
-  wood: { name: "녹색", hex: "#22c55e" },
-  fire: { name: "빨강", hex: "#ef4444" },
-  earth: { name: "황토색", hex: "#a16207" },
-  metal: { name: "흰색·은색", hex: "#cbd5e1" },
-  water: { name: "검정·남색", hex: "#1e3a8a" },
-};
-
-/** Korean adjective for the day-pillar header (e.g. 갑→푸른, 병→붉은). */
 export const ELEMENT_COLOR_KO: Record<Element, string> = {
   wood: "푸른",
   fire: "붉은",

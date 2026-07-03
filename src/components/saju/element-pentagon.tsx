@@ -1,4 +1,5 @@
 "use client";
+// 역할 설명: 사용자의 오행 분포를 5축 레이더(오각형) 차트로 시각화
 
 import {
   ELEMENT_DISPLAY,
@@ -6,27 +7,18 @@ import {
   type ElementProfile,
 } from "@/lib/saju";
 
-/**
- * 5-axis radar (pentagon) chart of the user's five-element distribution.
- *
- * Each axis is one of fire / earth / metal / water / wood. Counts are
- * normalised to a 0..maxAxis fraction so a single dominant element doesn't
- * collapse the others to invisible.
- */
 type Props = {
   profile: ElementProfile;
-  size?: number; // outer SVG size in px
+  size?: number;
 };
 
-const RING_LEVELS = 4; // concentric guides
+const RING_LEVELS = 4;
 
 export function ElementPentagon({ profile, size = 280 }: Props) {
   const cx = size / 2;
   const cy = size / 2;
-  // Reserve room for axis labels around the pentagon.
   const radius = size / 2 - 32;
 
-  // Per-axis raw count, then a normaliser so the largest axis fills the chart.
   const counts: Record<string, number> = {
     fire: profile.fire,
     earth: profile.earth,
@@ -37,7 +29,6 @@ export function ElementPentagon({ profile, size = 280 }: Props) {
   const maxCount = Math.max(1, ...Object.values(counts));
 
   const axes = ELEMENT_PENTAGON_ORDER.map((el, i) => {
-    // Start at top (-90deg) and go clockwise.
     const angle = (-Math.PI / 2) + (i * 2 * Math.PI) / 5;
     return { element: el, angle };
   });
@@ -56,7 +47,6 @@ export function ElementPentagon({ profile, size = 280 }: Props) {
     .map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`)
     .join(" ");
 
-  // Concentric guide pentagons.
   const ringPolygons = Array.from({ length: RING_LEVELS }, (_, r) => {
     const fraction = (r + 1) / RING_LEVELS;
     return axes
@@ -70,7 +60,6 @@ export function ElementPentagon({ profile, size = 280 }: Props) {
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        {/* Concentric guide rings */}
         {ringPolygons.map((points, i) => (
           <polygon
             key={i}
@@ -81,7 +70,6 @@ export function ElementPentagon({ profile, size = 280 }: Props) {
           />
         ))}
 
-        {/* Axes from center to each label */}
         {axes.map(({ angle }, i) => {
           const end = axisPoint(angle, 1);
           return (
@@ -97,7 +85,6 @@ export function ElementPentagon({ profile, size = 280 }: Props) {
           );
         })}
 
-        {/* Filled data polygon */}
         <polygon
           points={dataPolygon}
           fill="rgba(168, 85, 247, 0.25)"
@@ -105,7 +92,6 @@ export function ElementPentagon({ profile, size = 280 }: Props) {
           strokeWidth={2}
         />
 
-        {/* Data point glow + dot per axis */}
         {dataPoints.map((p, i) => {
           const display = ELEMENT_DISPLAY[p.element];
           return (
@@ -117,7 +103,6 @@ export function ElementPentagon({ profile, size = 280 }: Props) {
         })}
       </svg>
 
-      {/* Axis labels (HTML, positioned absolutely so they wrap freely) */}
       {axes.map(({ element, angle }, i) => {
         const labelRadius = radius + 18;
         const x = cx + labelRadius * Math.cos(angle);
@@ -133,14 +118,12 @@ export function ElementPentagon({ profile, size = 280 }: Props) {
               transform: "translate(-50%, -50%)",
             }}
           >
-            {/* Score badge */}
             <span
               className="text-[12px] font-semibold leading-none"
               style={{ color: display.color }}
             >
               {counts[element]}
             </span>
-            {/* Element token */}
             <div
               className="mt-1 grid size-[34px] place-items-center rounded-full border-2 text-[12px] font-bold leading-none"
               style={{

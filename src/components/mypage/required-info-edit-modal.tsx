@@ -1,4 +1,5 @@
 "use client";
+// 역할 설명: 마이페이지에서 생시/출생지 등 필수 정보 일부를 수정하는 모달
 
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -9,13 +10,13 @@ import { BIRTH_PLACE_OPTIONS } from "@/lib/birth-place";
 
 export type RequiredInfoInitial = {
   nickname: string | null;
-  gender: string | null;             // "male" | "female"
-  birth_date: string | null;          // "YYYY-MM-DD"
-  birth_time: string | null;          // "HH:MM" or null when unknown
-  calendar_type: string | null;       // "solar" | "lunar"
+  gender: string | null;
+  birth_date: string | null;
+  birth_time: string | null;
+  calendar_type: string | null;
   is_leap_month: boolean;
   birth_place: string | null;
-  age: number | null;                 // derived — display only
+  age: number | null;
 };
 
 export type RequiredInfoPatch = {
@@ -28,12 +29,6 @@ export type RequiredInfoPatch = {
   birth_place?: string | null;
 };
 
-/**
- * 필수 정보 수정 modal — onboarding 시 입력했던 핵심 정보만 다룬다.
- * 이름·성별·생년월일·생시·달력·윤달.
- *
- * 기본 정보(키/MBTI/직업 등)는 별도의 BasicInfoEditModal 에서 다룬다.
- */
 export function RequiredInfoEditModal({
   initial,
   onClose,
@@ -43,7 +38,6 @@ export function RequiredInfoEditModal({
   onClose: () => void;
   onSaved: (patch: RequiredInfoPatch) => void;
 }) {
-  // 이름·성별·생년월일·달력·윤달은 수정 불가 — 표시·검증용으로만 보관(setter 없음).
   const [nickname] = useState(initial.nickname ?? "");
   const [gender] = useState(initial.gender ?? "");
   const [birthDate] = useState(initial.birth_date ?? "");
@@ -156,7 +150,6 @@ export function RequiredInfoEditModal({
         </p>
 
         <div className="mt-[20px] space-y-[8px]">
-          {/* 이름 — 수정 불가 */}
           <PillRow>
             <span className="text-[16px] font-medium text-black shrink-0">이름 :</span>
             <span className="flex-1 text-[16px] font-medium text-black">
@@ -165,7 +158,6 @@ export function RequiredInfoEditModal({
             <span className="shrink-0 text-[11px] text-black/40">수정 불가</span>
           </PillRow>
 
-          {/* 성별 — 수정 불가 */}
           <PillRow>
             <span className="text-[14px] font-medium text-black shrink-0">성별</span>
             <span className="ml-auto text-[14px] font-medium text-black">
@@ -174,7 +166,6 @@ export function RequiredInfoEditModal({
             <span className="ml-[8px] shrink-0 text-[11px] text-black/40">수정 불가</span>
           </PillRow>
 
-          {/* 생년월일 — 수정 불가. 만 나이를 괄호로 함께, 안내 문구 노출. */}
           <StackedRow label="생년월일">
             <div className="flex items-baseline justify-between">
               <span className="text-[15px] font-medium text-black">
@@ -195,9 +186,6 @@ export function RequiredInfoEditModal({
             </p>
           </StackedRow>
 
-          {/* 생시 — 2줄 (라벨 + 입력기 + 모름). 시간 입력기에 시계
-              아이콘이 inset 으로 박혀있어 가로 폭이 작아도 OK 지만,
-              모름 체크박스까지 넣으면 좁아지므로 stacked. */}
           <StackedRow label="생시">
             <div className="flex items-center gap-[10px]">
               <div className="flex-1">
@@ -226,7 +214,6 @@ export function RequiredInfoEditModal({
             </div>
           </StackedRow>
 
-          {/* 출생지 — 단순 한 줄 (select) */}
           <PillRow>
             <span className="text-[14px] font-medium text-black shrink-0">출생지</span>
             <select
@@ -276,10 +263,6 @@ function PillRow({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** 라벨이 위에 작게, 입력기가 아래에 오는 2-line row.
- *  생년월일/생시처럼 입력기가 가로로 길어 PillRow 안에 안 들어가는
- *  케이스 전용. 같은 wash + border + padding 으로 PillRow 와 시각
- *  통일감 유지. */
 function StackedRow({
   label,
   children,

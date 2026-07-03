@@ -1,4 +1,5 @@
 "use client";
+// 내 사주 상세 페이지 (/saju) — 오행 밸런스, LLM 사주 풀이, 자미두수 CTA
 
 import { Info } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -17,7 +18,6 @@ import {
   type SajuResponse,
 } from "@/lib/saju";
 
-/** SajuResponse + the 4 narrative sections from /saju/me/detailed. */
 type DetailedSajuResponse = SajuResponse & {
   personality: string;
   love: string;
@@ -35,8 +35,6 @@ export default function SajuPage() {
       router.replace("/");
       return;
     }
-    // /saju/me/detailed is the LLM-backed endpoint (5–10s on cold call).
-    // Cache + revalidate so returning users see their saju immediately.
     fetchWithCache<DetailedSajuResponse>(
       "/saju/me/detailed",
       CACHE_TTL.saju,
@@ -62,10 +60,6 @@ export default function SajuPage() {
           </div>
         )}
 
-        {/* Loading state — same idiom as home's 행동 가이드 spinner so the
-            user gets the same "loading is happening" cue across screens.
-            /saju/me/detailed is LLM-backed (~5–10s cold call), so silent
-            spinning made the page look frozen. */}
         {!saju && !error && (
           <div className="pt-[60px]">
             <LoadingPanel
@@ -84,10 +78,8 @@ export default function SajuPage() {
 
         {saju && (
           <div className="space-y-[20px] pt-[14px]">
-            {/* 나의 사주 풀이 — 상단으로 (LLM 해석이 먼저 보이도록) */}
             <NarrativeSections data={saju} />
 
-            {/* 나의 사주 구성 — 펜타곤 + 종합 해석 + 명식 (구조적 정보는 하단으로) */}
             <section className="relative rounded-[18px] border border-white/15 bg-white/5 p-[16px] backdrop-blur-sm">
               <div className="flex items-center justify-between">
                 <h2 className="text-[16px] font-bold text-white">
@@ -99,12 +91,10 @@ export default function SajuPage() {
               </div>
             </section>
 
-            {/* 오행 종합 해석 — 3단계(별명 / 연애 기운 / 오행 파트너) */}
             <section className="rounded-[14px] border border-white/15 bg-white/5 p-[16px] backdrop-blur-sm">
               <ElementLoveProfile profile={saju.element_profile} />
             </section>
 
-            {/* 자미두수 풀이 — 버튼만. 본문은 /jamidusu 안에서 결제 후에만 노출 */}
             <JamidusuCta onOpen={() => router.push("/jamidusu")} />
           </div>
         )}
@@ -113,10 +103,6 @@ export default function SajuPage() {
   );
 }
 
-/**
- * 오행 종합 해석 — 가장 강한 오행 기반 결정론적 3단계 풀이.
- *   1. 별명(트렌디한 타이틀)  2. 내 연애 기운(강점·텐션)  3. 찾아야 할 오행 파트너
- */
 const ELEMENT_LOVE_PROFILE: Record<
   Element,
   { nickname: string; strength: string; partner: string }
@@ -164,7 +150,6 @@ function ElementLoveProfile({ profile }: { profile: ElementProfile }) {
   const p = ELEMENT_LOVE_PROFILE[dom];
   return (
     <div className="space-y-[12px]">
-      {/* 1. 나의 오행 타이틀(별명) */}
       <div>
         <p className="text-[11px] text-white/50">나의 오행</p>
         <p
@@ -178,7 +163,6 @@ function ElementLoveProfile({ profile }: { profile: ElementProfile }) {
         </p>
       </div>
 
-      {/* 2. 내 연애 기운 분석 */}
       <div className="border-t border-white/10 pt-[10px]">
         <p className="text-[12px] font-semibold text-[#fde047]">내 연애 기운</p>
         <p className="mt-[4px] text-[13px] leading-[20px] text-white/85 text-ko">
@@ -186,7 +170,6 @@ function ElementLoveProfile({ profile }: { profile: ElementProfile }) {
         </p>
       </div>
 
-      {/* 3. 내가 찾아야 할 오행 파트너 */}
       <div className="border-t border-white/10 pt-[10px]">
         <p className="text-[12px] font-semibold text-[#fde047]">
           내가 찾아야 할 오행 파트너
@@ -199,13 +182,9 @@ function ElementLoveProfile({ profile }: { profile: ElementProfile }) {
   );
 }
 
-/* ── Narrative interpretation cards (inlined from the old /saju/detail) ── */
-
 function NarrativeSections({ data }: { data: DetailedSajuResponse }) {
   const [showSources, setShowSources] = useState(false);
 
-  // RAG retrieval found nothing → render a polite explainer instead of
-  // 4 empty cards.
   if (data.interpretation_status === "pending") {
     return (
       <section className="rounded-[14px] border border-yellow-400/30 bg-yellow-500/5 p-[14px] text-center">
@@ -300,10 +279,6 @@ function NarrativeCard({
     </div>
   );
 }
-
-/* ── 자미두수 풀이 CTA ──
- * 버튼만 노출. 탭하면 /jamidusu 로 이동해 결제 후 본문을 본다.
- */
 
 function JamidusuCta({ onOpen }: { onOpen: () => void }) {
   return (

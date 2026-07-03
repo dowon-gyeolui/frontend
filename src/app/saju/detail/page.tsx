@@ -1,13 +1,9 @@
 "use client";
+// 구 사주 상세 경로 리다이렉트 (/saju/detail) — /saju 로 이동만 수행
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-/**
- * Backwards-compat redirect — the deep saju interpretation now lives inline
- * on /saju, so any old bookmark or link that points here just lands on the
- * canonical page.
- */
 export default function SajuDetailRedirect() {
   const router = useRouter();
   useEffect(() => {

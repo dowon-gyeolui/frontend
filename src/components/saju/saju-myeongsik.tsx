@@ -1,4 +1,5 @@
 "use client";
+// 역할 설명: 사주 명식표(4기둥)와 일간/십성/신살/궁합 요약 카드를 렌더링
 
 import { HeartHandshake, Shield, Sparkles, Sun } from "lucide-react";
 
@@ -14,8 +15,6 @@ import {
   type SajuPillar,
 } from "@/lib/saju";
 
-// 컬럼 헤더 라벨 — 백엔드는 [년주, 월주, 일주, 시주] 순서로 보내지만
-// 명식표는 한국 사주에서 통상 시→일→월→년 순서로 좌→우 배열한다.
 const PILLAR_HEADER_BY_LABEL: Record<string, string> = {
   시주: "생시",
   일주: "생일",
@@ -23,17 +22,6 @@ const PILLAR_HEADER_BY_LABEL: Record<string, string> = {
   년주: "생년",
 };
 
-/**
- * 사주 명식(命式) 화면 — Figma-style icon card layout.
- *
- * 두 줄로 구성:
- *   1. 4-기둥 카드 (년주 / 월주 / 일주 / 시주) — 각 카드에 간지,
- *      한자, 색깔+동물 이름. 일주 카드는 보라 그라디언트 강조.
- *   2. 2x2 stat 카드 — 일간(나), 십성, 신살, 궁합 포인트.
- *      각 카드는 색별 아이콘 + 핵심 값 + 한 줄 설명.
- */
-
-// 십성별 한 줄 풀이 (쉬운 한국어)
 const TEN_GOD_DESC: Record<string, string> = {
   비견: "자립, 독립심",
   겁재: "도전, 경쟁심",
@@ -47,7 +35,6 @@ const TEN_GOD_DESC: Record<string, string> = {
   편인: "직관, 독창성",
 };
 
-// 12신살 한 줄 풀이
 const SPIRIT_DESC: Record<string, string> = {
   겁살: "위기를 넘기는 힘",
   재살: "재물·관재 주의",
@@ -72,14 +59,6 @@ const COMPAT_POINT: Record<Element, { title: string; desc: string }> = {
   water: { title: "지혜의 인연",  desc: "깊이 이해하는 사이" },
 };
 
-/**
- * 사주 명식 카드 묶음 — 명식 표 그리드 + 4-스탯 카드.
- *
- * 표 그리드는 한국 사주명리 표준 명식표 레이아웃(시→일→월→년 순서,
- * 천간 / 십성 / 지지 / 십성 / 지장간 / 12운성 / 12신살 행)을 따른다.
- * 백엔드의 SajuPillar 가 이미 모든 행에 필요한 필드를 채워서 보내주므로
- * 여기선 단순히 표로 매핑만.
- */
 export function SajuMyeongsik({
   pillars,
   profile,
@@ -96,13 +75,11 @@ export function SajuMyeongsik({
 }
 
 function MyeongsikChart({ pillars }: { pillars: SajuPillar[] }) {
-  // 표는 시→일→월→년 순서. 백엔드는 [년,월,일,시] 로 보내므로 reverse.
   const reversed = [...pillars].reverse();
-  const dayIndex = reversed.findIndex((p) => p.label === "일주"); // 일주 컬럼 강조
+  const dayIndex = reversed.findIndex((p) => p.label === "일주");
 
   return (
     <div className="overflow-hidden rounded-[14px] border border-white/15 bg-white/5 backdrop-blur-sm">
-      {/* Column header row — 생시 / 생일 / 생월 / 생년 */}
       <div className="grid grid-cols-[44px_1fr_1fr_1fr_1fr] border-b border-white/10 bg-white/5">
         <div />
         {reversed.map((p, i) => (
@@ -271,7 +248,6 @@ function StatGrid({
 }) {
   const day = pillars[2];
 
-  // 일간 — 일주의 천간
   const stemEl: Element | null =
     day.stem_element ?? STEM_HANJA[day.stem]?.element ?? null;
   const stemHanja = day.stem_hanja ?? STEM_HANJA[day.stem]?.hanja ?? "?";
@@ -283,7 +259,6 @@ function StatGrid({
       ? `${day.stem}${ELEMENT_DISPLAY[stemEl].ko}(${stemHanja}${elHanja})`
       : day.stem;
 
-  // 십성 — 모든 기둥의 stem/branch ten_god 카운트해서 가장 많은 것
   const counts: Record<string, number> = {};
   for (const p of pillars) {
     if (p.stem_ten_god) counts[p.stem_ten_god] = (counts[p.stem_ten_god] ?? 0) + 1;
@@ -294,11 +269,9 @@ function StatGrid({
   const topTenGod = sortedTenGod[0]?.[0] ?? "비견";
   const tenGodDesc = TEN_GOD_DESC[topTenGod] ?? "—";
 
-  // 신살 — 일주의 12신살
   const spirit = day.twelve_spirit ?? "—";
   const spiritDesc = SPIRIT_DESC[spirit] ?? "—";
 
-  // 궁합 포인트 — 가장 강한 오행 기준
   const dom = dominantElement(profile);
   const compat = COMPAT_POINT[dom];
 
@@ -363,10 +336,6 @@ function StatCard({
   );
 }
 
-/**
- * Day-pillar headline — shows e.g. "갑술(푸른 개)" with the day stem's
- * element color word + branch animal. Mirrors the screenshot's title.
- */
 export function DayPillarHeadline({ pillar }: { pillar: SajuPillar }) {
   const stemEl: Element | null =
     pillar.stem_element ?? STEM_HANJA[pillar.stem]?.element ?? null;

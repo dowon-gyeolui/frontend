@@ -1,4 +1,5 @@
 "use client";
+// 온보딩 이후 화면 공통 레이아웃 — 상단 바 + 하단 네비게이션 shell.
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,16 +11,8 @@ import { StarBalancePill } from "@/components/payment/star-balance";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
-/**
- * Top + bottom chrome shared across the post-onboarding screens (Home,
- * Matching, Saju, Mypage). Children render between the two bars.
- */
 type AppShellProps = {
   children: ReactNode;
-  /**
-   * Optional yellow chip rendered to the left of the user icon. Used on the
-   * home screen to invite the user to finish filling out their profile.
-   */
   topChip?: ReactNode;
 };
 
@@ -31,15 +24,6 @@ const NAV_ITEMS = [
 
 const UNREAD_POLL_MS = 30_000;
 
-/**
- * Small red dot on the 매칭 nav icon when there are any unread messages.
- *
- * Polls /chat/unread-summary on a slow cadence so the badge stays roughly
- * fresh wherever the user is in the app. We deliberately don't tie this
- * to the 2.5s chat-room poll — that's a per-thread loop only running on
- * the chat screen; the nav badge is "did anyone message me anywhere?" and
- * 30s freshness is plenty.
- */
 function useUnreadTotal(): number {
   const [total, setTotal] = useState(0);
   const pathname = usePathname();
@@ -54,7 +38,6 @@ function useUnreadTotal(): number {
           if (!cancelled) setTotal(r.total_unread);
         })
         .catch(() => {
-          /* soft-fail; the dot just won't update this tick */
         });
     };
 
@@ -64,8 +47,6 @@ function useUnreadTotal(): number {
       cancelled = true;
       window.clearInterval(handle);
     };
-    // re-run on route change so the badge refreshes immediately when the
-    // user comes back from the chat room (where mark-read just fired).
   }, [pathname]);
 
   return total;
@@ -83,7 +64,6 @@ export function AppShell({ children, topChip }: AppShellProps) {
           "linear-gradient(to bottom, #12081f 0%, #2a0e4f 50%, #5e35b1 100%)",
       }}
     >
-      {/* Top bar */}
       <div className="relative pt-[39px]">
         <div className="flex items-center justify-between px-[24px]">
           <Link href="/home" aria-label="홈으로">
@@ -104,10 +84,8 @@ export function AppShell({ children, topChip }: AppShellProps) {
         <div className="mt-[14px] h-px bg-white/40" />
       </div>
 
-      {/* Content */}
       <div className="flex flex-1 flex-col pb-[100px]">{children}</div>
 
-      {/* Bottom nav (pill) */}
       <nav className="fixed bottom-[20px] left-1/2 z-10 flex h-[65px] w-[212px] -translate-x-1/2 items-center justify-around rounded-full border border-[#4b3270] bg-[#211432] px-2">
         {NAV_ITEMS.map((item) => {
           const active = pathname === item.href;
