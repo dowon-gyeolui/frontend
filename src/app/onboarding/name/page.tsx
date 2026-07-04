@@ -1,5 +1,5 @@
 "use client";
-// 온보딩 1단계(/onboarding/name) — 닉네임, 성별 입력 페이지
+// 온보딩 2단계(/onboarding/name) — 닉네임, 성별 입력 페이지
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -23,7 +23,7 @@ export default function OnboardingNamePage() {
   };
 
   return (
-    <OnboardingShell step={1}>
+    <OnboardingShell step={2}>
       <div className="flex flex-1 flex-col px-[36px] pb-[40px]">
         <div className="flex flex-1 flex-col justify-start gap-[26px] pt-[40px]">
           <h1 className="text-center text-[24px] font-bold tracking-tight text-white">

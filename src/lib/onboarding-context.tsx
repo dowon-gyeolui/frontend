@@ -14,6 +14,7 @@ export type Gender = "male" | "female";
 export type CalendarType = "solar" | "lunar";
 
 export type OnboardingState = {
+  username?: string;
   nickname?: string;
   gender?: Gender;
   birth_date?: string;

@@ -7,11 +7,11 @@ import type { ReactNode } from "react";
 import { ZamiLogo } from "@/components/brand/zami-logo";
 
 export type OnboardingShellProps = {
-  step: 1 | 2 | 3 | 4 | 5;
+  step: 1 | 2 | 3 | 4 | 5 | 6;
   children: ReactNode;
 };
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
 
 export function OnboardingShell({ step, children }: OnboardingShellProps) {
   return (

@@ -1,5 +1,5 @@
 "use client";
-// 온보딩 3단계(/onboarding/birth-time) — 출생 시간 입력(모름 선택 가능) 페이지
+// 온보딩 4단계(/onboarding/birth-time) — 출생 시간 입력(모름 선택 가능) 페이지
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -25,7 +25,7 @@ export default function OnboardingBirthTimePage() {
   };
 
   return (
-    <OnboardingShell step={3}>
+    <OnboardingShell step={4}>
       <div className="flex flex-1 flex-col px-[36px] pb-[40px]">
         <div className="flex flex-1 flex-col justify-start gap-[20px] pt-[40px]">
           <div className="flex flex-col gap-[10px]">

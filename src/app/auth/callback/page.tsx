@@ -34,7 +34,7 @@ function CallbackHandler() {
     }
 
     saveToken(token);
-    router.replace(isNew ? "/onboarding/name" : "/home");
+    router.replace(isNew ? "/onboarding/account" : "/home");
   }, [params, router]);
 
   return (

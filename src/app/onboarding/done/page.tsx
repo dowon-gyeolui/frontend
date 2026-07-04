@@ -110,7 +110,7 @@ export default function OnboardingDonePage() {
   }, []);
 
   return (
-    <OnboardingShell step={5}>
+    <OnboardingShell step={6}>
       <div className="flex flex-1 flex-col items-center justify-center px-[24px] pb-[40px]">
         {status.kind === "submitting" && (
           <>

@@ -1,5 +1,5 @@
 "use client";
-// 온보딩 4단계(/onboarding/ideal-type) — 선호 나이대/지역/최소 키 입력 페이지
+// 온보딩 5단계(/onboarding/ideal-type) — 선호 나이대/지역/최소 키 입력 페이지
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -49,7 +49,7 @@ export default function OnboardingIdealTypePage() {
   };
 
   return (
-    <OnboardingShell step={4}>
+    <OnboardingShell step={5}>
       <div className="flex flex-1 flex-col px-[36px] pb-[40px]">
         <div className="flex flex-1 flex-col justify-start gap-[24px] pt-[40px]">
           <div className="flex flex-col gap-[10px]">

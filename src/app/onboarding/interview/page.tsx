@@ -60,7 +60,7 @@ export default function OnboardingInterviewPage() {
   };
 
   return (
-    <OnboardingShell step={5}>
+    <OnboardingShell step={6}>
       <div className="flex flex-1 flex-col px-[24px] pb-[40px]">
         <div className="flex flex-1 flex-col gap-[16px] pt-[28px]">
           <div className="flex flex-col gap-[8px]">
