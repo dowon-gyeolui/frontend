@@ -334,7 +334,7 @@ export default function HomePage() {
             API 오류: {error}
           </p>
         )}
-        <div className="mt-[24px] flex justify-center">
+        <div className="mt-[24px] flex flex-col items-center gap-[10px]">
           <button
             type="button"
             onClick={() => setLogoutOpen(true)}
@@ -342,6 +342,12 @@ export default function HomePage() {
           >
             로그아웃
           </button>
+          <Link
+            href="/privacy"
+            className="text-[12px] text-white/40 underline underline-offset-2"
+          >
+            개인정보처리방침
+          </Link>
         </div>
       </div>
 

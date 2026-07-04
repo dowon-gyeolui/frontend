@@ -21,6 +21,7 @@ type PublicProfile = {
   nickname: string | null;
   photo_url: string | null;
   photos: string[];
+  photos_total: number;
   is_blinded: boolean;
   age: number | null;
   gender: string | null;
@@ -47,6 +48,7 @@ const MOCK_PROFILES: MockProfile[] = [
     nickname: "신시아",
     photo_url: "/cynthia.png",
     photos: ["/cynthia.png"],
+    photos_total: 1,
     is_blinded: false,
     age: 30,
     gender: "female",
@@ -219,6 +221,15 @@ export default function ProfileDetailPage() {
                 </div>
               )}
             </PhotoCarousel>
+
+            {!data.is_blinded && data.photos_total > data.photos.length && (
+              <div className="mt-[10px] flex items-center justify-center gap-[6px] rounded-[14px] border border-dashed border-white/20 bg-white/5 px-[14px] py-[12px] text-center">
+                <Lock className="size-[13px] text-white/50" />
+                <p className="text-[12px] leading-[18px] text-white/60">
+                  잠긴 사진 {data.photos_total - data.photos.length}장 · 내가 사진을 더 등록하면 볼 수 있어요
+                </p>
+              </div>
+            )}
 
             {data.bio && (
               <div className="mt-[16px] rounded-[14px] border border-white/15 bg-white/10 p-[14px] backdrop-blur-sm">
