@@ -9,7 +9,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { LoadingPanel } from "@/components/ui/loading-panel";
 import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
-import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
+import { CACHE_TTL, fetchWithPolling } from "@/lib/cache";
 
 type DeepStar = {
   name: string;
@@ -117,9 +117,13 @@ export default function JamidusuPage() {
       return;
     }
     apiFetch<Me>("/users/me").then(setMe).catch(() => {});
-    fetchWithCache<DeepResponse>("/saju/me/jamidusu-deep", CACHE_TTL.saju, setData, {
-      onError: (e: Error) => setError(e.message),
-    });
+    return fetchWithPolling<DeepResponse>(
+      "/saju/me/jamidusu-deep",
+      CACHE_TTL.saju,
+      (v) => v.interpretation_status === "ready",
+      setData,
+      { onError: (e: Error) => setError(e.message) },
+    );
   }, [router]);
 
   return (
@@ -335,7 +339,9 @@ function DetailView({
       {data && data.interpretation_status === "pending" && (
         <section className="mt-[20px] rounded-[14px] border border-white/15 bg-white/5 p-[16px] text-center">
           <p className="text-[13px] leading-[22px] text-white/75">
-            자미두수 풀이를 만들지 못했어요. 사주 정보를 확인해주시거나 잠시 후 새로고침 해주세요.
+            자미두수 풀이를 정성껏 작성하고 있어요.
+            <br />
+            잠시만 기다리시면 자동으로 표시됩니다. (최초 1회만 시간이 걸려요)
           </p>
         </section>
       )}

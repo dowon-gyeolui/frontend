@@ -79,3 +79,48 @@ export async function fetchWithCache<T>(
     }
   }
 }
+
+export function fetchWithPolling<T>(
+  path: string,
+  ttlMs: number,
+  isReady: (v: T) => boolean,
+  setter: (v: T) => void,
+  options: {
+    onError?: (e: Error) => void;
+    intervalMs?: number;
+    maxAttempts?: number;
+  } = {},
+): () => void {
+  const { onError, intervalMs = 5000, maxAttempts = 24 } = options;
+  let cancelled = false;
+  let timer: number | undefined;
+
+  const cached = cacheGet<T>(path, ttlMs);
+  if (cached !== null && isReady(cached)) setter(cached);
+
+  const attempt = async (n: number) => {
+    try {
+      const fresh = await apiFetch<T>(path);
+      if (cancelled) return;
+      setter(fresh);
+      if (isReady(fresh)) {
+        cacheSet(path, fresh);
+      } else if (n < maxAttempts) {
+        timer = window.setTimeout(() => attempt(n + 1), intervalMs);
+      }
+    } catch (e) {
+      if (cancelled) return;
+      if (cached === null && n === 0) {
+        onError?.(e instanceof Error ? e : new Error(String(e)));
+      } else if (n < maxAttempts) {
+        timer = window.setTimeout(() => attempt(n + 1), intervalMs);
+      }
+    }
+  };
+
+  attempt(0);
+  return () => {
+    cancelled = true;
+    if (timer !== undefined) window.clearTimeout(timer);
+  };
+}

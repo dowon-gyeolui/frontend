@@ -9,7 +9,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { ElementPentagon } from "@/components/saju/element-pentagon";
 import { LoadingPanel } from "@/components/ui/loading-panel";
 import { getToken } from "@/lib/auth";
-import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
+import { CACHE_TTL, fetchWithPolling } from "@/lib/cache";
 import {
   ELEMENT_DISPLAY,
   dominantElement,
@@ -35,9 +35,10 @@ export default function SajuPage() {
       router.replace("/");
       return;
     }
-    fetchWithCache<DetailedSajuResponse>(
+    return fetchWithPolling<DetailedSajuResponse>(
       "/saju/me/detailed",
       CACHE_TTL.saju,
+      (v) => v.interpretation_status === "ready",
       setSaju,
       { onError: (e) => setError(e.message) },
     );
@@ -189,9 +190,9 @@ function NarrativeSections({ data }: { data: DetailedSajuResponse }) {
     return (
       <section className="rounded-[14px] border border-yellow-400/30 bg-yellow-500/5 p-[14px] text-center">
         <p className="text-[13px] leading-[20px] text-yellow-100/80">
-          심층 해석에 어려움을 겪고 있어요.
+          사주 풀이를 정성껏 작성하고 있어요.
           <br />
-          생년월일/시간을 더 정확히 입력하면 풀이가 향상됩니다.
+          잠시만 기다리시면 자동으로 표시됩니다. (최초 1회만 시간이 걸려요)
         </p>
       </section>
     );
