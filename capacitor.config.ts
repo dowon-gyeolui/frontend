@@ -1,4 +1,4 @@
-// Capacitor 네이티브 앱 설정 — 배포된 웹(zami.vercel.app)을 로드하는 하이브리드 앱.
+// Capacitor 네이티브 앱 설정 — 배포된 웹(thezami.io)을 로드하는 하이브리드 앱.
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
@@ -6,12 +6,12 @@ const config: CapacitorConfig = {
   appName: "ZAMI",
   webDir: "www",
   server: {
-    url: "https://zami.vercel.app",
+    url: "https://thezami.io",
     // 카카오 OAuth 흐름(프론트 → 백엔드 → kauth.kakao.com → 백엔드 콜백 → 프론트)이
     // WebView 안에서 그대로 이어지도록 이동 허용 도메인을 지정한다.
     allowNavigation: [
-      "zami.vercel.app",
-      "*.vercel.app",
+      "thezami.io",
+      "*.thezami.io",
       "kauth.kakao.com",
       "kapi.kakao.com",
       "accounts.kakao.com",
