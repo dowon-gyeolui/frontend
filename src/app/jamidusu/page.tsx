@@ -337,13 +337,18 @@ function DetailView({
       )}
 
       {data && data.interpretation_status === "pending" && (
-        <section className="mt-[20px] rounded-[14px] border border-white/15 bg-white/5 p-[16px] text-center">
-          <p className="text-[13px] leading-[22px] text-white/75">
-            자미두수 풀이를 정성껏 작성하고 있어요.
-            <br />
-            잠시만 기다리시면 자동으로 표시됩니다. (최초 1회만 시간이 걸려요)
-          </p>
-        </section>
+        <div className="mt-[20px]">
+          <LoadingPanel
+            estimatedMs={60000}
+            done={false}
+            messages={[
+              { atPct: 0, text: "명반 그리는 중..." },
+              { atPct: 30, text: "12궁 배치 확인 중..." },
+              { atPct: 60, text: "풀이 작성 중..." },
+              { atPct: 90, text: "거의 다 했어요!" },
+            ]}
+          />
+        </div>
       )}
     </>
   );

@@ -188,13 +188,16 @@ function NarrativeSections({ data }: { data: DetailedSajuResponse }) {
 
   if (data.interpretation_status === "pending") {
     return (
-      <section className="rounded-[14px] border border-yellow-400/30 bg-yellow-500/5 p-[14px] text-center">
-        <p className="text-[13px] leading-[20px] text-yellow-100/80">
-          사주 풀이를 정성껏 작성하고 있어요.
-          <br />
-          잠시만 기다리시면 자동으로 표시됩니다. (최초 1회만 시간이 걸려요)
-        </p>
-      </section>
+      <LoadingPanel
+        estimatedMs={45000}
+        done={false}
+        messages={[
+          { atPct: 0, text: "사주 분석 중..." },
+          { atPct: 30, text: "책 구절을 찾아보는 중..." },
+          { atPct: 60, text: "풀이 작성 중..." },
+          { atPct: 90, text: "거의 다 했어요!" },
+        ]}
+      />
     );
   }
   const hasSources = data.interpretation_sources.length > 0;
