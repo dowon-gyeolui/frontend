@@ -25,6 +25,7 @@ type DetailedSajuResponse = {
   love: string;
   wealth: string;
   advice: string;
+  interpretation_status?: "pending" | "ready";
 };
 
 type SubmitState =
@@ -85,10 +86,14 @@ export default function OnboardingDonePage() {
         }
 
         setStatus({ kind: "analyzing" });
+        // 자미두수 심층 풀이도 미리 생성시켜 둔다(서버 백그라운드 생성 트리거).
+        apiFetch("/saju/me/jamidusu-deep").catch(() => {});
         try {
           const saju = await apiFetch<DetailedSajuResponse>("/saju/me/detailed");
           if (cancelled) return;
-          cacheSet("/saju/me/detailed", saju);
+          if (saju.interpretation_status === "ready") {
+            cacheSet("/saju/me/detailed", saju);
+          }
           setStatus({ kind: "ready", saju, nickname });
         } catch {
           if (cancelled) return;
