@@ -11,7 +11,7 @@ import { StatBillboard } from "@/components/home/stat-billboard";
 import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
 import { MatchInfoModal } from "@/components/matching/match-info-modal";
 import { UnlockModal } from "@/components/matching/unlock-modal";
-import { ApiError, apiFetch } from "@/lib/api";
+import { ApiError } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
 import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
 import {
@@ -79,9 +79,11 @@ export default function HomePage() {
       router.replace("/");
       return;
     }
-    apiFetch<Me>("/users/me")
-      .then(setMe)
-      .catch((e: Error) => setError(e.message));
+    // 캐시된 값을 먼저 보여줘서 아래 birth_date 의존 요청들이 네트워크 왕복을
+    // 기다리지 않고 즉시 시작되게 한다(재방문 시 체감 속도 개선).
+    fetchWithCache<Me>("/users/me", CACHE_TTL.short, setMe, {
+      onError: (e) => setError(e.message),
+    });
   }, [router]);
 
   useEffect(() => {
