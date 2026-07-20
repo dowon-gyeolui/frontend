@@ -9,6 +9,7 @@ import { ChatThreadRow } from "@/components/matching/chat-thread-row";
 import { MatchCard, type MatchCandidate } from "@/components/matching/match-card";
 import { MatchInfoModal } from "@/components/matching/match-info-modal";
 import { getToken } from "@/lib/auth";
+import { CACHE_TTL, swrCache } from "@/lib/cache";
 import { leaveThread, listThreads, prefetchMessages, type ChatThreadSummary } from "@/lib/chat";
 import { listUnlocked } from "@/lib/matches";
 
@@ -60,12 +61,19 @@ function MatchingPageContent() {
       router.replace("/");
       return;
     }
-    listUnlocked()
-      .then(setUnlocked)
-      .catch((e: Error) => {
-        setUnlocked([]);
-        setError(e.message);
-      });
+    // 캐시 히트 시 즉시 렌더 → 백그라운드 갱신. 캐시 미스/에러 시 기존 에러 경로 유지.
+    swrCache<MatchCandidate[]>(
+      "/matches",
+      CACHE_TTL.matches,
+      listUnlocked,
+      setUnlocked,
+      {
+        onError: (e) => {
+          setUnlocked([]);
+          setError(e.message);
+        },
+      },
+    );
   }, [router]);
 
   useEffect(() => {
@@ -96,12 +104,18 @@ function MatchingPageContent() {
                 onClick={() => {
                   setError(null);
                   setUnlocked(null);
-                  listUnlocked()
-                    .then(setUnlocked)
-                    .catch((e: Error) => {
-                      setUnlocked([]);
-                      setError(e.message);
-                    });
+                  swrCache<MatchCandidate[]>(
+                    "/matches",
+                    CACHE_TTL.matches,
+                    listUnlocked,
+                    setUnlocked,
+                    {
+                      onError: (e) => {
+                        setUnlocked([]);
+                        setError(e.message);
+                      },
+                    },
+                  );
                 }}
                 className="mt-3 rounded-full border border-white/20 bg-white/10 px-[16px] py-[6px] text-[13px] text-white hover:bg-white/15"
               >

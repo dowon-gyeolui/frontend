@@ -13,12 +13,13 @@ import { MatchInfoModal } from "@/components/matching/match-info-modal";
 import { UnlockModal } from "@/components/matching/unlock-modal";
 import { ApiError } from "@/lib/api";
 import { clearToken, getToken } from "@/lib/auth";
-import { CACHE_TTL, fetchWithCache } from "@/lib/cache";
+import { CACHE_TTL, fetchWithCache, swrCache } from "@/lib/cache";
 import {
   EXTRA_DAILY_LIMIT,
   STAR_COST_PER_CARD,
   getTodayCard,
   unlockExtraCard,
+  type TodayCardResponse,
 } from "@/lib/matches";
 import { notifyStarsChanged } from "@/lib/stars";
 import { profileCompletionPct } from "@/lib/profile-completion";
@@ -84,13 +85,20 @@ export default function HomePage() {
     fetchWithCache<Me>("/users/me", CACHE_TTL.short, setMe, {
       onError: (e) => setError(e.message),
     });
+    // 오늘의 카드는 /users/me(birth_date) 응답을 기다리지 않고 병렬로 시작한다.
+    // 서버가 birth_date 미입력 시 card:null 을 주므로 병렬 호출이 안전하며,
+    // 캐시 히트 시 즉시 렌더 → 백그라운드 갱신으로 첫 화면 표시를 앞당긴다.
+    swrCache<TodayCardResponse>(
+      "/matches/today",
+      CACHE_TTL.matches,
+      getTodayCard,
+      setToday,
+      { onError: () => setToday({ card: null }) },
+    );
   }, [router]);
 
   useEffect(() => {
     if (!me || !me.birth_date) return;
-    getTodayCard()
-      .then(setToday)
-      .catch(() => setToday({ card: null }));
     fetchWithCache<TodayFortune>(
       "/saju/me/today-fortune",
       CACHE_TTL.short,

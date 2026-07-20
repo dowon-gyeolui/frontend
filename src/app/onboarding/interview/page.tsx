@@ -23,6 +23,8 @@ export default function OnboardingInterviewPage() {
     () => new Set((state.interview ?? []).map((a) => a.question_key)),
   );
   const [open, setOpen] = useState<Set<string>>(new Set());
+  // "다음"을 눌러 검증을 시도했는지 여부 — 미입력 안내 표시에 사용
+  const [triedNext, setTriedNext] = useState(false);
 
   const toggleCategory = (name: string) =>
     setOpen((prev) => {
@@ -51,10 +53,18 @@ export default function OnboardingInterviewPage() {
     (k) => (answers[k] ?? "").trim().length > 0,
   ).length;
 
+  // 체크한 질문은 모두 답변이 있어야 하고, 최소 1개 이상 답해야 진행 가능
+  const canProceed = selected.size > 0 && answeredCount === selected.size;
+
   const onNext = () => {
-    const list = [...selected]
-      .map((k) => ({ question_key: k, answer: (answers[k] ?? "").trim() }))
-      .filter((a) => a.answer.length > 0);
+    if (!canProceed) {
+      setTriedNext(true);
+      return;
+    }
+    const list = [...selected].map((k) => ({
+      question_key: k,
+      answer: (answers[k] ?? "").trim(),
+    }));
     update({ interview: list });
     router.push("/onboarding/done");
   };
@@ -68,9 +78,9 @@ export default function OnboardingInterviewPage() {
               연애 인터뷰
             </h1>
             <p className="text-center text-[13px] leading-[19px] text-white/60">
-              답하고 싶은 질문만 골라 답해주세요.
+              질문을 골라 답해주세요. 최소 1개는 꼭 답해야 해요.
               <br />
-              내가 답한 개수만큼 상대의 답변도 볼 수 있어요. (선택, 건너뛰기 가능)
+              내가 답한 개수만큼 상대의 답변도 볼 수 있어요. (필수)
             </p>
           </div>
 
@@ -135,6 +145,13 @@ export default function OnboardingInterviewPage() {
                                 className="mt-[8px] w-full resize-none rounded-[10px] border border-white/20 bg-white/10 px-[12px] py-[8px] text-[13px] text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-[#a855f7]"
                               />
                             )}
+                            {checked &&
+                              triedNext &&
+                              (answers[q.key] ?? "").trim().length === 0 && (
+                                <p className="mt-[6px] text-[12px] text-[#f87171]">
+                                  답변을 입력해주세요.
+                                </p>
+                              )}
                           </div>
                         );
                       })}
@@ -148,7 +165,7 @@ export default function OnboardingInterviewPage() {
           <p className="text-center text-[12px] text-white/50">
             {answeredCount > 0
               ? `${answeredCount}개 답변 작성됨`
-              : "아직 답한 질문이 없어요"}
+              : "최소 1개 이상의 질문에 답해주세요"}
           </p>
         </div>
 
@@ -169,7 +186,7 @@ export default function OnboardingInterviewPage() {
             onClick={onNext}
             className="h-[52px] flex-1 rounded-[5px] bg-[#6366f1] text-[18px] font-semibold text-white shadow-[0px_4px_15px_-2px_rgba(99,102,241,0.5)] hover:opacity-90"
           >
-            {answeredCount > 0 ? "다음" : "건너뛰기"}
+            다음
           </button>
         </div>
       </div>

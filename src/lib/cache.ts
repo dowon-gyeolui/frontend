@@ -80,6 +80,31 @@ export async function fetchWithCache<T>(
   }
 }
 
+// fetchWithCache 와 동일한 stale-while-revalidate 흐름이지만, apiFetch 대신
+// 임의의 fetcher 를 받는다. getTodayCard/listUnlocked 처럼 mock 변환이 섞인
+// 도메인 함수를 그대로 캐시에 태우기 위한 소형 헬퍼(기존 함수는 그대로 둔다).
+export async function swrCache<T>(
+  path: string,
+  ttlMs: number,
+  fetcher: () => Promise<T>,
+  setter: (v: T) => void,
+  options: { onError?: (e: Error) => void } = {},
+): Promise<void> {
+  const cached = cacheGet<T>(path, ttlMs);
+  if (cached !== null) setter(cached);
+
+  try {
+    const fresh = await fetcher();
+    setter(fresh);
+    cacheSet(path, fresh);
+  } catch (e) {
+    if (cached === null) {
+      const err = e instanceof Error ? e : new Error(String(e));
+      options.onError?.(err);
+    }
+  }
+}
+
 export function fetchWithPolling<T>(
   path: string,
   ttlMs: number,
