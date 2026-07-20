@@ -1,0 +1,214 @@
+# =============================================================================
+# ZAMI — Codemagic CI/CD 설정 (Capacitor 8 하이브리드 셸)
+# =============================================================================
+# 이 파일은 GitHub 저장소(dowon-gyeolui/frontend)의 "루트"에 있어야
+# Codemagic이 자동으로 인식한다. (로컬 경로: frontend/codemagic.yaml)
+#
+# 앱 구조 요약 (실제 파일 기준):
+#   - 셸 앱: capacitor.config.ts 가 https://thezami.io 를 원격 로드
+#     → CI 에서 `next build` 불필요. npm ci + cap sync 만으로 네이티브 빌드 가능.
+#   - Android: AGP 8.13.0 / compileSdk 36 / minSdk 24, build.gradle 에 서명 설정 없음
+#     → 미서명 .aab 를 만들고 jarsigner 로 후서명(기존 gradle 파일 무수정 원칙).
+#   - iOS: CocoaPods 아님. CapApp-SPM(Swift Package Manager) 구조
+#     → pod install 스텝 없음. --workspace 가 아니라 --project 로 빌드.
+#     → Capacitor 8 SPM 템플릿에는 공유 xcscheme 이 없어 CI 에서 스킴을 생성한다.
+#
+# 사용 전 채워야 하는 값은 전부 `# TODO(사용자):` 주석으로 표시했다.
+# =============================================================================
+
+workflows:
+  # ===========================================================================
+  # 워크플로우 1: Android 릴리스 (.aab)
+  # ===========================================================================
+  android-release:
+    name: ZAMI Android Release (.aab)
+    instance_type: linux_x2   # Android 빌드는 Linux 인스턴스로 충분(맥보다 저렴/빠름)
+    max_build_duration: 60
+    environment:
+      java: 21                # AGP 8.13 은 JDK 17+ 필요
+      node: 22.14.0
+      # TODO(사용자): Codemagic UI > Team settings > codemagic.yaml settings >
+      #   Code signing identities > Android 에 업로드 키스토어(.jks)를 업로드하고,
+      #   그때 지정한 "참조 이름"으로 아래 값을 교체할 것. (RELEASE.md 4번 참고)
+      #   업로드하면 CM_KEYSTORE_PATH / CM_KEYSTORE_PASSWORD / CM_KEY_ALIAS /
+      #   CM_KEY_PASSWORD 환경변수가 자동 주입된다.
+      android_signing:
+        - zami_upload_keystore   # TODO(사용자): 실제 키스토어 참조 이름으로 교체
+      groups:
+        # TODO(사용자): Google Play 자동 업로드를 쓸 때만 필요.
+        #   Codemagic UI 에서 `google_play` 환경변수 그룹을 만들고
+        #   GCLOUD_SERVICE_ACCOUNT_CREDENTIALS (서비스 계정 JSON 전체 내용)를 등록.
+        # - google_play
+        []
+    scripts:
+      - name: npm 의존성 설치
+        script: |
+          npm ci
+      - name: Capacitor Android 동기화
+        script: |
+          npx cap sync android
+      - name: Android App Bundle 빌드 (미서명)
+        script: |
+          cd android
+          chmod +x gradlew
+          ./gradlew bundleRelease
+      - name: AAB 업로드 키 서명 (jarsigner)
+        # build.gradle 에 signingConfig 가 없으므로(기존 파일 무수정 원칙)
+        # 빌드 산출물을 jarsigner 로 후서명한다. Play App Signing 은 이 서명을
+        # "업로드 키" 서명으로 인식한다.
+        script: |
+          AAB_PATH=android/app/build/outputs/bundle/release/app-release.aab
+          jarsigner -sigalg SHA256withRSA -digestalg SHA-256 \
+            -keystore "$CM_KEYSTORE_PATH" \
+            -storepass "$CM_KEYSTORE_PASSWORD" \
+            -keypass "$CM_KEY_PASSWORD" \
+            "$AAB_PATH" "$CM_KEY_ALIAS"
+          jarsigner -verify "$AAB_PATH"
+    artifacts:
+      - android/app/build/outputs/bundle/release/*.aab
+    # -------------------------------------------------------------------------
+    # TODO(사용자): Google Play 자동 업로드 — 아래 주석 해제 전에 필요한 것:
+    #   1. Google Play Console 에서 앱을 만들고 "최초 1회는 .aab 를 수동 업로드"
+    #      해야 한다(그래야 API 로 업로드 가능해짐).
+    #   2. Google Cloud 서비스 계정 생성 → Play Console 에 초대(릴리스 권한) →
+    #      JSON 키를 위의 `google_play` 환경변수 그룹에 등록.
+    #   3. 위 environment.groups 의 `- google_play` 주석도 함께 해제.
+    # -------------------------------------------------------------------------
+    # publishing:
+    #   google_play:
+    #     credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+    #     track: internal          # 내부 테스트 트랙부터 시작
+    #     submit_as_draft: true    # 콘솔에서 검토 후 수동 출시
+
+  # ===========================================================================
+  # 워크플로우 2a: iOS 스모크 테스트 (서명 없는 시뮬레이터 빌드)
+  # ---------------------------------------------------------------------------
+  # Apple 콘솔 준비물(ASC API 키·배포 인증서) 없이 "이 셸이 CI 에서 빌드되는가"
+  # 만 빠르게 확인한다. 서명하지 않으므로 실기기 설치·TestFlight 업로드는 불가.
+  # 이게 통과하면 아래 ios-release 로 넘어가 서명 빌드를 구성한다.
+  # Codemagic 연결 직후 콘솔 작업 없이 바로 돌려볼 수 있는 워크플로우다.
+  # ===========================================================================
+  ios-smoke:
+    name: ZAMI iOS Smoke (서명 없는 시뮬레이터 빌드)
+    instance_type: mac_mini_m2
+    max_build_duration: 45
+    environment:
+      node: 22.14.0
+      xcode: latest   # TODO(사용자): 재현성을 원하면 특정 버전으로 고정 (예: 16.4)
+      vars:
+        XCODE_PROJECT: ios/App/App.xcodeproj   # SPM 구조 → workspace 아님
+        XCODE_SCHEME: App
+    scripts:
+      - name: npm 의존성 설치
+        script: |
+          npm ci
+      - name: Capacitor iOS 동기화 (SPM — pod install 불필요)
+        script: |
+          npx cap sync ios
+      - name: Xcode 공유 스킴 확인/생성
+        # Capacitor 8 SPM 템플릿에는 공유 xcscheme 이 포함되지 않으므로 CI 에서 만든다.
+        script: |
+          if [ ! -e "ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme" ]; then
+            ruby -e "require 'xcodeproj'; \
+              p = Xcodeproj::Project.open('ios/App/App.xcodeproj'); \
+              p.recreate_user_schemes; \
+              Xcodeproj::XCScheme.share_scheme('ios/App/App.xcodeproj', 'App')"
+          fi
+      - name: 시뮬레이터용 빌드 (서명 없음)
+        # -sdk iphonesimulator + CODE_SIGNING_ALLOWED=NO → 인증서 없이 컴파일 검증.
+        script: |
+          xcodebuild \
+            -project "$XCODE_PROJECT" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+    artifacts:
+      - /tmp/xcodebuild_logs/*.log
+
+  # ===========================================================================
+  # 워크플로우 2b: iOS 릴리스 (.ipa)
+  # ===========================================================================
+  ios-release:
+    name: ZAMI iOS Release (.ipa)
+    instance_type: mac_mini_m2
+    max_build_duration: 90
+    integrations:
+      # TODO(사용자): Codemagic UI > Team settings > Integrations >
+      #   Developer Portal 에 App Store Connect API 키(.p8 + Issuer ID + Key ID)를
+      #   등록하고, 그때 지정한 키 이름으로 아래 값을 교체할 것. (RELEASE.md 3번 참고)
+      #   등록하면 APP_STORE_CONNECT_* 환경변수가 자동 주입되어
+      #   아래 app-store-connect CLI 가 인자 없이 동작한다.
+      app_store_connect: ZAMI_ASC_KEY   # TODO(사용자): 실제 API 키 이름으로 교체
+    environment:
+      node: 22.14.0
+      xcode: latest   # TODO(사용자): 재현 가능한 빌드를 원하면 특정 버전으로 고정 (예: 16.4)
+      vars:
+        BUNDLE_ID: com.zami.app
+        XCODE_PROJECT: ios/App/App.xcodeproj   # SPM 구조 → workspace 아님
+        XCODE_SCHEME: App
+        # TODO(사용자): App Store Connect 에서 앱 생성 후 발급되는 숫자 Apple ID
+        #   (App 정보 > 일반 정보 > Apple ID). TestFlight 빌드 번호 자동 증가에 사용.
+        # APP_APPLE_ID: 0000000000
+      groups:
+        # TODO(사용자): Codemagic UI 에서 `ios_credentials` 환경변수 그룹을 만들고
+        #   CERTIFICATE_PRIVATE_KEY 를 등록할 것. (신규 배포 인증서 자동 생성용 RSA 키)
+        #   로컬에서 생성: ssh-keygen -t rsa -b 2048 -m PEM -f ios_cert_key -q -N ""
+        #   → ios_cert_key "파일 내용 전체"를 변수 값으로 붙여넣기.
+        - ios_credentials
+    scripts:
+      - name: npm 의존성 설치
+        script: |
+          npm ci
+      - name: Capacitor iOS 동기화 (SPM — pod install 불필요)
+        script: |
+          npx cap sync ios
+      - name: Xcode 공유 스킴 확인/생성
+        # Capacitor 8 SPM 템플릿에는 공유 xcscheme 이 포함되지 않는다.
+        # (로컬에서 Xcode 로 열면 자동 생성되지만 CI 클린 체크아웃에는 없음)
+        # 스킴이 없으면 xcodebuild -scheme App 이 실패하므로 여기서 생성한다.
+        script: |
+          if [ ! -e "ios/App/App.xcodeproj/xcshareddata/xcschemes/App.xcscheme" ]; then
+            ruby -e "require 'xcodeproj'; \
+              p = Xcodeproj::Project.open('ios/App/App.xcodeproj'); \
+              p.recreate_user_schemes; \
+              Xcodeproj::XCScheme.share_scheme('ios/App/App.xcodeproj', 'App')"
+          fi
+      - name: 코드 서명 파일 가져오기 (App Store Connect API 자동 서명)
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --certificate-key=@env:CERTIFICATE_PRIVATE_KEY \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+      # TODO(사용자): TestFlight 빌드 번호 자동 증가 — APP_APPLE_ID 를 채운 뒤 주석 해제.
+      #   (같은 빌드 번호로는 TestFlight 재업로드가 거부된다)
+      # - name: 빌드 번호 자동 증가
+      #   script: |
+      #     cd ios/App
+      #     LATEST_BUILD_NUMBER=$(app-store-connect get-latest-testflight-build-number "$APP_APPLE_ID" || echo "0")
+      #     agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
+      - name: IPA 빌드
+        script: |
+          xcode-project build-ipa \
+            --project "$XCODE_PROJECT" \
+            --scheme "$XCODE_SCHEME"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+    # -------------------------------------------------------------------------
+    # TODO(사용자): TestFlight 자동 업로드 — 위 integrations 의 ASC API 키 등록을
+    #   마친 뒤 주석 해제. beta_groups 는 App Store Connect > TestFlight 에서
+    #   만든 내부 테스터 그룹 이름과 일치해야 한다.
+    # -------------------------------------------------------------------------
+    # publishing:
+    #   app_store_connect:
+    #     auth: integration
+    #     submit_to_testflight: true
+    #     # beta_groups:
+    #     #   - ZAMI 내부 테스터   # TODO(사용자): 실제 그룹 이름으로 교체
