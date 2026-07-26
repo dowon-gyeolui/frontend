@@ -45,7 +45,14 @@ type DeepResponse = {
   sources: string[];
 };
 
-type Me = { id: number; nickname: string | null };
+type Me = {
+  id: number;
+  nickname: string | null;
+  birth_date: string | null;
+  birth_time: string | null;
+  calendar_type: string | null;
+  is_leap_month?: boolean;
+};
 type Step = "intro" | "detail";
 
 const PALACE_ORDER = [
@@ -149,7 +156,7 @@ export default function JamidusuPage() {
         {step === "intro" ? (
           <IntroView onNext={() => setStep("detail")} />
         ) : (
-          <DetailView nickname={me?.nickname ?? null} data={data} error={error} />
+          <DetailView me={me} data={data} error={error} />
         )}
       </div>
     </AppShell>
@@ -243,14 +250,15 @@ function IntroView({ onNext }: { onNext: () => void }) {
 }
 
 function DetailView({
-  nickname,
+  me,
   data,
   error,
 }: {
-  nickname: string | null;
+  me: Me | null;
   data: DeepResponse | null;
   error: string | null;
 }) {
+  const nickname = me?.nickname ?? null;
   const sortedPalaces = data
     ? [...data.palaces].sort((a, b) => {
         const ai = PALACE_ORDER.indexOf(a.name_ko);
@@ -267,10 +275,13 @@ function DetailView({
             ? `${nickname ? `${nickname}님의 ` : ""}자미두수 명반`
             : `${nickname ? `${nickname}님의 ` : ""}자미두수 풀이중...`}
         </h2>
-        {data?.bureau_name && (
+        {me?.birth_date && (
           <p className="mt-[8px] text-center text-[12px] text-white/65">
-            {data.year_pillar}년주 · {data.bureau_name}
-            {data.lunar_birth && ` · 음력 ${data.lunar_birth}`}
+            생년월일 {me.birth_date}
+            {me.calendar_type
+              ? ` (${me.calendar_type === "lunar" ? "음력" : "양력"}${me.is_leap_month ? " 윤달" : ""})`
+              : ""}
+            {me.birth_time ? ` · ${me.birth_time}` : " · 시간 모름"}
           </p>
         )}
         {data?.hour_assumed && (

@@ -10,10 +10,6 @@ import { apiFetch } from "@/lib/api";
 import { cacheSet } from "@/lib/cache";
 import { useOnboarding } from "@/lib/onboarding-context";
 import {
-  BRANCH_DATA,
-  ELEMENT_DISPLAY,
-  STEM_HANJA,
-  dominantElement,
   type ElementProfile,
   type SajuPillar,
 } from "@/lib/saju";
@@ -212,35 +208,15 @@ function ReadyView({
   onGoSaju: () => void;
   onGoHome: () => void;
 }) {
-  const dayPillar = saju?.pillars[2];
-  const dominant = saju ? dominantElement(saju.element_profile) : null;
-  const dominantKo = dominant ? ELEMENT_DISPLAY[dominant].ko : null;
-  const dominantHanja = dominant ? ELEMENT_DISPLAY[dominant].hanja : null;
-  const dayHanja = dayPillar
-    ? `${STEM_HANJA[dayPillar.stem]?.hanja ?? "?"}${BRANCH_DATA[dayPillar.branch]?.hanja ?? "?"}`
-    : null;
-
   return (
     <div className="flex w-full flex-col items-center">
       <h1 className="mt-[12px] text-center text-[22px] font-bold tracking-tight text-white">
         {nickname} 님의 사주를 풀었어요
       </h1>
 
-      {saju && dayPillar && dominant && (
+      {saju && saju.personality && (
         <div className="mt-[20px] w-full max-w-[340px] space-y-[12px]">
-          <div className="grid grid-cols-2 gap-[10px]">
-            <InfoBox label="일주" value={dayPillar.combined} hanja={dayHanja} />
-            <InfoBox
-              label="주요 오행"
-              value={dominantKo ?? ""}
-              hanja={dominantHanja ?? ""}
-            />
-          </div>
-
-          {saju.personality && (
-            <NarrativeCard title="성격" body={saju.personality} />
-          )}
-          {saju.advice && <NarrativeCard title="조언" body={saju.advice} />}
+          <NarrativeCard title="성격" body={saju.personality} />
         </div>
       )}
 
@@ -271,24 +247,6 @@ function ReadyView({
           홈으로 가기
         </button>
       </div>
-    </div>
-  );
-}
-
-function InfoBox({
-  label,
-  value,
-  hanja,
-}: {
-  label: string;
-  value: string;
-  hanja: string | null;
-}) {
-  return (
-    <div className="rounded-[12px] border border-white/15 bg-white/5 p-[12px] text-center backdrop-blur-sm">
-      <p className="text-[11px] text-white/60">{label}</p>
-      <p className="mt-[4px] text-[18px] font-bold text-white">{value}</p>
-      {hanja && <p className="text-[11px] text-white/40">{hanja}</p>}
     </div>
   );
 }
