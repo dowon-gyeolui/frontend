@@ -16,7 +16,8 @@ export const EXTRA_DAILY_LIMIT = 10;
 
 export const STAR_COST_PER_CARD = 10;
 
-const USE_MOCK_PHOTOS = true;
+// 실제 사용자 사진을 노출한다. (목업 사진 강제 비활성화)
+const USE_MOCK_PHOTOS = false;
 const MOCK_PHOTOS = ["/cynthia.png"];
 
 function withMockPhotos(card: MatchCandidate | null): MatchCandidate | null {

@@ -91,15 +91,17 @@ export function AppShell({ children, topChip }: AppShellProps) {
 
       <nav className="fixed bottom-[20px] left-1/2 z-10 flex h-[65px] w-[280px] -translate-x-1/2 items-center justify-around rounded-full border border-[#4b3270] bg-[#211432] px-2">
         <div className="relative flex h-full w-full items-center">
-          {/* 활성 탭 위치로 스르륵 이동하는 하이라이트 인디케이터 (4개 탭 기준 1/4 폭). */}
+          {/* 시안 A — 활성 탭으로 스르륵 미끄러지는 노란 알약 하이라이트 (4개 탭 기준 1/4 슬롯). */}
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-y-[9px] left-0 w-1/4 rounded-full bg-[#fde047]/10 ring-1 ring-inset ring-[#fde047]/20 transition-all duration-300 ease-out motion-reduce:transition-none"
+            className="pointer-events-none absolute inset-y-0 left-0 z-0 grid w-1/4 place-items-center transition-transform duration-[350ms] ease-[cubic-bezier(.34,1.35,.5,1)] motion-reduce:transition-none"
             style={{
               transform: `translateX(${activeIndex < 0 ? 0 : activeIndex * 100}%)`,
               opacity: activeIndex < 0 ? 0 : 1,
             }}
-          />
+          >
+            <span className="h-[46px] w-[86%] rounded-full bg-[#fde047]/15 shadow-[inset_0_0_0_1px_rgba(253,224,71,0.45),0_0_16px_-4px_rgba(253,224,71,0.6)]" />
+          </span>
           {NAV_ITEMS.map((item, index) => {
             const active = index === activeIndex;
             const Icon = item.icon;

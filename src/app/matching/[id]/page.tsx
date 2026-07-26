@@ -43,7 +43,6 @@ export default function ChatRoomPage() {
   const [candidate, setCandidate] = useState<MatchCandidate | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportModalOpen, setReportModalOpen] = useState(false);
@@ -206,27 +205,45 @@ export default function ChatRoomPage() {
 
   const send = useCallback(async () => {
     const text = input.trim();
-    if (!text || sending) return;
-    setSending(true);
+    if (!text || !me) return;
+    // 낙관적 UI: 보내는 즉시 말풍선을 띄우고 입력창을 비운다(서버 왕복/검열을 기다리지 않음).
+    const tempId = -Date.now();
+    const optimistic: Message = {
+      id: tempId,
+      thread_id: 0,
+      sender_id: me.id,
+      content: text,
+      media_url: null,
+      media_type: null,
+      created_at: new Date().toISOString(),
+      pending: true,
+    };
+    setMessages((prev) => [...prev, optimistic]);
+    setInput("");
     setError(null);
     try {
       const msg = await sendMessageTo(peerId, text);
+      // 임시 말풍선을 실제 메시지로 교체(폴링이 이미 가져왔으면 임시만 제거).
       setMessages((prev) => {
-        if (prev.some((m) => m.id === msg.id)) return prev;
-        return [...prev, msg];
+        const withoutTemp = prev.filter((m) => m.id !== tempId);
+        if (withoutTemp.some((m) => m.id === msg.id)) return withoutTemp;
+        return [...withoutTemp, msg];
       });
       lastIdRef.current = Math.max(lastIdRef.current, msg.id);
-      setInput("");
     } catch (e) {
+      // 실패 시 임시 말풍선을 '실패' 상태로 표시(내용은 남겨 재입력을 돕는다).
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === tempId ? { ...m, pending: false, failed: true } : m,
+        ),
+      );
       if (e instanceof ApiError && e.status === 404) {
         setError("상대방 정보를 찾을 수 없어요.");
       } else {
-        setError(e instanceof Error ? e.message : "전송 실패");
+        setError(e instanceof Error ? e.message : "전송에 실패했어요. 잠시 후 다시 시도해주세요.");
       }
-    } finally {
-      setSending(false);
     }
-  }, [input, peerId, sending]);
+  }, [input, peerId, me]);
 
   const sendMedia = useCallback(
     async (file: Blob, kind: "image" | "audio") => {
@@ -357,7 +374,6 @@ export default function ChatRoomPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && send()}
-            disabled={sending}
             placeholder="채팅을 보내볼까요?."
             className="size-full bg-transparent pr-[40px] text-[16px] font-light text-[#212265] placeholder:text-[#212265]/63 focus:outline-none"
           />
@@ -367,7 +383,7 @@ export default function ChatRoomPage() {
               if (input.trim()) send();
               else setAttachmentOpen(true);
             }}
-            disabled={attachmentUploading || sending}
+            disabled={attachmentUploading}
             aria-label={input.trim() ? "보내기" : "첨부 메뉴 열기"}
             className="absolute right-[10px] top-1/2 grid size-[40px] -translate-y-1/2 place-items-center rounded-full bg-[#8b5cf6] text-white shadow-[0_0_10px_-2px_rgba(139,92,246,0.6)] transition disabled:bg-[#8b5cf6]/40"
           >
@@ -596,15 +612,22 @@ function ThemBubble({
 
 function MeBubble({ message, isNew }: { message: Message; isNew?: boolean }) {
   const hasMedia = !!message.media_url;
+  const statusLabel = message.failed
+    ? "실패"
+    : message.pending
+      ? "전송 중"
+      : formatTime(message.created_at);
   return (
     <div className={`flex items-end justify-end gap-[6px]${isNew ? " animate-msg-float-up" : ""}`}>
-      <span className="mb-[2px] shrink-0 text-[10px] text-white/50">
-        {formatTime(message.created_at)}
+      <span
+        className={`mb-[2px] shrink-0 text-[10px] ${message.failed ? "text-red-300" : "text-white/50"}`}
+      >
+        {statusLabel}
       </span>
       <div
-        className={`max-w-[70%] rounded-[22px] bg-[#8b5cf6] text-[14px] text-white shadow-[0_0_4px_0_#8b5cf6] ${
+        className={`max-w-[70%] rounded-[22px] bg-[#8b5cf6] text-[14px] text-white shadow-[0_0_4px_0_#8b5cf6] transition-opacity ${
           hasMedia ? "p-[6px]" : "px-[16px] py-[10px]"
-        }`}
+        } ${message.pending ? "opacity-60" : ""} ${message.failed ? "opacity-70 ring-1 ring-red-400/70" : ""}`}
       >
         <MediaContent message={message} />
         {message.content && (

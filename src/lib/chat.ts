@@ -13,6 +13,9 @@ export type Message = {
   media_url: string | null;
   media_type: MediaType | null;
   created_at: string;
+  /** 낙관적 UI 로컬 전용 플래그(서버 응답에는 없음). 전송 중/실패 표시에 사용. */
+  pending?: boolean;
+  failed?: boolean;
 };
 
 export type ChatPeer = {
