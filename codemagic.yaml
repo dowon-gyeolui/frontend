@@ -22,7 +22,7 @@ workflows:
   # ===========================================================================
   android-release:
     name: ZAMI Android Release (.aab)
-    instance_type: linux_x2   # Android 빌드는 Linux 인스턴스로 충분(맥보다 저렴/빠름)
+    instance_type: mac_mini_m2   # 무료 플랜은 mac_mini_m2 만 제공 → Android 도 여기서 빌드(linux_x2 는 유료)
     max_build_duration: 60
     environment:
       java: 21                # AGP 8.13 은 JDK 17+ 필요
