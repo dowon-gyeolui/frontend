@@ -23,6 +23,20 @@ const NAV_ITEMS = [
   { href: "/settings", label: "설정", icon: Settings },
 ] as const;
 
+// 설정 탭은 허브에서 진입하는 세부 화면(개인정보처리방침·이용약관·FAQ·마이페이지)에서도
+// 활성(노란불) 상태를 유지한다.
+const SETTINGS_PATHS = ["/settings", "/privacy", "/terms", "/mypage"];
+
+function isNavActive(href: string, pathname: string): boolean {
+  if (pathname === href) return true;
+  if (href === "/settings") {
+    return SETTINGS_PATHS.some(
+      (p) => pathname === p || pathname.startsWith(`${p}/`),
+    );
+  }
+  return false;
+}
+
 const UNREAD_POLL_MS = 30_000;
 
 function useUnreadTotal(): number {
@@ -57,7 +71,7 @@ export function AppShell({ children, topChip }: AppShellProps) {
   const pathname = usePathname();
   const unreadTotal = useUnreadTotal();
   // usePathname() 기반 활성 판정 — 서버/클라 동일 값이라 하이드레이션 불일치 없음.
-  const activeIndex = NAV_ITEMS.findIndex((item) => pathname === item.href);
+  const activeIndex = NAV_ITEMS.findIndex((item) => isNavActive(item.href, pathname));
 
   return (
     <div
@@ -80,7 +94,13 @@ export function AppShell({ children, topChip }: AppShellProps) {
               aria-label="마이페이지"
               className="grid size-[25px] place-items-center"
             >
-              <User className="size-[25px] stroke-white stroke-[1.5]" />
+              <User
+                className={`size-[25px] stroke-[1.5] transition-colors ${
+                  pathname === "/mypage"
+                    ? "fill-[#fde047] stroke-[#fde047]"
+                    : "fill-transparent stroke-white"
+                }`}
+              />
             </Link>
           </div>
         </div>

@@ -12,7 +12,7 @@ import { MatchCard, type MatchCandidate } from "@/components/matching/match-card
 import { MatchInfoModal } from "@/components/matching/match-info-modal";
 import { UnlockModal } from "@/components/matching/unlock-modal";
 import { ApiError } from "@/lib/api";
-import { clearToken, getToken } from "@/lib/auth";
+import { getToken } from "@/lib/auth";
 import { CACHE_TTL, fetchWithCache, swrCache } from "@/lib/cache";
 import {
   EXTRA_DAILY_LIMIT,
@@ -68,7 +68,6 @@ export default function HomePage() {
   const [activeIsPaid, setActiveIsPaid] = useState(false);
   const [unlockOpen, setUnlockOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [logoutOpen, setLogoutOpen] = useState(false);
   useEffect(() => {
     if (!toast) return;
     const t = window.setTimeout(() => setToast(null), 2600);
@@ -344,32 +343,24 @@ export default function HomePage() {
             API 오류: {error}
           </p>
         )}
-        <div className="mt-[24px] flex flex-col items-center gap-[10px]">
-          <button
-            type="button"
-            onClick={() => setLogoutOpen(true)}
-            className="text-[12px] text-white/40 underline underline-offset-2"
-          >
-            로그아웃
-          </button>
-          <Link
-            href="/privacy"
-            className="text-[12px] text-white/40 underline underline-offset-2"
-          >
-            개인정보처리방침
-          </Link>
-        </div>
+        <footer className="mt-[28px]">
+          <div className="space-y-[2px] text-center text-[11px] leading-[16px] text-white/40">
+            <p>상호: 멜로비 · 대표자: 김병철</p>
+            <p>사업자등록번호: 315-03-92937</p>
+            <p>서울특별시 강남구 강남대로 354, 11층 889호(역삼동, 혜천빌딩)</p>
+            <p>고객센터: 010-9363-8833 · 이메일: thunderbolt9410@gmail.com</p>
+          </div>
+          <div className="mt-[10px] flex justify-center">
+            <Link
+              href="/privacy"
+              className="text-[12px] text-white/40 underline underline-offset-2"
+            >
+              개인정보처리방침
+            </Link>
+          </div>
+        </footer>
       </div>
 
-      {logoutOpen && (
-        <LogoutConfirmModal
-          onClose={() => setLogoutOpen(false)}
-          onConfirm={() => {
-            clearToken();
-            router.replace("/");
-          }}
-        />
-      )}
 
       {activeMatch && (
         <MatchInfoModal
@@ -402,48 +393,5 @@ export default function HomePage() {
         </div>
       )}
     </AppShell>
-  );
-}
-
-function LogoutConfirmModal({
-  onClose,
-  onConfirm,
-}: {
-  onClose: () => void;
-  onConfirm: () => void;
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-50 grid place-items-center bg-black/60 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className="w-[300px] rounded-[16px] border border-white/15 bg-[#1f1235] p-[20px]"
-      >
-        <h3 className="text-center text-[16px] font-bold text-white">
-          로그아웃 하시겠어요?
-        </h3>
-        <p className="mt-[10px] text-center text-[12px] leading-[18px] text-white/70">
-          다시 로그인하면 이어서 이용할 수 있어요.
-        </p>
-        <div className="mt-[16px] flex gap-[8px]">
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-[40px] flex-1 rounded-[10px] border border-white/20 bg-white/5 text-[14px] text-white hover:bg-white/10"
-          >
-            취소
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            className="h-[40px] flex-1 rounded-[10px] bg-[rgba(255,95,95,0.9)] text-[14px] font-bold text-black hover:bg-[rgba(255,95,95,1)]"
-          >
-            로그아웃
-          </button>
-        </div>
-      </div>
-    </div>
   );
 }
