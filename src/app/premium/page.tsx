@@ -89,7 +89,8 @@ function PremiumContent() {
           <button
             type="button"
             onClick={() => router.push("/store")}
-            className="mt-[18px] flex h-[52px] w-full items-center justify-center gap-[8px] rounded-[12px] bg-gradient-to-r from-yellow-300 to-pink-400 text-[16px] font-bold text-[#1b1029] shadow-[0_0_15px_-3px_rgba(253,224,71,0.6)] hover:opacity-90"
+            data-shine
+            className="relative mt-[18px] flex h-[52px] w-full items-center justify-center gap-[8px] overflow-hidden rounded-[12px] bg-gradient-to-r from-yellow-300 to-pink-400 text-[16px] font-bold text-[#1b1029] shadow-[0_0_15px_-3px_rgba(253,224,71,0.6)] hover:opacity-90"
           >
             <Star className="size-[16px] fill-[#1b1029]" />
             별 충전하러 가기

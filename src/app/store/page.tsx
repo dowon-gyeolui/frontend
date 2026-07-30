@@ -159,7 +159,8 @@ function PackageCard({
       type="button"
       onClick={onBuy}
       disabled={pending || disabled}
-      className={`flex w-full items-center justify-between rounded-[18px] border p-[16px] text-left transition active:scale-[0.99] disabled:opacity-50 ${
+      data-shine
+      className={`relative flex w-full items-center justify-between overflow-hidden rounded-[18px] border p-[16px] text-left transition active:scale-[0.99] disabled:opacity-50 ${
         product.featured
           ? "border-2 border-yellow-300/60 bg-gradient-to-br from-yellow-300/15 to-pink-400/10 shadow-[0_0_18px_-6px_rgba(253,224,71,0.5)]"
           : "border border-white/20 bg-white/5"

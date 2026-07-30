@@ -1,6 +1,7 @@
 // 루트 레이아웃 — 전체 앱(/)의 HTML 뼈대와 공통 메타데이터를 정의
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { TouchSparkle } from "@/components/ui/touch-sparkle";
 
 export const metadata: Metadata = {
   title: "ZAMI · 사주 매칭",
@@ -29,6 +30,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-dvh bg-zinc-950 font-sans">
+        <TouchSparkle />
         <div className="mx-auto flex min-h-dvh w-full max-w-[402px] flex-col bg-black">
           {children}
         </div>
