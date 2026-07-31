@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { ElementPentagon } from "@/components/saju/element-pentagon";
 import { LoadingPanel } from "@/components/ui/loading-panel";
-import { apiFetch } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { CACHE_TTL, fetchWithPolling } from "@/lib/cache";
 import {
@@ -36,8 +35,6 @@ export default function SajuPage() {
       router.replace("/");
       return;
     }
-    // 자미두수 심층 풀이를 미리 생성시켜 둔다(서버 백그라운드 생성 트리거).
-    apiFetch("/saju/me/jamidusu-deep").catch(() => {});
     return fetchWithPolling<DetailedSajuResponse>(
       "/saju/me/detailed",
       CACHE_TTL.saju,
