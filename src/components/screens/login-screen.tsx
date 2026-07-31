@@ -9,6 +9,7 @@ import { useState } from "react";
 import { ZamiLogo } from "@/components/brand/zami-logo";
 import { saveToken } from "@/lib/auth";
 import { API_URL } from "@/lib/config";
+import { registerForPushNotifications } from "@/lib/push";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -43,6 +44,7 @@ export default function LoginScreen() {
       }
       const data = (await res.json()) as { token: string; is_new: boolean };
       saveToken(data.token);
+      void registerForPushNotifications();
       router.push(data.is_new ? "/onboarding/account" : "/home");
     } catch {
       setError("네트워크 오류가 발생했어요. 잠시 후 다시 시도해주세요.");

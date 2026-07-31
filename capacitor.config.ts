@@ -1,4 +1,5 @@
 // Capacitor 네이티브 앱 설정 — 배포된 웹(thezami.io)을 로드하는 하이브리드 앱.
+/// <reference types="@capacitor/push-notifications" />
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
@@ -21,6 +22,12 @@ const config: CapacitorConfig = {
   },
   android: {
     allowMixedContent: false,
+  },
+  plugins: {
+    PushNotifications: {
+      // 포그라운드 상태에서도 알림/배지/사운드를 표시(안드로이드는 alert 값이 기본 표시 방식).
+      presentationOptions: ["badge", "sound", "alert"],
+    },
   },
 };
 

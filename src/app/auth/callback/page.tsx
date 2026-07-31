@@ -5,6 +5,7 @@ import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { saveToken } from "@/lib/auth";
+import { registerForPushNotifications } from "@/lib/push";
 
 function CallbackBackground({ children }: { children: React.ReactNode }) {
   return (
@@ -34,6 +35,7 @@ function CallbackHandler() {
     }
 
     saveToken(token);
+    void registerForPushNotifications();
     router.replace(isNew ? "/onboarding/account" : "/home");
   }, [params, router]);
 
