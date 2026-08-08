@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#FFFFFF</color>
+    <!-- 적응형 아이콘 배경 — 전경(ic_launcher_foreground)은 마크만 그린 투명 PNG. -->
+    <color name="ic_launcher_background">#1B0B33</color>
 </resources>

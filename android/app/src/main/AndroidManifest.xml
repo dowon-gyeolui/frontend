@@ -15,6 +15,7 @@
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
+            android:screenOrientation="portrait"
             android:exported="true">
 
             <intent-filter>
@@ -23,6 +24,14 @@
             </intent-filter>
 
         </activity>
+
+        <!-- FCM 알림 기본 표시 설정 — 지정하지 않으면 상태바에 흰 사각형이 뜬다. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_notify" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/colorAccent" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

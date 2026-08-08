@@ -1,5 +1,20 @@
 apply plugin: 'com.android.application'
 
+// 릴리스 서명 정보 — android/keystore.properties (git 미추적) 또는 환경변수에서 읽는다.
+// 파일/환경변수가 없으면 서명 없이 빌드되므로 개발자는 별도 설정 없이 debug 빌드가 가능하다.
+def keystorePropsFile = rootProject.file("keystore.properties")
+def keystoreProps = new Properties()
+if (keystorePropsFile.exists()) {
+    keystorePropsFile.withInputStream { keystoreProps.load(it) }
+}
+def ksStoreFile = keystoreProps['storeFile'] ?: System.getenv('ZAMI_KEYSTORE_FILE')
+def ksStorePassword = keystoreProps['storePassword'] ?: System.getenv('ZAMI_KEYSTORE_PASSWORD')
+def ksKeyAlias = keystoreProps['keyAlias'] ?: System.getenv('ZAMI_KEY_ALIAS')
+def ksKeyPassword = keystoreProps['keyPassword'] ?: System.getenv('ZAMI_KEY_PASSWORD')
+// 상대경로는 android/ 기준으로 해석한다(절대경로 권장).
+def ksResolvedFile = ksStoreFile == null ? null : rootProject.file(ksStoreFile)
+def hasReleaseSigning = ksResolvedFile != null && ksResolvedFile.exists()
+
 android {
     namespace = "com.zami.app"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +22,10 @@ android {
         applicationId "com.zami.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        // 버전은 gradle.properties 에서 관리한다(릴리스마다 zamiVersionCode 를 +1).
+        // CI/스크립트에서 -PzamiVersionCode=12 처럼 덮어쓸 수도 있다.
+        versionCode Integer.parseInt((project.findProperty("zamiVersionCode") ?: "1") as String)
+        versionName (project.findProperty("zamiVersionName") ?: "1.0.0") as String
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -16,10 +33,47 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                storeFile ksResolvedFile
+                storePassword ksStorePassword
+                keyAlias ksKeyAlias
+                keyPassword ksKeyPassword
+                enableV1Signing true
+                enableV2Signing true
+            }
+        }
+    }
+
     buildTypes {
         release {
+            // Capacitor 브리지는 리플렉션으로 플러그인을 찾으므로 R8 축소는 켜지 않는다.
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig hasReleaseSigning ? signingConfigs.release : null
+        }
+    }
+
+    // AAB 분할 배포 — 기기별로 필요한 리소스만 내려받게 해 설치 용량을 줄인다.
+    bundle {
+        language { enableSplit = true }
+        density { enableSplit = true }
+        abi { enableSplit = true }
+    }
+}
+
+// 서명 키가 없으면 릴리스 산출물이 조용히 미서명으로 나오는 것을 막는다.
+tasks.whenTaskAdded { task ->
+    if (task.name == 'bundleRelease' || task.name == 'assembleRelease') {
+        task.doFirst {
+            if (!hasReleaseSigning) {
+                throw new GradleException(
+                    "릴리스 서명 키가 없습니다. android/keystore.properties 를 만들거나 " +
+                    "ZAMI_KEYSTORE_FILE/ZAMI_KEYSTORE_PASSWORD/ZAMI_KEY_ALIAS/ZAMI_KEY_PASSWORD 환경변수를 설정하세요. " +
+                    "(RELEASE.md 참고)"
+                )
+            }
         }
     }
 }

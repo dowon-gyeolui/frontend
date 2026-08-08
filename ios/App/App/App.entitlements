@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- 푸시 알림. Xcode 자동 서명이 'Push Notifications' capability 를 붙여준다.
+	     App Store / TestFlight 배포 빌드는 production, 개발 빌드는 Xcode 가 development 로 자동 치환한다. -->
+	<key>aps-environment</key>
+	<string>production</string>
+</dict>
+</plist>

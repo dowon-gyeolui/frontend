@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ZAMI 브랜드 색 — 웹 스플래시 그라디언트(#12081f → #2a0e4f → #5e35b1)와 액센트(#fde047) 기준. -->
+<resources>
+    <color name="colorPrimary">#2A0E4F</color>
+    <color name="colorPrimaryDark">#12081F</color>
+    <color name="colorAccent">#FDE047</color>
+</resources>

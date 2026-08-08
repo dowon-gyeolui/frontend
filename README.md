@@ -237,3 +237,24 @@ cd frontend
 npm install
 npm run dev    # http://localhost:3000
 ```
+
+---
+
+## 모바일 앱 (Capacitor 8)
+
+`thezami.io` 를 로드하는 네이티브 셸이다. 웹을 번들하지 않으므로 **웹 배포 = 앱 갱신**이다.
+
+| 항목 | 값 |
+|---|---|
+| 앱 ID | `com.zami.app` |
+| 앱 이름 | ZAMI |
+| 네이티브 기능 | 푸시 알림 (`@capacitor/push-notifications`) |
+| Android | `android/` — minSdk 24 / targetSdk 36, 세로 고정 |
+| iOS | `ios/` — iOS 15+, iPhone 전용, 세로 고정 (빌드는 macOS 필요) |
+
+```bash
+./scripts/build-android-release.sh   # 서명된 .aab (Play 업로드용)
+./scripts/build-ios-release.sh       # .ipa (macOS 전용)
+```
+
+> 출시 절차·스토어 등록·심사 대응은 **[RELEASE.md](RELEASE.md)** 참고.

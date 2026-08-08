@@ -38,8 +38,12 @@
 	<string>Main</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
-		<string>armv7</string>
+		<string>arm64</string>
 	</array>
+	<!-- 표준 HTTPS/시스템 암호화만 사용 → 수출 규정 신고 대상 아님.
+	     이 키가 없으면 TestFlight/심사 제출 때마다 수출 규정 질문이 반복된다. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  xcodebuild -exportArchive 용 옵션. App Store Connect 업로드(.ipa) 기준.
+  teamID 는 Apple Developer > Membership 의 Team ID(영숫자 10자리)로 바꿔야 한다.
+  스크립트에서 ZAMI_TEAM_ID 환경변수로 덮어쓸 수 있다(scripts/build-ios-release.sh).
+-->
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>app-store-connect</string>
+	<key>teamID</key>
+	<string>YOUR_TEAM_ID</string>
+	<key>destination</key>
+	<string>export</string>
+	<key>signingStyle</key>
+	<string>automatic</string>
+	<key>uploadSymbols</key>
+	<true/>
+	<key>manageAppVersionAndBuildNumber</key>
+	<false/>
+</dict>
+</plist>

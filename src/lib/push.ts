@@ -14,12 +14,16 @@ import { apiFetch } from "@/lib/api";
  * 기기 토큰을 백엔드에 등록한다.
  * 계약(백엔드와 조율 필요, 미확정 시 아래 값으로 가정하고 진행):
  *   POST /users/me/device-token
- *   body: { token: string, platform: "android" }
+ *   body: { token: string, platform: "android" | "ios" }
+ *
+ * 안드로이드는 FCM 등록 토큰, iOS 는 APNs 디바이스 토큰이 넘어온다(형식이 다르다).
+ * 백엔드는 platform 값으로 발송 경로를 구분해야 한다.
  */
 export async function registerDeviceToken(token: string): Promise<void> {
+  const platform = Capacitor.getPlatform(); // "android" | "ios"
   await apiFetch("/users/me/device-token", {
     method: "POST",
-    body: JSON.stringify({ token, platform: "android" }),
+    body: JSON.stringify({ token, platform }),
   });
 }
 
